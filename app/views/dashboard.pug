@@ -1,0 +1,21 @@
+extends layout
+
+block content
+  h1 Dashboard
+  h2 Upcoming Events
+  ul
+    each event in upcomingEvents
+      li
+        strong= event.name
+        p= event.date + " at " + event.time
+        a(href=`/events/${event.id}`) View Details
+
+  h2 To-Do List
+  ul
+    each task in todoList
+      li= task
+
+  h2 Notifications
+  ul
+    each notification in notifications
+      li= notification

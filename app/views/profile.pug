@@ -1,0 +1,12 @@
+extends layout
+
+block content
+  h1 Update Profile
+  form(action='/profile/update' method='POST')
+    label(for='interests') Interests:
+    input(type='text' name='interests')
+    label(for='courses') Courses:
+    input(type='text' name='courses')
+    label(for='free_time') Free Time Windows:
+    input(type='text' name='free_time')
+    button(type='submit') Update Profile

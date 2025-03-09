@@ -1,0 +1,128 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #F1F1F1;
+    color: #333333;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Header */
+  .header {
+    background-color: #66B89E;
+    color: white;
+    padding: 20px;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  /* Navigation Bar */
+  .navbar {
+    background-color: #333333;
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px;
+  }
+  
+  .navbar a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 16px;
+  }
+  
+  .navbar a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Content Area */
+  .container {
+    display: flex;
+    max-width: 1000px;
+    margin: 20px auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    width: 200px;
+    background-color: #AAAAAA;
+    height: 150px;
+    margin-right: 20px;
+  }
+  
+  /* Main Content */
+  .main-content {
+    flex: 1;
+  }
+  
+  h1, h2, h3 {
+    color: #333333;
+  }
+  
+  /* Design Colors Section */
+  .design-colors {
+    margin: 20px;
+  }
+  
+  .design-colors ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .design-colors li {
+    font-size: 18px;
+    margin: 5px 0;
+  }
+  
+  /* Accessibility Styles */
+  .contrast-box {
+    background-color: #333333;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 18px;
+  }
+  
+  /* Button */
+  .button {
+    background-color: #66B89E;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .button:hover {
+    background-color: #559A89;
+  }
+  
+  /* Input Fields */
+  input[type="text"], input[type="email"], input[type="password"], textarea {
+    border: 1px solid #AAAAAA;
+    padding: 10px;
+    width: 100%;
+    border-radius: 5px;
+  }
+  
+  input:focus, textarea:focus {
+    border-color: #66B89E;
+    outline: none;
+  }
+  
+  /* Responsive Design */
+  @media screen and (max-width: 768px) {
+    .container {
+      flex-direction: column;
+    }
+    .sidebar {
+      width: 100%;
+      height: auto;
+      margin-bottom: 10px;
+    }
+  }
+  

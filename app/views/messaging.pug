@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  h1 Messages
+  ul
+    each message in messages
+      li
+        strong= message.sender
+        p= message.text
+        small= message.timestamp
+  form(action='/messages/send' method='POST')
+    label(for='receiver') To:
+    input(type='text' name='receiver' required)
+    label(for='message') Message:
+    textarea(name='message' required)
+    button(type='submit') Send Message
