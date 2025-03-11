@@ -54,7 +54,27 @@ class Message {
         });
     }
 
-    // Add other methods as needed (e.g., updateMessage, deleteMessage)
+    // Update an existing message in the database
+    async updateMessage(newContent) {
+        const query = "UPDATE Messages SET Content = ? WHERE MessageID = ?"; // SQL query to update a message's content
+        return new Promise((resolve, reject) => {
+            db.query(query, [newContent, this.id], (err, results) => { // Execute the query with the new content and message ID
+                if (err) reject(err); // Reject the promise if there's an error
+                resolve(results.affectedRows > 0); // Resolve with true if the message was updated, false otherwise
+            });
+        });
+    }
+
+    // Delete a message from the database
+    async deleteMessage() {
+        const query = "DELETE FROM Messages WHERE MessageID = ?"; // SQL query to delete a message
+        return new Promise((resolve, reject) => {
+            db.query(query, [this.id], (err, results) => { // Execute the query with the message ID
+                if (err) reject(err); // Reject the promise if there's an error
+                resolve(results.affectedRows > 0); // Resolve with true if the message was deleted, false otherwise
+            });
+        });
+    }
 }
 
 module.exports = { Message };
