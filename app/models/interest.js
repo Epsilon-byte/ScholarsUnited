@@ -11,8 +11,9 @@ class Interest {
         const query = "SELECT * FROM Interests WHERE InterestID = ?";
         return new Promise((resolve, reject) => {
             db.query(query, [this.id], (err, results) => {
-                if (err) reject(err);
-                if (results.length > 0) {
+                if (err) {
+                    reject(err);
+                } else if (results.length > 0) {
                     this.name = results[0].InterestName;
                     resolve(results[0]);
                 } else {
@@ -27,8 +28,11 @@ class Interest {
         const query = "SELECT * FROM Interests";
         return new Promise((resolve, reject) => {
             db.query(query, (err, results) => {
-                if (err) reject(err);
-                resolve(results);
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
             });
         });
     }
