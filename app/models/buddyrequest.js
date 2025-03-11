@@ -63,7 +63,6 @@ class BuddyRequest {
         });
     }
 
-    // Add other methods as needed (e.g., deleteRequest)
 }
 
 module.exports = { BuddyRequest };
