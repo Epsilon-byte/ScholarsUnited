@@ -37,7 +37,28 @@ class Notification {
         });
     }
 
-    // Add other methods as needed (e.g., markAsRead, deleteNotification)
+    // Mark a notification as read
+    async markAsRead() {
+        // Assuming you have a 'Read' column in the Notifications table (boolean)
+        const query = "UPDATE Notifications SET Read = true WHERE NotificationID = ?";
+        return new Promise((resolve, reject) => {
+            db.query(query, [this.id], (err, results) => {
+                if (err) reject(err);
+                resolve(results.affectedRows > 0); // Resolve with true if updated, false otherwise
+            });
+        });
+    }
+
+    // Delete a notification
+    async deleteNotification() {
+        const query = "DELETE FROM Notifications WHERE NotificationID = ?";
+        return new Promise((resolve, reject) => {
+            db.query(query, [this.id], (err, results) => {
+                if (err) reject(err);
+                resolve(results.affectedRows > 0); // Resolve with true if deleted, false otherwise
+            });
+        });
+    }
 }
 
 module.exports = { Notification };
