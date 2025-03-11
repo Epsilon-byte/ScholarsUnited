@@ -15,9 +15,12 @@ class UserInterest {
             WHERE UserInterests.UserID = ?`;
         return new Promise((resolve, reject) => {
             db.query(query, [this.userId], (err, results) => {
-                if (err) reject(err);
-                this.interests = results.map((row) => row.InterestName);
-                resolve(this.interests);
+                if (err) {
+                    reject(err);
+                } else {
+                    this.interests = results.map((row) => row.InterestName);
+                    resolve(this.interests);
+                }
             });
         });
     }
