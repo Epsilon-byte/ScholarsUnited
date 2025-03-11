@@ -1,0 +1,12 @@
+extends layout
+
+block content
+  h1 Events
+
+  ul
+    each event in events
+      li
+        strong= event.name
+        p= event.date + " at " + event.time
+        p= "Location: " + event.location
+        a(href=`/events/${event.id}`) View Details
