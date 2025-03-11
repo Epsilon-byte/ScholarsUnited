@@ -15,8 +15,11 @@ class UserCourse {
             WHERE UserCourses.UserID = ?`;
         return new Promise((resolve, reject) => {
             db.query(query, [userId], (err, results) => {
-                if (err) reject(err);
-                resolve(results);
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
             });
         });
     }
@@ -30,8 +33,11 @@ class UserCourse {
             WHERE UserCourses.CourseID = ?`;
         return new Promise((resolve, reject) => {
             db.query(query, [courseId], (err, results) => {
-                if (err) reject(err);
-                resolve(results);
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
             });
         });
     }
@@ -41,8 +47,11 @@ class UserCourse {
         const query = "INSERT INTO UserCourses (UserID, CourseID) VALUES (?, ?)";
         return new Promise((resolve, reject) => {
             db.query(query, [this.userId, this.courseId], (err, results) => {
-                if (err) reject(err);
-                resolve(results);
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
             });
         });
     }
