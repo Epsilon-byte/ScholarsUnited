@@ -16,8 +16,9 @@ class User {
         const query = "SELECT * FROM Users WHERE UserID = ?";
         return new Promise((resolve, reject) => {
             db.query(query, [this.id], (err, results) => {
-                if (err) reject(err);
-                if (results.length > 0) {
+                if (err) {
+                    reject(err);
+                } else if (results.length > 0) {
                     const user = results[0];
                     this.fullName = user.FullName;
                     this.email = user.Email;
@@ -41,39 +42,48 @@ class User {
             WHERE UserInterests.UserID = ?`;
         return new Promise((resolve, reject) => {
             db.query(query, [this.id], (err, results) => {
-                if (err) reject(err);
-                this.interests = results.map((row) => row.InterestName);
-                resolve(this.interests);
+                if (err) {
+                    reject(err);
+                } else {
+                    this.interests = results.map((row) => row.InterestName);
+                    resolve(this.interests);
+                }
             });
         });
     }
 
     // Delete a user account
     static async deleteUser(userId) {
+        const query = "DELETE FROM Users WHERE UserID = ?";
         return new Promise((resolve, reject) => {
-            const query = "DELETE FROM Users WHERE UserID = ?";
             db.query(query, [userId], (err, results) => {
-                if (err) reject(err);
-                resolve({ message: `User ${userId} deleted successfully.` });
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve({ message: `User ${userId} deleted successfully.` });
+                }
             });
         });
     }
 
     // Search users by name, interests, or availability
     static async searchUsers(query) {
+        const sql = `
+            SELECT DISTINCT Users.UserID, Users.FullName, Users.Email, Users.AvailableTime
+            FROM Users
+            LEFT JOIN UserInterests ON Users.UserID = UserInterests.UserID
+            LEFT JOIN Interests ON UserInterests.InterestID = Interests.InterestID
+            WHERE Users.FullName LIKE ? OR Interests.InterestName LIKE ? OR Users.AvailableTime LIKE ?
+            LIMIT 20`; // Limit results to 20 for efficiency
+        
+        const searchQuery = `%${query}%`;
         return new Promise((resolve, reject) => {
-            const sql = `
-                SELECT DISTINCT Users.UserID, Users.FullName, Users.Email, Users.AvailableTime
-                FROM Users
-                LEFT JOIN UserInterests ON Users.UserID = UserInterests.UserID
-                LEFT JOIN Interests ON UserInterests.InterestID = Interests.InterestID
-                WHERE Users.FullName LIKE ? OR Interests.InterestName LIKE ? OR Users.AvailableTime LIKE ?
-                LIMIT 20`; // Limit results to 20 for efficiency
-            
-            const searchQuery = `%${query}%`;
             db.query(sql, [searchQuery, searchQuery, searchQuery], (err, results) => {
-                if (err) reject(err);
-                resolve(results);
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(results);
+                }
             });
         });
     }
