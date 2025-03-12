@@ -100,7 +100,36 @@ static async getAllEvents() {
         });
     });
 }
-
-}
+// Fetch upcoming events (events happening in the future)
+    static async getUpcomingEvents() {
+        const query = "SELECT * FROM Events WHERE Date >= CURDATE() ORDER BY Date ASC";
+        return new Promise((resolve, reject) => {
+            db.query(query, (err, results) => {
+                if (err) {
+                    console.error("Database Query Error:", err);
+                    reject(err);
+                } else {
+                    console.log("Fetched Upcoming Events from DB:", results); // Debugging
+                    resolve(results || []); // Always return an array
+                }
+            });
+        });
+    }
+        // Fetch upcoming events (events happening in the future)
+        static async getUpcomingEvents() {
+            const query = "SELECT * FROM Events WHERE Date >= CURDATE() ORDER BY Date ASC";
+            return new Promise((resolve, reject) => {
+                db.query(query, (err, results) => {
+                    if (err) {
+                        console.error("Database Query Error:", err);
+                        reject(err);
+                    } else {
+                        console.log("Fetched Upcoming Events from DB:", results); // Debugging
+                        resolve(results || []); // Always return an array
+                    }
+                });
+            });
+        }
+    }
 
 module.exports = { Event };
