@@ -85,6 +85,22 @@ class Event {
             });
         });
     }
+    // Fetch all events
+static async getAllEvents() {
+    const query = "SELECT * FROM Events";
+    return new Promise((resolve, reject) => {
+        db.query(query, (err, results) => {
+            if (err) {
+                console.error("Database Error:", err);
+                reject(err);
+            } else {
+                console.log("Fetched Events:", results); // Debugging log
+                resolve(results || []); // Ensure it always returns an array
+            }
+        });
+    });
+}
+
 }
 
 module.exports = { Event };

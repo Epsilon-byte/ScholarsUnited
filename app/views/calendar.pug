@@ -2,6 +2,7 @@ extends layout
 
 block content
   h1 Study Events Calendar
+
   table
     thead
       tr
@@ -10,10 +11,14 @@ block content
         th Event Name
         th Actions
     tbody
-      each event in events
+      if events && Array.isArray(events) && events.length
+        each event in events
+          tr
+            td= event.date
+            td= event.time
+            td= event.name
+            td
+              a(href=`/events/join/${event.id}`) Join
+      else
         tr
-          td= event.date
-          td= event.time
-          td= event.name
-          td
-            a(href=`/events/join/${event.id}`) Join
+          td(colspan="4") No events available

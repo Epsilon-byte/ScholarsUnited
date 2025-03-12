@@ -7,6 +7,9 @@ var app = express();
 // Add static files location
 app.use(express.static("static"));
 
+app.set('view engine', 'pug');
+app.set('views', './app/views');
+
 // Get the functions in the db.js file to use
 const db = require('./services/db');
 
@@ -196,6 +199,20 @@ app.get("/notifications/:userId", function (req, res) {
             res.status(500).send("Error fetching notifications");
         });
 });
+
+app.get("/calendar", async function (req, res) {
+    try {
+        const events = await Event.getAllEvents(); // Fetch events from DB
+        console.log("Fetched Events:", events); // Debugging output
+
+        // Ensure events is an array before passing it to the template
+        res.render("calendar", { events: events || [] });
+    } catch (err) {
+        console.error("Error fetching events:", err);
+        res.render("calendar", { events: [] }); // Fallback to empty array
+    }
+});
+
 // Start server on port 3000
 app.listen(3000,function(){
     console.log(`Server running at http://127.0.0.1:3000/`);
