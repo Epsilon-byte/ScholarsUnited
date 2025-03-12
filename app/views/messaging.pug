@@ -2,12 +2,18 @@ extends layout
 
 block content
   h1 Messages
-  ul
-    each message in messages
-      li
-        strong= message.sender
-        p= message.text
-        small= message.timestamp
+
+  if messages && Array.isArray(messages) && messages.length
+    ul
+      each message in messages
+        li
+          strong= message.sender
+          p= message.content
+          small= message.timestamp
+  else
+    p No messages available.
+
+  h2 Send a Message
   form(action='/messages/send' method='POST')
     label(for='receiver') To:
     input(type='text' name='receiver' required)

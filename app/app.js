@@ -141,15 +141,17 @@ app.get("/event-participants/:eventId", function (req, res) {
 });
 
 // ========== MESSAGE ROUTES ==========
-app.get("/messages/:userId", function (req, res) {
-    Message.getMessages(req.params.userId)
-        .then(messages => {
-            res.json(messages);
-        })
-        .catch(err => {
-            console.error(err);
-            res.status(500).send("Error fetching messages");
-        });
+app.get("/messages/:userId", async function (req, res) {
+    try {
+        const messages = await Message.getMessages(req.params.userId);
+        console.log("Fetched Messages:", messages); // Debugging output
+
+        // Ensure messages is always an array before rendering
+        res.render("messaging", { messages: messages || [] });
+    } catch (err) {
+        console.error("Error fetching messages:", err);
+        res.render("messaging", { messages: [] }); // Ensure empty array if error
+    }
 });
 
 app.post("/messages/send", function (req, res) {

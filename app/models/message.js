@@ -9,6 +9,22 @@ class Message {
         this.timestamp = null;
     }
 
+    // Fetch all messages for a user
+    static async getMessages(userId) {
+        const query = "SELECT * FROM Messages WHERE ReceiverID = ? OR SenderID = ?";
+        return new Promise((resolve, reject) => {
+            db.query(query, [userId, userId], (err, results) => {
+                if (err) {
+                    console.error("Database Query Error:", err);
+                    reject(err);
+                } else {
+                    console.log("Fetched Messages from DB:", results); // Debugging
+                    resolve(results || []); // Always return an array
+                }
+            });
+        });
+    }
+
     // Fetch message details
     async getMessageDetails() {
         const query = "SELECT * FROM Messages WHERE MessageID = ?";
