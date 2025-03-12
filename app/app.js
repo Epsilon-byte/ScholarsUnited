@@ -14,6 +14,10 @@ app.set('views','./app/views');
 // Get the functions in the db.js file to use
 const db = require('./services/db');
 
+app.get("/", function(req,res){
+    res.render("index");
+});
+
 // Import models
 const { User } = require("./models/User");
 const { Interest } = require("./models/Interest");
