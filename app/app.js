@@ -19,16 +19,16 @@ app.get("/", function(req,res){
 });
 
 // Import models
-const { User } = require("./models/User");
-const { Interest } = require("./models/Interest");
-const { UserInterest } = require("./models/UserInterest");
-const { Course } = require("./models/Course");
-const { UserCourse } = require("./models/UserCourse");
-const { Event } = require("./models/Event");
-const { EventParticipant } = require("./models/EventParticipant");
-const { Message } = require("./models/Message");
-const { BuddyRequest } = require("./models/BuddyRequest");
-const { Notification } = require("./models/Notification");
+const { User } = require("./models/user");
+const { Interest } = require("./models/interest");
+const { UserInterest } = require("./models/user-interest");
+const { Course } = require("./models/course");
+const { UserCourse } = require("./models/user-course");
+const { Event } = require("./models/event");
+const { EventParticipant } = require("./models/event-participant");
+const { Message } = require("./models/message");
+const { BuddyRequest } = require("./models/buddy-request");
+const { Notification } = require("./models/notification");
 
 // ========== USER ROUTES ==========
 app.get("/users/:id", function (req, res) {
