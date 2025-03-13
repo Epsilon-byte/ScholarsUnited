@@ -14,8 +14,8 @@ block content
       if events && Array.isArray(events) && events.length
         each event in events
           tr
-            td= event.date
-            td= event.time
+            td= event.date || 'Invalid Date'
+            td= event.time || 'Invalid Time'
             td= event.name
             td
               a(href=`/events/join/${event.id}`) Join
