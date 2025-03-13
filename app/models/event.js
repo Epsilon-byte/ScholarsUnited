@@ -1,9 +1,6 @@
-// models/event.js
-
 const db = require("../services/db"); // Import database connection
 
 class Event {
-    // ... (constructor and getEventDetails() as in the previous response) 
     constructor(id) {
         this.id = id;
         this.name = null;
@@ -14,6 +11,7 @@ class Event {
         this.userId = null;
         this.participants = null; // Initialize participants to null or an empty array []
     }
+    
 
     // Fetch event participants
     async getEventParticipants() {
@@ -22,114 +20,101 @@ class Event {
             FROM EventParticipants
             INNER JOIN Users ON EventParticipants.UserID = Users.UserID
             WHERE EventParticipants.EventID = ?`;
-        return new Promise((resolve, reject) => {
-            db.query(query, [this.id], (err, results) => {
-                if (err) reject(err);
-                this.participants = results; // Store the participants
-                resolve(this.participants);
-            });
-        });
+        try {
+            const [results] = await db.promise().query(query, [this.id]);
+            this.participants = results;
+            return this.participants;
+        } catch (err) {
+            console.error("Error fetching participants:", err);
+            throw err; // Re-throw the error to be handled by the caller
+        }
     }
 
     // Static method to create a new event
-    static async createEvent(name, description, date, time, location, userId) { // Changed 'title' to 'name'
+    static async createEvent(name, description, date, time, location, userId) {
         const query = "INSERT INTO Events (Title, Description, Date, Time, Location, UserID) VALUES (?, ?, ?, ?, ?, ?)";
-        return new Promise((resolve, reject) => {
-            db.query(query, [name, description, date, time, location, userId], (err, results) => {
-                if (err) reject(err);
-                resolve(results.insertId); // Resolve with the new event's ID
-            });
-        });
+        try {
+            const [results] = await db.promise().query(query, [name, description, date, time, location, userId]);
+            return results.insertId; // Return the new event's ID
+        } catch (err) {
+            console.error("Error creating event:", err);
+            throw err;
+        }
     }
 
     // Update an existing event
     async updateEvent(name, description, date, time, location) {
         const query = "UPDATE Events SET Title = ?, Description = ?, Date = ?, Time = ?, Location = ? WHERE EventID = ?";
-        return new Promise((resolve, reject) => {
-            db.query(query, [name, description, date, time, location, this.id], (err, results) => {
-                if (err) reject(err);
-                resolve(results.affectedRows > 0); // Resolve with true if updated, false otherwise
-            });
-        });
+        try {
+            const [results] = await db.promise().query(query, [name, description, date, time, location, this.id]);
+            return results.affectedRows > 0; // Returns true if updated, false otherwise
+        } catch (err) {
+            console.error("Error updating event:", err);
+            throw err;
+        }
     }
 
     // Delete an event
     async deleteEvent() {
         const query = "DELETE FROM Events WHERE EventID = ?";
-        return new Promise((resolve, reject) => {
-            db.query(query, [this.id], (err, results) => {
-                if (err) reject(err);
-                resolve(results.affectedRows > 0); // Resolve with true if deleted, false otherwise
-            });
-        });
+        try {
+            const [results] = await db.promise().query(query, [this.id]);
+            return results.affectedRows > 0; // Returns true if deleted, false otherwise
+        } catch (err) {
+            console.error("Error deleting event:", err);
+            throw err;
+        }
     }
 
     // Add a participant to the event
     async addParticipant(userId) {
         const query = "INSERT INTO EventParticipants (UserID, EventID) VALUES (?, ?)";
-        return new Promise((resolve, reject) => {
-            db.query(query, [userId, this.id], (err, results) => {
-                if (err) reject(err);
-                resolve(results.affectedRows > 0); // Resolve with true if added, false otherwise
-            });
-        });
+        try {
+            const [results] = await db.promise().query(query, [userId, this.id]);
+            return results.affectedRows > 0; // Returns true if added, false otherwise
+        } catch (err) {
+            console.error("Error adding participant:", err);
+            throw err;
+        }
     }
 
     // Remove a participant from the event
     async removeParticipant(userId) {
         const query = "DELETE FROM EventParticipants WHERE UserID = ? AND EventID = ?";
-        return new Promise((resolve, reject) => {
-            db.query(query, [userId, this.id], (err, results) => {
-                if (err) reject(err);
-                resolve(results.affectedRows > 0); // Resolve with true if removed, false otherwise
-            });
-        });
-    }
-    // Fetch all events
-static async getAllEvents() {
-    const query = "SELECT * FROM Events";
-    return new Promise((resolve, reject) => {
-        db.query(query, (err, results) => {
-            if (err) {
-                console.error("Database Error:", err);
-                reject(err);
-            } else {
-                console.log("Fetched Events:", results); // Debugging log
-                resolve(results || []); // Ensure it always returns an array
-            }
-        });
-    });
-}
-// Fetch upcoming events (events happening in the future)
-    static async getUpcomingEvents() {
-        const query = "SELECT * FROM Events WHERE Date >= CURDATE() ORDER BY Date ASC";
-        return new Promise((resolve, reject) => {
-            db.query(query, (err, results) => {
-                if (err) {
-                    console.error("Database Query Error:", err);
-                    reject(err);
-                } else {
-                    console.log("Fetched Upcoming Events from DB:", results); // Debugging
-                    resolve(results || []); // Always return an array
-                }
-            });
-        });
-    }
-        // Fetch upcoming events (events happening in the future)
-        static async getUpcomingEvents() {
-            const query = "SELECT * FROM Events WHERE Date >= CURDATE() ORDER BY Date ASC";
-            return new Promise((resolve, reject) => {
-                db.query(query, (err, results) => {
-                    if (err) {
-                        console.error("Database Query Error:", err);
-                        reject(err);
-                    } else {
-                        console.log("Fetched Upcoming Events from DB:", results); // Debugging
-                        resolve(results || []); // Always return an array
-                    }
-                });
-            });
+        try {
+            const [results] = await db.promise().query(query, [userId, this.id]);
+            return results.affectedRows > 0; // Returns true if removed, false otherwise
+        } catch (err) {
+            console.error("Error removing participant:", err);
+            throw err;
         }
     }
+
+    // Fetch all events
+    static async getAllEvents() {
+        const query = "SELECT * FROM Events";
+        try {
+            const results = await db.query(query);
+            console.log("Fetched Events:", results); // Debugging log
+            return results || []; // Return an array, even if empty
+        } catch (err) {
+            console.error("Error fetching all events:", err);
+            throw err;
+        }
+    }
+
+    // Fetch upcoming events (events happening in the future)
+    static async getUpcomingEvents() {
+        const query = "SELECT * FROM Events WHERE Date >= CURDATE() ORDER BY Date ASC";
+        try {
+            const results = await db.query(query);
+            console.log("Fetched Upcoming Events:", results); // Debugging log
+            return results || []; // Return an array, even if empty
+        } catch (err) {
+            console.error("Error fetching upcoming events:", err);
+            throw err;
+        }
+    }
+}
 
 module.exports = { Event };
