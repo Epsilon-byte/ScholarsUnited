@@ -14,23 +14,22 @@ class User {
     // Fetch user details
     async getUserDetails() {
         const query = "SELECT * FROM Users WHERE UserID = ?";
-        return new Promise((resolve, reject) => {
-            db.query(query, [this.id], (err, results) => {
-                if (err) {
-                    reject(err);
-                } else if (results.length > 0) {
-                    const user = results[0];
-                    this.fullName = user.FullName;
-                    this.email = user.Email;
-                    this.hobbies = user.Hobbies;
-                    this.academicInfo = user.AcademicInfo;
-                    this.availableTime = user.AvailableTime;
-                    resolve(user);
-                } else {
-                    resolve(null);
-                }
-            });
-        });
+        try {
+            const results = await db.query(query, [this.id]);
+            if (!results || results.length === 0) return null; // No user found
+
+            const user = results[0]; // Get the first user (assuming unique UserID)
+            this.fullName = user.FullName;
+            this.email = user.Email;
+            this.hobbies = user.Hobbies;
+            this.academicInfo = user.AcademicInfo;
+            this.availableTime = user.AvailableTime;
+
+            return user;
+        } catch (err) {
+            console.error("Error fetching user details:", err);
+            throw err; // Rethrow error for handling in routes
+        }
     }
 
     // Fetch user interests
@@ -40,16 +39,14 @@ class User {
             FROM UserInterests
             INNER JOIN Interests ON UserInterests.InterestID = Interests.InterestID
             WHERE UserInterests.UserID = ?`;
-        return new Promise((resolve, reject) => {
-            db.query(query, [this.id], (err, results) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    this.interests = results.map((row) => row.InterestName);
-                    resolve(this.interests);
-                }
-            });
-        });
+        try {
+            const results = await db.query(query, [this.id]);
+            this.interests = results.map(row => row.InterestName);
+            return this.interests;
+        } catch (err) {
+            console.error("Error fetching user interests:", err);
+            throw err;
+        }
     }
 
     // Delete a user account
@@ -57,11 +54,8 @@ class User {
         const query = "DELETE FROM Users WHERE UserID = ?";
         return new Promise((resolve, reject) => {
             db.query(query, [userId], (err, results) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve({ message: `User ${userId} deleted successfully.` });
-                }
+                if (err) reject(err);
+                else resolve({ message: `User ${userId} deleted successfully.` });
             });
         });
     }
@@ -79,11 +73,8 @@ class User {
         const searchQuery = `%${query}%`;
         return new Promise((resolve, reject) => {
             db.query(sql, [searchQuery, searchQuery, searchQuery], (err, results) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(results);
-                }
+                if (err) reject(err);
+                else resolve(results);
             });
         });
     }
