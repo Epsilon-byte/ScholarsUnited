@@ -1,5 +1,6 @@
 const db = require("../services/db"); // Import database connection
 
+
 class User {
     constructor(id) {
         this.id = id;
@@ -14,24 +15,28 @@ class User {
     // Fetch user details
     async getUserDetails() {
         const query = "SELECT * FROM Users WHERE UserID = ?";
-        return new Promise((resolve, reject) => {
-            db.query(query, [this.id], (err, results) => {
-                if (err) {
-                    reject(err);
-                } else if (results.length > 0) {
-                    const user = results[0];
-                    this.fullName = user.FullName;
-                    this.email = user.Email;
-                    this.hobbies = user.Hobbies;
-                    this.academicInfo = user.AcademicInfo;
-                    this.availableTime = user.AvailableTime;
-                    resolve(user);
-                } else {
-                    resolve(null);
-                }
-            });
-        });
+    
+        try {
+            const results = await db.query(query, [this.id]);
+    
+            if (!results || results.length === 0) {
+                return null; // Return null if no user is found
+            }
+    
+            const user = results[0]; // Get the first user (assuming unique UserID)
+            this.fullName = user.FullName;
+            this.email = user.Email;
+            this.hobbies = user.Hobbies;
+            this.academicInfo = user.AcademicInfo;
+            this.availableTime = user.AvailableTime;
+    
+            return user; // Return the user object
+        } catch (err) {
+            console.error("Error fetching user details:", err);
+            throw err; // Rethrow the error to be handled elsewhere
+        }
     }
+    
 
     // Fetch user interests
     async getUserInterests() {

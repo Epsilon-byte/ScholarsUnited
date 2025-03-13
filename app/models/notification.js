@@ -59,6 +59,29 @@ class Notification {
             });
         });
     }
+
+    static async getNotificationsByUserId(userId) {
+        const query = `
+            SELECT 
+                Notifications.NotificationID, 
+                Notifications.Message, 
+                Notifications.Timestamp, 
+                Users.FullName, 
+                Users.Email
+            FROM Notifications
+            INNER JOIN Users ON Users.UserID = Notifications.UserID
+            WHERE Users.UserID = ?`;
+
+        return new Promise((resolve, reject) => {
+            db.query(query, [userId], (err, results) => {
+                if (err) {
+                    reject(err);  // Reject the promise if an error occurs
+                } else {
+                    resolve(results);  // Resolve the promise with the fetched notifications
+                }
+            });
+        });
+    }
 }
 
 module.exports = { Notification };

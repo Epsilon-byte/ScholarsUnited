@@ -1,6 +1,8 @@
 // Import express.js
 const express = require("express");
 
+const { formatDate, formatTime } = require("/src/helper.js");
+
 // Create express app
 var app = express();
 
@@ -93,16 +95,16 @@ app.get("/user-interests/:userId", function (req, res) {
 });
 
 // ========== COURSE ROUTES ==========
-app.get("/courses", function (req, res) {
-    Course.getAllCourses()
-        .then(courses => {
-            res.json(courses);
-        })
-        .catch(err => {
-            console.error(err);
-            res.status(500).send("Error fetching courses");
-        });
+app.get("/courses", async function (req, res) {
+    try {
+        const courses = await Course.getAllCourses();  // Await the result from getAllCourses
+        res.json(courses);  // Send the courses as a JSON response
+    } catch (err) {
+        console.error(err);  // Log any errors to the console
+        res.status(500).send("Error fetching courses");  // Return a 500 status and error message
+    }
 });
+
 
 // ========== USER-COURSE ROUTES ==========
 app.get("/user-courses/:userId", function (req, res) {
@@ -192,38 +194,58 @@ app.get("/buddyRequests/received/:userId", function (req, res) {
 
 // ========== NOTIFICATION ROUTES ==========
 app.get("/notifications/:userId", function (req, res) {
-    Notification.getNotificationsByUserId(req.params.userId)
+    // Ensure userId is provided in the request and it's a valid number
+    const userId = req.params.userId;
+
+    if (!userId || isNaN(userId)) {
+        return res.status(400).send("Invalid UserID");
+    }
+
+    // Call the method to get notifications for the given user
+    Notification.getNotificationsByUserId(userId)
         .then(notifications => {
-            res.json(notifications);
+            if (notifications.length === 0) {
+                return res.status(404).send("No notifications found for this user");
+            }
+            res.json(notifications); // Return the notifications as JSON
         })
         .catch(err => {
-            console.error(err);
-            res.status(500).send("Error fetching notifications");
+            console.error("Error fetching notifications:", err);
+            res.status(500).send("Error fetching notifications"); // Internal Server Error
         });
 });
 
+
 app.get("/calendar", async function (req, res) {
     try {
-        const events = await Event.getAllEvents(); // Fetch events from DB
-        console.log("Fetched Events:", events); // Debugging output
+        // Fetch events from the database
+        const events = await Event.getAllEvents();
 
-        // Ensure events is an array before passing it to the template
+        // Format each event's date and time
+        events.forEach(event => {
+            console.log("Original event:", event);  // Debugging log
+
+            event.date = formatDate(event.date);
+            event.time = formatTime(event.time);
+        });
+
+        // Render the calendar template with the events
         res.render("calendar", { events: events || [] });
     } catch (err) {
         console.error("Error fetching events:", err);
-        res.render("calendar", { events: [] }); // Fallback to empty array
+        res.render("calendar", { events: [] });  // Fallback to empty events if error occurs
     }
 });
 
+
 app.get("/dashboard", async function (req, res) {
     try {
-        const upcomingEvents = await Event.getUpcomingEvents(); // Fetch events from DB
-        console.log("Fetched Upcoming Events:", upcomingEvents); // Debugging log
-
-        res.render("dashboard", { upcomingEvents: upcomingEvents || [] });
+        const upcomingEvents = await Event.getUpcomingEvents();
+        console.log("Fetched Upcoming Events:", upcomingEvents);
+        res.render("dashboard", { upcomingEvents: upcomingEvents || [], errorMessage: null });
     } catch (err) {
         console.error("Error fetching upcoming events:", err);
-        res.render("dashboard", { upcomingEvents: [] }); // Ensure empty array if error
+        res.render("dashboard", { upcomingEvents: [], errorMessage: "Failed to fetch upcoming events. Please try again later." });
     }
 });
 
