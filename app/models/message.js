@@ -9,87 +9,90 @@ class Message {
         this.timestamp = null;
     }
 
-    // Fetch all messages for a user
+    // Fetch all messages for a user (sent or received)
     static async getMessages(userId) {
-        const query = "SELECT * FROM Messages WHERE ReceiverID = ? OR SenderID = ?";
-        return new Promise((resolve, reject) => {
-            db.query(query, [userId, userId], (err, results) => {
-                if (err) {
-                    console.error("Database Query Error:", err);
-                    reject(err);
-                } else {
-                    console.log("Fetched Messages from DB:", results); // Debugging
-                    resolve(results || []); // Always return an array
-                }
-            });
-        });
+        const query = `
+            SELECT Messages.MessageID, Messages.Content, Messages.Timestamp,
+                   Sender.FullName AS SenderName, Receiver.FullName AS ReceiverName
+            FROM Messages
+            INNER JOIN Users AS Sender ON Messages.SenderID = Sender.UserID
+            INNER JOIN Users AS Receiver ON Messages.ReceiverID = Receiver.UserID
+            WHERE Messages.SenderID = ? OR Messages.ReceiverID = ?
+            ORDER BY Messages.Timestamp DESC`;
+        try {
+            const results = await db.query(query, [userId, userId]);
+            return results.length > 0 ? results : [];
+        } catch (err) {
+            console.error("Error fetching messages:", err);
+            throw err;
+        }
     }
 
-    // Fetch message details
+    // Fetch details of a specific message
     async getMessageDetails() {
         const query = "SELECT * FROM Messages WHERE MessageID = ?";
-        return new Promise((resolve, reject) => {
-            db.query(query, [this.id], (err, results) => {
-                if (err) reject(err);
-                if (results.length > 0) {
-                    this.senderId = results[0].SenderID;
-                    this.receiverId = results[0].ReceiverID;
-                    this.content = results[0].Content;
-                    this.timestamp = results[0].Timestamp;
-                    resolve(results[0]);
-                } else {
-                    resolve(null);
-                }
-            });
-        });
+        try {
+            const results = await db.query(query, [this.id]);
+            if (!results || results.length === 0) return null;
+
+            const message = results[0];
+            this.senderId = message.SenderID;
+            this.receiverId = message.ReceiverID;
+            this.content = message.Content;
+            this.timestamp = message.Timestamp;
+            return message;
+        } catch (err) {
+            console.error("Error fetching message details:", err);
+            throw err;
+        }
     }
 
-    // Get sender details (you can add a similar method for receiver details)
+    // Fetch sender details
     async getSenderDetails() {
-        const query = "SELECT * FROM Users WHERE UserID = ?";
-        return new Promise((resolve, reject) => {
-            db.query(query, [this.senderId], (err, results) => {
-                if (err) reject(err);
-                if (results.length > 0) {
-                    resolve(results[0]); // Resolve with sender details
-                } else {
-                    resolve(null);
-                }
-            });
-        });
+        const query = "SELECT UserID, FullName, Email FROM Users WHERE UserID = ?";
+        try {
+            const results = await db.query(query, [this.senderId]);
+            return results.length > 0 ? results[0] : null;
+        } catch (err) {
+            console.error("Error fetching sender details:", err);
+            throw err;
+        }
     }
 
-    // Static method to create a new message
+    // Create a new message
     static async createMessage(senderId, receiverId, content) {
         const query = "INSERT INTO Messages (SenderID, ReceiverID, Content) VALUES (?, ?, ?)";
-        return new Promise((resolve, reject) => {
-            db.query(query, [senderId, receiverId, content], (err, results) => {
-                if (err) reject(err);
-                resolve(results.insertId); // Resolve with the ID of the new message
-            });
-        });
+        try {
+            const results = await db.query(query, [senderId, receiverId, content]);
+            return { message: "Message sent successfully", insertedId: results.insertId };
+        } catch (err) {
+            console.error("Error creating message:", err);
+            throw err;
+        }
     }
 
-    // Update an existing message in the database
+    // Update an existing message
     async updateMessage(newContent) {
-        const query = "UPDATE Messages SET Content = ? WHERE MessageID = ?"; // SQL query to update a message's content
-        return new Promise((resolve, reject) => {
-            db.query(query, [newContent, this.id], (err, results) => { // Execute the query with the new content and message ID
-                if (err) reject(err); // Reject the promise if there's an error
-                resolve(results.affectedRows > 0); // Resolve with true if the message was updated, false otherwise
-            });
-        });
+        const query = "UPDATE Messages SET Content = ? WHERE MessageID = ?";
+        try {
+            const results = await db.query(query, [newContent, this.id]);
+            return results.affectedRows > 0 ? { message: "Message updated successfully" } : null;
+        } catch (err) {
+            console.error("Error updating message:", err);
+            throw err;
+        }
     }
 
-    // Delete a message from the database
+    // Delete a message
     async deleteMessage() {
-        const query = "DELETE FROM Messages WHERE MessageID = ?"; // SQL query to delete a message
-        return new Promise((resolve, reject) => {
-            db.query(query, [this.id], (err, results) => { // Execute the query with the message ID
-                if (err) reject(err); // Reject the promise if there's an error
-                resolve(results.affectedRows > 0); // Resolve with true if the message was deleted, false otherwise
-            });
-        });
+        const query = "DELETE FROM Messages WHERE MessageID = ?";
+        try {
+            const results = await db.query(query, [this.id]);
+            return results.affectedRows > 0 ? { message: "Message deleted successfully" } : null;
+        } catch (err) {
+            console.error("Error deleting message:", err);
+            throw err;
+        }
     }
 }
 
