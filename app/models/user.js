@@ -1,6 +1,5 @@
 const db = require("../services/db"); // Import database connection
 
-
 class User {
     constructor(id) {
         this.id = id;
@@ -15,25 +14,22 @@ class User {
     // Fetch user details
     async getUserDetails() {
         const query = "SELECT * FROM Users WHERE UserID = ?";
-        return new Promise((resolve, reject) => {
-            db.query(query, [this.id], (err, results) => {
-                if (err) {
-                    reject(err);
-                } else if (results.length > 0) {
-                    const user = results[0];
-                    this.fullName = user.FullName;
-                    this.email = user.Email;
-                    this.hobbies = user.Hobbies;
-                    this.academicInfo = user.AcademicInfo;
-                    this.availableTime = user.AvailableTime;
-                    resolve(user);
-                } else {
-                    resolve(null);
-                }
-            });
-        });
+        try {
+            const results = await db.query(query, [this.id]);
+            if (!results || results.length === 0) return null;
+
+            const user = results[0];
+            this.fullName = user.FullName;
+            this.email = user.Email;
+            this.hobbies = user.Hobbies;
+            this.academicInfo = user.AcademicInfo;
+            this.availableTime = user.AvailableTime;
+            return user;
+        } catch (err) {
+            console.error("Error fetching user details:", err);
+            throw err;
+        }
     }
-    
 
     // Fetch user interests
     async getUserInterests() {
@@ -55,12 +51,13 @@ class User {
     // Delete a user account
     static async deleteUser(userId) {
         const query = "DELETE FROM Users WHERE UserID = ?";
-        return new Promise((resolve, reject) => {
-            db.query(query, [userId], (err, results) => {
-                if (err) reject(err);
-                else resolve({ message: `User ${userId} deleted successfully.` });
-            });
-        });
+        try {
+            const results = await db.query(query, [userId]);
+            return { message: `User ${userId} deleted successfully.` };
+        } catch (err) {
+            console.error("Error deleting user:", err);
+            throw err;
+        }
     }
 
     // Search users by name, interests, or availability
@@ -71,15 +68,15 @@ class User {
             LEFT JOIN UserInterests ON Users.UserID = UserInterests.UserID
             LEFT JOIN Interests ON UserInterests.InterestID = Interests.InterestID
             WHERE Users.FullName LIKE ? OR Interests.InterestName LIKE ? OR Users.AvailableTime LIKE ?
-            LIMIT 20`; // Limit results to 20 for efficiency
-        
+            LIMIT 20`;
         const searchQuery = `%${query}%`;
-        return new Promise((resolve, reject) => {
-            db.query(sql, [searchQuery, searchQuery, searchQuery], (err, results) => {
-                if (err) reject(err);
-                else resolve(results);
-            });
-        });
+        try {
+            const results = await db.query(sql, [searchQuery, searchQuery, searchQuery]);
+            return results.length > 0 ? results : [];
+        } catch (err) {
+            console.error("Error searching users:", err);
+            throw err;
+        }
     }
 }
 
