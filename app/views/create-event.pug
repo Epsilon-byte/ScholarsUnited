@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1 Create Study Event
+  form(action='/events/create' method='POST')
+    label(for='name') Event Name:
+    input(type='text' name='name' required)
+    label(for='date') Date:
+    input(type='date' name='date' required)
+    label(for='time') Time:
+    input(type='time' name='time' required)
+    label(for='description') Description:
+    textarea(name='description')
+    button(type='submit') Create Event

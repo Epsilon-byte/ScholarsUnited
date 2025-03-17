@@ -1,0 +1,12 @@
+extends layout
+
+block content
+  h1 Search for Study Buddies
+  form(action='/search' method='GET')
+    label(for='interests') Interests:
+    input(type='text' name='interests')
+    label(for='study_modules') Study Modules:
+    input(type='text' name='study_modules')
+    label(for='availability') Availability:
+    input(type='text' name='availability')
+    button(type='submit') Search

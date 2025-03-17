@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  h1 Events
+
+  if events && Array.isArray(events) && events.length
+    ul
+      each event in events
+        li
+          strong= event.Title
+          p= event.Date + " at " + event.Time
+          p= "Location: " + (event.Location || "Not specified")
+          a(href=`/events/${event.EventID}`) View Details
+  else
+    p No events found.
