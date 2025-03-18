@@ -1,58 +1,37 @@
-doctype html
-html(lang="en")
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport" content="width=device-width, initial-scale=1.0")
-    title Course Manager
-    link(rel="stylesheet" href="/styles.css")
+extends layout
 
-  body
-    .container
-      //- Header / Navigation
-      header.header
-        nav.navbar
-          .logo Course Manager
-          ul.nav-links
-            li: a(href="/") Home
-            li: a(href="/calendar") Calendar
-            li: a(href="/events") Events
-            li: a(href="/courses") Courses
-            li: a(href="/dashboard") Dashboard
+block content
+  .container
+    //- Header / Navigation
+    header.header
+      nav.navbar
+        .logo LOGO
+        ul.nav-links
+          li: a(href='#') MATCHMAKING
+          li: a(href='/calendar') CALENDAR
+          li: a(href='/events') EVENT
+          li: a(href='/courses') COURSES
+          li: a(href='#') MESSAGING
+          li: a(href='/dashboard') DASHBOARD
 
-      //- Course Section
-      section.main-content
-        .course-box
-          h1 Welcome to Course Manager
-          p Explore and manage your courses with ease.
+    //- Courses Section
+    section.main-content
+      .course-box
+        h1 Available Courses
+        p Explore and manage your courses with ease.
 
-      //- Available Courses
+    //- Course Cards
+    section.course-list-section
+      .card-container#course-list
+        each course in courses
+          .profile-card
+            .profile-info
+              h3= course.CourseName
+              p= course.CourseDescription || 'No description available'
+              button.btn.btn-primary View Course
+
+    //- No Courses Available Message
+    if !courses || courses.length === 0
       section.course-list-section
-        h2 Available Courses
-        .card-container#course-list
+        p No courses available at the moment.
 
-    script.
-      async function fetchCourses() {
-        try {
-          const response = await fetch("/courses");
-          const courses = await response.json();
-          const courseList = document.getElementById("course-list");
-
-          courseList.innerHTML = "";
-          courses.forEach(course => {
-            const card = document.createElement("div");
-            card.classList.add("profile-card");
-
-            card.innerHTML = `
-              <div class="profile-info">
-                <h3>${course.CourseName}</h3>
-                <p>${course.CourseDescription || 'No description available'}</p>
-                <button class="btn btn-primary">View Course</button>
-              </div>
-            `;
-            courseList.appendChild(card);
-          });
-        } catch (error) {
-          console.error("Error fetching courses:", error);
-        }
-      }
-      window.onload = fetchCourses;

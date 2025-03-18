@@ -1,31 +1,23 @@
 extends layout
 
 block content
-  h1 Dashboard
+  .container
+    h1 Dashboard
+    h2 Upcoming Events
+    if upcomingEvents && Array.isArray(upcomingEvents) && upcomingEvents.length
+      ul
+        each event in upcomingEvents
+          li
+            strong= event.name
+            p= event.date + " at " + event.time
+            a(href=`/events/${event.id}`) View Details
+    else
+      p No upcoming events.
 
-  h2 Upcoming Events
-  if upcomingEvents && Array.isArray(upcomingEvents) && upcomingEvents.length
-    ul
-      each event in upcomingEvents
-        li
-          strong= event.name
-          p= event.date + " at " + event.time
-          a(href=`/events/${event.id}`) View Details
-  else
-    p No upcoming events.
-
-  h2 To-Do List
-  if todoList && Array.isArray(todoList) && todoList.length
-    ul
-      each task in todoList
-        li= task
-  else
-    p No tasks in your to-do list.
-
-  h2 Notifications
-  if notifications && Array.isArray(notifications) && notifications.length
-    ul
-      each notification in notifications
-        li= notification
-  else
-    p No notifications.
+    h2 Notifications
+    if notifications && Array.isArray(notifications) && notifications.length
+      ul
+        each notification in notifications
+          li= notification
+    else
+      p No notifications.

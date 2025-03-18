@@ -1,13 +1,13 @@
 // Import express.js
 const express = require("express");
 
-const { formatDate, formatTime } = require("/src/helper.js");
+const { formatDate, formatTime } = require("./helper.js");
 
 // Create express app
 var app = express();
 
 // Add static files location
-app.use(express.static("static"));
+app.use(express.static("app/public"));
 
 app.set('view engine', 'pug');
 app.set('views', './app/views');
@@ -97,11 +97,11 @@ app.get("/user-interests/:userId", function (req, res) {
 // ========== COURSE ROUTES ==========
 app.get("/courses", async function (req, res) {
     try {
-        const courses = await Course.getAllCourses();  // Await the result from getAllCourses
-        res.json(courses);  // Send the courses as a JSON response
+        const courses = await Course.getAllCourses();  // Awaits the result from getAllCourses
+        res.render("courses", { courses: courses });  // Passes the courses to the template
     } catch (err) {
-        console.error(err);  // Log any errors to the console
-        res.status(500).send("Error fetching courses");  // Return a 500 status and error message
+        console.error(err);  // Logs any errors to the console
+        res.status(500).send("Error fetching courses");  // Returns a 500 status and error message
     }
 });
 
@@ -240,14 +240,25 @@ app.get("/calendar", async function (req, res) {
 
 app.get("/dashboard", async function (req, res) {
     try {
+        // Fetch upcoming events, to-do list, and notifications from the database or other sources
         const upcomingEvents = await Event.getUpcomingEvents();
-        console.log("Fetched Upcoming Events:", upcomingEvents);
-        res.render("dashboard", { upcomingEvents: upcomingEvents || [], errorMessage: null });
+        const notifications = await Notification.getNotificationsByUserId(req.user.id);
+
+        // Render the dashboard template with data
+        res.render("dashboard", { 
+            upcomingEvents: upcomingEvents || [], 
+            notifications: notifications || [] 
+        });
     } catch (err) {
-        console.error("Error fetching upcoming events:", err);
-        res.render("dashboard", { upcomingEvents: [], errorMessage: "Failed to fetch upcoming events. Please try again later." });
+        console.error("Error fetching dashboard data:", err);
+        res.render("dashboard", { 
+            upcomingEvents: [], 
+            notifications: [], 
+            errorMessage: "Failed to fetch dashboard data. Please try again later." 
+        });
     }
 });
+
 
 // Start server on port 3000
 app.listen(3000,function(){
