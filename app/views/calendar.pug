@@ -1,24 +1,39 @@
 extends layout
 
 block content
-  h1 Study Events Calendar
+  .container
+    //- Header / Navigation
+    header.header
+      nav.navbar
+        .logo LOGO
+        ul.nav-links
+          li: a(href='#') MATCHMAKING
+          li: a(href='/calendar') CALENDAR
+          li: a(href='/events') EVENT
+          li: a(href='/courses') COURSES
+          li: a(href='#') MESSAGING
+          li: a(href='/dashboard') DASHBOARD
 
-  table
-    thead
-      tr
-        th Date
-        th Time
-        th Event Name
-        th Actions
-    tbody
-      if events && Array.isArray(events) && events.length
-        each event in events
-          tr
-            td= event.date || 'Invalid Date'
-            td= event.time || 'Invalid Time'
-            td= event.name
-            td
-              a(href=`/events/join/${event.id}`) Join
-      else
-        tr
-          td(colspan="4") No events available
+    //- Calendar Section
+    section.main-content
+      .calendar-box
+        h1 Study Events Calendar
+        table.calendar-table
+          thead
+            tr
+              th Date
+              th Time
+              th Event Name
+              th Actions
+          tbody
+            if events && Array.isArray(events) && events.length
+              each event in events
+                tr
+                  td= event.date || 'Invalid Date'
+                  td= event.time || 'Invalid Time'
+                  td= event.name
+                  td
+                    a.btn.btn-primary(href=`/events/join/${event.id}`) Join
+            else
+              tr
+                td(colspan="4") No events available

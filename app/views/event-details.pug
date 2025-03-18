@@ -1,0 +1,18 @@
+extends layout
+
+block content
+  h1= event.name
+  p= "Date: " + event.date
+  p= "Time: " + event.time
+  p= "Location: " + (event.location || "Not specified")
+  p= "Description: " + (event.description || "No description provided")
+
+  h2 Participants
+  if event.participants && event.participants.length
+    ul
+      each participant in event.participants
+        li= participant.FullName
+  else
+    p No participants yet.
+
+  a(href="/events") Back to Events

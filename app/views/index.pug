@@ -1,13 +1,35 @@
 extends layout
 
 block content
-  h1 Welcome to Study Buddy App
-  include signup.pug
-  include profile.pug
-  include calendar.pug
-  include create-event.pug
-  include search.pug
-  include messaging.pug
-  include dashboard.pug
-  include users.pug 
-  include events.pug
+  .container
+    //- Header / Navigation
+    header.header
+      nav.navbar
+        .logo LOGO
+        ul.nav-links
+          li: a(href='#') MATCHMAKING
+          li: a(href='/calendar') CALENDAR
+          li: a(href='/events') EVENT
+          li: a(href='/courses') COURSES
+          li: a(href='#') MESSAGING
+          li: a(href='/dashboard') DASHBOARD
+
+    //- Main Welcome Section
+    section.main-content
+      .welcome-box
+        h1 Welcome to ScholarsUnited
+        p Find study buddies, collaborate, and manage your learning experience.
+        button.btn.btn-primary Get Started
+
+    //- Community Profiles Section
+    section.profiles
+      h2 Our Community
+      .card-container
+        each item in [1, 2, 3, 4, 5]
+          .profile-card
+            //- Example profile picture (replace with dynamic image if available)
+            .profile-pic(style="background-image: url('/images/profile-placeholder.png')")
+            .profile-info
+              h3 User #{item}
+              p A brief bio or interests.
+              button.btn.btn-secondary View Profile

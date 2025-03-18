@@ -1,0 +1,17 @@
+form(action="/login" method="post")
+    input(type="email" name="email" placeholder="Email" required)
+    input(type="password" name="password" placeholder="Password" required)
+    button(type="submit") Login
+    a(href="/register") 
+        button(type="button") Register
+
+
+if messages && messages.error
+    .alert.alert-danger
+        each error in messages.error
+            p= error
+
+if messages && messages.success
+    .alert.alert-success
+        each msg in messages.success
+            p= msg

@@ -1,0 +1,58 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Course Manager
+    link(rel="stylesheet" href="/styles.css")
+
+  body
+    .container
+      //- Header / Navigation
+      header.header
+        nav.navbar
+          .logo Course Manager
+          ul.nav-links
+            li: a(href="/") Home
+            li: a(href="/calendar") Calendar
+            li: a(href="/events") Events
+            li: a(href="/courses") Courses
+            li: a(href="/dashboard") Dashboard
+
+      //- Course Section
+      section.main-content
+        .course-box
+          h1 Welcome to Course Manager
+          p Explore and manage your courses with ease.
+
+      //- Available Courses
+      section.course-list-section
+        h2 Available Courses
+        .card-container#course-list
+
+    script.
+      async function fetchCourses() {
+        try {
+          const response = await fetch("/courses");
+          const courses = await response.json();
+          const courseList = document.getElementById("course-list");
+
+          courseList.innerHTML = "";
+          courses.forEach(course => {
+            const card = document.createElement("div");
+            card.classList.add("profile-card");
+
+            card.innerHTML = `
+              <div class="profile-info">
+                <h3>${course.CourseName}</h3>
+                <p>${course.CourseDescription || 'No description available'}</p>
+                <button class="btn btn-primary">View Course</button>
+              </div>
+            `;
+            courseList.appendChild(card);
+          });
+        } catch (error) {
+          console.error("Error fetching courses:", error);
+        }
+      }
+      window.onload = fetchCourses;

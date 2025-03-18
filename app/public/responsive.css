@@ -1,0 +1,21 @@
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar {
+      flex-direction: column;
+      text-align: center;
+    }
+  
+    .nav-links {
+      flex-direction: column;
+    }
+  
+    .welcome-box, .calendar-box, .course-box {
+      width: 90%;
+    }
+  
+    .card-container {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+  
