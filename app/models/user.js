@@ -11,7 +11,7 @@ class User {
         this.availableTime = null;
     }
 
-    // Fetch user details
+    // Fetch user details by ID
     async getUserDetails() {
         const query = "SELECT * FROM Users WHERE UserID = ?";
         try {
@@ -27,6 +27,20 @@ class User {
             return user;
         } catch (err) {
             console.error("Error fetching user details:", err);
+            throw err;
+        }
+    }
+
+    // Fetch user by email (for login authentication)
+    static async findByEmail(email) {
+        const query = "SELECT * FROM Users WHERE Email = ?";
+        try {
+            const results = await db.query(query, [email]);
+            if (!results || results.length === 0) return null; // User not found
+
+            return results[0]; // Return the first matching user
+        } catch (err) {
+            console.error("Error fetching user by email:", err);
             throw err;
         }
     }
