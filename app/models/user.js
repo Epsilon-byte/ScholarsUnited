@@ -33,24 +33,16 @@ class User {
 
     // Fetch user by email (for login authentication)
     static async findByEmail(email) {
+        const query = "SELECT * FROM Users WHERE Email = ?";
         try {
-            const [user] = await db.query("SELECT * FROM Users WHERE Email = ?", [email]);
-            console.log("User found in database:", user); // Debugging
-            if (!user) {
-                return null; // No user found
-            }
-            // Ensure the returned object has the correct properties
-            return {
-                id: user.UserID, // Use the correct column name from your database
-                Email: user.Email,
-                FullName: user.FullName,
-                Password: user.Password // Include password for comparison
-            };
+          const [results] = await db.query(query, [email]);
+          return results[0] || null; // Return the first user or null if not found
         } catch (err) {
-            console.error("Error in findByEmail:", err);
-            throw err; // Propagate the error
+          console.error("Error finding user by email:", err);
+          throw err;
         }
-    }
+      }
+      
     // Fetch user interests
     async getUserInterests() {
         const query = `

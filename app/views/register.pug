@@ -1,13 +1,55 @@
-form(action="/register" method="post")
-    input(type="text" name="fullName" placeholder="Full Name" required)
-    input(type="email" name="email" placeholder="Email" required)
-    input(type="password" name="password" placeholder="Password" required)
-    label(for='interests') Interests:
-    input(type='text' name='interests')
-    label(for='hobbies') Hobbies:
-    input(type='text' name='hobbies')
-    label(for='academic_info') Academic Info:
-    input(type='text' name='academic_info')
-    label(for='time_frames') Available Time Frames:
-    input(type='text' name='time_frames')
-    button(type="submit") Register
+extends layout
+
+block content
+  .container
+    //- Header / Navigation
+    header.header
+      nav.navbar
+        .logo LOGO
+        ul.nav-links
+          li: a(href='/') MATCHMAKING
+          li: a(href='/calendar') CALENDAR
+          li: a(href='/events') EVENTS
+          li: a(href='/courses') COURSES
+          li: a(href='/messaging') MESSAGING
+          li: a(href='/dashboard') DASHBOARD
+
+    //- Signup Form Section
+    section.signup-section
+      .signup-box
+        h1 Sign Up
+        form(action='/register' method='POST')
+          .form-group
+            label(for='email') Email:
+            input(type='email' name='email' id='email' required)
+          .form-group
+            label(for='password') Password:
+            input(type='password' name='password' id='password' required)
+          .form-group
+            label(for='fullName') Full Name:
+            input(type='text' name='fullName' id='fullName' required)
+          .form-group
+            label(for='interests') Interests:
+            input(type='text' name='interests' id='interests')
+          .form-group
+            label(for='hobbies') Hobbies:
+            input(type='text' name='hobbies' id='hobbies')
+          .form-group
+            label(for='academic_info') Academic Info:
+            input(type='text' name='academic_info' id='academic_info')
+          .form-group
+            label(for='time_frames') Available Time Frames:
+            input(type='text' name='time_frames' id='time_frames')
+          .form-group
+            button.btn.btn-primary(type='submit') Sign Up
+
+        //- Flash Messages
+        if messages && messages.error
+          .alert.alert-danger
+            each error in messages.error
+              p= error
+
+        if messages && messages.success
+          .alert.alert-success
+            each msg in messages.success
+              p= msg

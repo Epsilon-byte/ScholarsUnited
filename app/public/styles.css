@@ -7,6 +7,10 @@
 @import url("courses.css");
 @import url("responsive.css");
 @import url("event.css");
+@import url("dashboard.css");
+@import url("signup.css");
+@import url("login.css");
+@import url("notifications.css");
 
 /* Buttons */
 .btn {

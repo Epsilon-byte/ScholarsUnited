@@ -1,14 +1,13 @@
-// Example formatDate and formatTime functions in helper.js
-function formatDate(dateString) {
-    if (!dateString) return "No date specified";
-    const date = new Date(dateString);
-    return date.toLocaleDateString(); // Format as needed
-  }
-  
-  function formatTime(timeString) {
-    if (!timeString) return "No time specified";
-    const time = new Date(`1970-01-01T${timeString}`);
-    return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // Format as needed
-  }
+
+// helper.js
+function formatDate(date) {
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(date).toLocaleDateString(undefined, options);
+}
+
+function formatTime(time) {
+  const options = { hour: '2-digit', minute: '2-digit' };
+  return new Date(`1970-01-01T${time}`).toLocaleTimeString(undefined, options);
+}
 
 module.exports = { formatDate, formatTime };
