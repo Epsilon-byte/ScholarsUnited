@@ -24,12 +24,11 @@ block content
           each event in events
             .event-box
               .event-header
-                h3= event.name
+                h3= event.Title
                 span.event-date= event.date + " at " + event.time
               .event-location
-                p Location: #{event.location || 'Not specified'}
+                p Location: #{event.Location || 'Not specified'}
               .event-actions
-                a(href=`/events/${event.id}` class='btn btn-secondary') View Details
+                a(href=`/events/${event.EventID}` class='btn btn-secondary') View Details
       else
         p No upcoming events found.
-

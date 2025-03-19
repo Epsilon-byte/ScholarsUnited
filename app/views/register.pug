@@ -2,4 +2,12 @@ form(action="/register" method="post")
     input(type="text" name="fullName" placeholder="Full Name" required)
     input(type="email" name="email" placeholder="Email" required)
     input(type="password" name="password" placeholder="Password" required)
+    label(for='interests') Interests:
+    input(type='text' name='interests')
+    label(for='hobbies') Hobbies:
+    input(type='text' name='hobbies')
+    label(for='academic_info') Academic Info:
+    input(type='text' name='academic_info')
+    label(for='time_frames') Available Time Frames:
+    input(type='text' name='time_frames')
     button(type="submit") Register

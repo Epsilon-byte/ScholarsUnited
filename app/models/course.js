@@ -23,15 +23,15 @@ class Course {
 
     // Fetch all courses
     static async getAllCourses() {
-        const query = "SELECT * FROM Courses";
+        const query = "SELECT CourseID, CourseName FROM Courses";
         try {
-            const results = await db.query(query);
-            return results.length > 0 ? results : [];
+          const [results] = await db.query(query); // Destructure to get only the rows
+          return results || []; // Return an array, even if empty
         } catch (err) {
-            console.error("Error fetching all courses:", err);
-            throw err;
+          console.error("Error fetching all courses:", err);
+          throw err;
         }
-    }
+      }
 
     // Add a new course
     static async addCourse(courseName) {

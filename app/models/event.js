@@ -31,16 +31,16 @@ class Event {
     }
 
     // Static method to create a new event
-    static async createEvent(name, description, date, time, location, userId) {
+    static async createEvent(title, description, date, time, location, userId) {
         const query = "INSERT INTO Events (Title, Description, Date, Time, Location, UserID) VALUES (?, ?, ?, ?, ?, ?)";
         try {
-            const [results] = await db.promise().query(query, [name, description, date, time, location, userId]);
-            return results.insertId; // Return the new event's ID
+          const [results] = await db.query(query, [title, description, date, time, location, userId]);
+          return results.insertId; // Return the new event's ID
         } catch (err) {
-            console.error("Error creating event:", err);
-            throw err;
+          console.error("Error creating event:", err);
+          throw err;
         }
-    }
+      }
 
     // Update an existing event
     async updateEvent(name, description, date, time, location) {
@@ -94,14 +94,14 @@ class Event {
     static async getAllEvents() {
         const query = "SELECT * FROM Events";
         try {
-            const results = await db.query(query);
-            console.log("Fetched Events:", results); // Debugging log
-            return results || []; // Return an array, even if empty
+          const [results] = await db.query(query); // Destructure to get only the rows
+          console.log("Fetched Events:", results); // Debugging log
+          return results || []; // Return an array, even if empty
         } catch (err) {
-            console.error("Error fetching all events:", err);
-            throw err;
+          console.error("Error fetching all events:", err);
+          throw err;
         }
-    }
+      }
 
     // Fetch upcoming events (events happening in the future)
     static async getUpcomingEvents() {
@@ -115,6 +115,17 @@ class Event {
             throw err;
         }
     }
+
+    static async getEventById(eventId) {
+        const query = "SELECT * FROM Events WHERE EventID = ?";
+        try {
+          const [results] = await db.query(query, [eventId]);
+          return results[0] || null; // Return the first row (event) or null if not found
+        } catch (err) {
+          console.error("Error fetching event by ID:", err);
+          throw err;
+        }
+      }
 }
 
 module.exports = { Event };

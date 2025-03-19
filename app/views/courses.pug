@@ -7,11 +7,11 @@ block content
       nav.navbar
         .logo LOGO
         ul.nav-links
-          li: a(href='#') MATCHMAKING
+          li: a(href='/') MATCHMAKING
           li: a(href='/calendar') CALENDAR
-          li: a(href='/events') EVENT
+          li: a(href='/events') EVENTS
           li: a(href='/courses') COURSES
-          li: a(href='#') MESSAGING
+          li: a(href='/messaging') MESSAGING
           li: a(href='/dashboard') DASHBOARD
 
     //- Courses Section
@@ -27,11 +27,9 @@ block content
           .profile-card
             .profile-info
               h3= course.CourseName
-              p= course.CourseDescription || 'No description available'
-              button.btn.btn-primary View Course
+              a(href=`/courses/${course.CourseID}` class='btn btn-primary') View Course
 
     //- No Courses Available Message
     if !courses || courses.length === 0
       section.course-list-section
         p No courses available at the moment.
-

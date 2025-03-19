@@ -3,8 +3,8 @@ const db = require("../services/db"); // Import database connection
 class User {
     constructor(id) {
         this.id = id;
-        this.fullName = null;
-        this.email = null;
+        this.fullName = fullName;
+        this.email = email;
         this.interests = [];
         this.hobbies = null;
         this.academicInfo = null;
@@ -33,18 +33,24 @@ class User {
 
     // Fetch user by email (for login authentication)
     static async findByEmail(email) {
-        const query = "SELECT * FROM Users WHERE Email = ?";
         try {
-            const results = await db.query(query, [email]);
-            if (!results || results.length === 0) return null; // User not found
-
-            return results[0]; // Return the first matching user
+            const [user] = await db.query("SELECT * FROM Users WHERE Email = ?", [email]);
+            console.log("User found in database:", user); // Debugging
+            if (!user) {
+                return null; // No user found
+            }
+            // Ensure the returned object has the correct properties
+            return {
+                id: user.UserID, // Use the correct column name from your database
+                Email: user.Email,
+                FullName: user.FullName,
+                Password: user.Password // Include password for comparison
+            };
         } catch (err) {
-            console.error("Error fetching user by email:", err);
-            throw err;
+            console.error("Error in findByEmail:", err);
+            throw err; // Propagate the error
         }
     }
-
     // Fetch user interests
     async getUserInterests() {
         const query = `

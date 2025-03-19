@@ -118,14 +118,13 @@ app.get("/user-interests/:userId", function (req, res) {
 // ========== COURSE ROUTES ==========
 app.get("/courses", async function (req, res) {
     try {
-        const courses = await Course.getAllCourses();  // Awaits the result from getAllCourses
-        res.render("courses", { courses: courses });  // Passes the courses to the template
+      const courses = await Course.getAllCourses(); // Fetch courses from the database
+      res.render("courses", { courses: courses || [] }); // Pass courses to the template
     } catch (err) {
-        console.error(err);  // Logs any errors to the console
-        res.status(500).send("Error fetching courses");  // Returns a 500 status and error message
+      console.error("Error fetching courses:", err);
+      res.status(500).send("Error fetching courses");
     }
-});
-
+  });
 
 // ========== USER-COURSE ROUTES ==========
 app.get("/user-courses/:userId", function (req, res) {
@@ -140,16 +139,68 @@ app.get("/user-courses/:userId", function (req, res) {
 });
 
 // ========== EVENT ROUTES ==========
-app.get("/events", function (req, res) {
-    Event.getAllEvents()
-        .then(events => {
-            res.json(events);
-        })
-        .catch(err => {
-            console.error(err);
-            res.status(500).send("Error fetching events");
-        });
+app.get("/events", async function (req, res) {
+    try {
+      const events = await Event.getAllEvents();
+  
+      // Format each event's date and time
+      events.forEach(event => {
+        event.date = formatDate(event.Date); 
+        event.time = formatTime(event.Time);
+      });
+  
+      // Render the events template with the events data
+      res.render("events", { events: events || [] });
+    } catch (err) {
+      console.error("Error fetching events:", err);
+      res.render("events", { events: [] }); // Fallback to empty events if error occurs
+    }
+  });
+
+// Route to display the event creation form
+app.get("/events/create", function (req, res) {
+    res.render("create-event");
 });
+
+// Route to handle the event creation form submission
+app.post("/events/create", async function (req, res) {
+    const { title, description, date, time, location, userId } = req.body;
+
+    try {
+        // Create the event using the Event model
+        const eventId = await Event.createEvent(title, description, date, time, location, userId);
+        console.log("Event created with ID:", eventId);
+
+        // Redirect to the events page after successful creation
+        res.redirect("/events");
+    } catch (err) {
+        console.error("Error creating event:", err);
+        res.status(500).send("Error creating event");
+    }
+});
+
+app.get("/events/:id", async function (req, res) {
+    const eventId = req.params.id; // Get the event ID from the URL
+  
+    try {
+      // Fetch the event details from the database
+      const event = await Event.getEventById(eventId);
+  
+      if (!event) {
+        return res.status(404).send("Event not found");
+      }
+  
+      // Format the date and time
+      event.date = formatDate(event.Date);
+      event.time = formatTime(event.Time);
+  
+      // Render the event details template
+      res.render("event-details", { event });
+    } catch (err) {
+      console.error("Error fetching event details:", err);
+      res.status(500).send("Error fetching event details");
+    }
+  });
 
 // ========== EVENT-PARTICIPANT ROUTES ==========
 app.get("/event-participants/:eventId", function (req, res) {
@@ -236,27 +287,47 @@ app.get("/notifications/:userId", function (req, res) {
         });
 });
 
+// ===== CALENDAR ROUTE ===== ///
 
 app.get("/calendar", async function (req, res) {
     try {
-        // Fetch events from the database
-        const events = await Event.getAllEvents();
-
-        // Format each event's date and time
-        events.forEach(event => {
-            console.log("Original event:", event);  // Debugging log
-
-            event.date = formatDate(event.date);
-            event.time = formatTime(event.time);
-        });
-
-        // Render the calendar template with the events
-        res.render("calendar", { events: events || [] });
+      // Fetch events from the database
+      const events = await Event.getAllEvents();
+  
+      // Format each event's date and time
+      events.forEach(event => {
+        console.log("Original event:", event); // Debugging log
+  
+        event.date = formatDate(event.Date); 
+        event.time = formatTime(event.Time);
+      });
+  
+      // Render the calendar template with the events
+      res.render("calendar", { events: events || [] });
     } catch (err) {
-        console.error("Error fetching events:", err);
-        res.render("calendar", { events: [] });  // Fallback to empty events if error occurs
+      console.error("Error fetching events:", err);
+      res.render("calendar", { events: [] }); // Fallback to empty events if error occurs
     }
-});
+  });
+
+  app.post("/events/join/:id", async function (req, res) {
+    const eventId = req.params.id;
+    const userId = req.session.user.id; // Assuming the user is logged in
+  
+    try {
+      const event = new Event(eventId);
+      const success = await event.addParticipant(userId);
+  
+      if (success) {
+        res.redirect(`/events/${eventId}`); // Redirect to the event details page
+      } else {
+        res.status(400).send("Failed to join event");
+      }
+    } catch (err) {
+      console.error("Error joining event:", err);
+      res.status(500).send("Error joining event");
+    }
+  });
 
 
 // ====== LOGIN ROUTE ====== //
@@ -268,42 +339,38 @@ app.get("/login", (req, res) => {
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
-    console.log("Entered Email:", email);
-    console.log("Entered Password:", password);
-
     try {
-        // Fetch user from the database
         const user = await User.findByEmail(email);
         if (!user) {
             console.log("❌ User not found in database!");
             return res.status(401).send("Invalid email or password");
         }
 
-        console.log("✅ User found:", user);
-        console.log("Stored Hash from DB:", user.Password);
+        console.log("✅ User found:", user); // Debugging
 
-        // Ensure Password & Stored Hash are defined
-        if (!password || !user.Password) {
-            console.log("❌ Either password is empty or stored hash is missing!");
-            return res.status(401).send("Invalid email or password");
-        }
-
-        // Compare entered password with stored hash
         const match = await bcrypt.compare(password, user.Password);
-        console.log("Password Match:", match);
-
         if (!match) {
             console.log("❌ Password mismatch!");
             return res.status(401).send("Invalid email or password");
         }
 
-        console.log("✅ Login successful!");
-        res.send("Login successful!");
+        // Set session data
+        req.session.user = {
+            id: user.id, // Ensure this matches the property returned by findByEmail
+            email: user.Email,
+            fullName: user.FullName
+        };
+
+        console.log("Session set:", req.session.user); // Debugging
+
+        return res.redirect("/dashboard");
     } catch (err) {
-        console.error("❌ Login error:", err);
+        console.error("Login error:", err);
         res.status(500).send("Internal server error");
     }
 });
+
+// ===== REGISTRATION ROUTE ====== //
 
 app.get("/register", (req, res) => {
     res.render("register", { messages: req.session.messages });
@@ -351,12 +418,14 @@ app.get("/logout", (req, res) => {
 
 // ====== DASHBOARD ROUTE ====== //
 app.get("/dashboard", async (req, res) => {
-    if (!req.session.user) {
+    if (!req.session.user || !req.session.user.id) {
+        console.log("No session or user ID found, redirecting to login"); // Debugging
         return res.redirect("/login");
     }
 
+    console.log("Session data:", req.session.user); // Debugging
+
     try {
-        // Get notifications for user
         const notifications = await db.query(
             "SELECT * FROM Notifications WHERE UserID = ? ORDER BY Timestamp DESC",
             [req.session.user.id]

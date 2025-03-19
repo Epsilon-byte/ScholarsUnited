@@ -1,20 +1,14 @@
+// Example formatDate and formatTime functions in helper.js
 function formatDate(dateString) {
-    if (!dateString) return "Invalid Date";
-    
+    if (!dateString) return "No date specified";
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "Invalid Date"; // Handle invalid date conversion
-
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
-
-function formatTime(timeString) {
-    if (!timeString) return "Invalid Time";
-
-    // Some databases return time as HH:MM:SS, need to parse correctly
-    const [hours, minutes] = timeString.split(":");
-    if (!hours || !minutes) return "Invalid Time";
-
-    return `${hours}:${minutes}`; // Simple HH:MM format
-}
+    return date.toLocaleDateString(); // Format as needed
+  }
+  
+  function formatTime(timeString) {
+    if (!timeString) return "No time specified";
+    const time = new Date(`1970-01-01T${timeString}`);
+    return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // Format as needed
+  }
 
 module.exports = { formatDate, formatTime };

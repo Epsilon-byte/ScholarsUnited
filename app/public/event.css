@@ -1,50 +1,49 @@
-/* Events Section */
+/* events.css */
+.events-section {
+  max-width: 800px; /* Adjust the width of the events section */
+  margin: 0 auto; /* Center the events section */
+  padding: 20px;
+}
+
+.create-event-btn {
+  display: block; /* Make the button a block element */
+  margin: 10px auto 20px; /* Center the button and add space below */
+  text-align: center; /* Center the text inside the button */
+}
+
+.event-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px; /* Add space between event boxes */
+}
+
 .event-box {
-    background-color: #66B89E;
-    color: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    text-align: center;
-    margin: 0 auto 40px auto;
-    width: 80%;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-  }
-  
-  .event-box h1 {
-    margin-bottom: 15px;
-    font-size: 2.5em;
-  }
-  
-  .event-actions {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .event-list-section {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    text-align: center;
-  }
-  
-  .event-list-section h2 {
-    font-size: 2em;
-    margin-bottom: 20px;
-  }
-  
-  /* Event Cards */
-  .event-card {
-    background: #fff;
-    border-radius: 10px;
-    width: 250px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: transform 0.3s, box-shadow 0.3s;
-    padding: 15px;
-  }
-  
-  .event-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 12px rgba(0,0,0,0.2);
-  }
-  
+  flex: 1 1 calc(33.333% - 40px); /* Make events take up 1/3 of the width (adjust as needed) */
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.event-header h3 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.event-date {
+  font-size: 0.9em;
+  color: #555;
+}
+
+.event-location {
+  margin: 10px 0;
+  font-size: 0.9em;
+  color: #777;
+}
+
+.event-actions {
+  display: flex;
+  justify-content: center; /* Center the button horizontally */
+  margin-top: 10px; /* Add some space above the button */
+}

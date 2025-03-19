@@ -7,11 +7,11 @@ block content
       nav.navbar
         .logo LOGO
         ul.nav-links
-          li: a(href='#') MATCHMAKING
+          li: a(href='/') MATCHMAKING
           li: a(href='/calendar') CALENDAR
-          li: a(href='/events') EVENT
+          li: a(href='/events') EVENTS
           li: a(href='/courses') COURSES
-          li: a(href='#') MESSAGING
+          li: a(href='/messaging') MESSAGING
           li: a(href='/dashboard') DASHBOARD
 
     //- Calendar Section
@@ -31,9 +31,10 @@ block content
                 tr
                   td= event.date || 'Invalid Date'
                   td= event.time || 'Invalid Time'
-                  td= event.name
+                  td= event.Title
                   td
-                    a.btn.btn-primary(href=`/events/join/${event.id}`) Join
+                    form(action=`/events/join/${event.EventID}` method="POST" style="display: inline;")
+                      button.btn.btn-primary(type="submit") Join
             else
               tr
                 td(colspan="4") No events available
