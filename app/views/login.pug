@@ -1,0 +1,39 @@
+extends layout
+
+block content
+  .container
+    //- Header / Navigation
+    header.header
+      nav.navbar
+        .logo LOGO
+        ul.nav-links
+          li: a(href='/') MATCHMAKING
+          li: a(href='/calendar') CALENDAR
+          li: a(href='/events') EVENTS
+          li: a(href='/courses') COURSES
+          li: a(href='/messaging') MESSAGING
+          li: a(href='/dashboard') DASHBOARD
+
+    //- Login Form Section
+    section.login-section
+      .login-box
+        h1 Login
+        form(action="/login" method="post")
+          .form-group
+            input(type="email" name="email" placeholder="Email" required)
+          .form-group
+            input(type="password" name="password" placeholder="Password" required)
+          .form-group
+            button.btn.btn-primary(type="submit") Login
+            a(href="/register" class="btn btn-secondary") Register
+
+        //- Flash Messages
+        if messages && messages.error
+          .alert.alert-danger
+            each error in messages.error
+              p= error
+
+        if messages && messages.success
+          .alert.alert-success
+            each msg in messages.success
+              p= msg

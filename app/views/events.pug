@@ -1,15 +1,34 @@
 extends layout
 
 block content
-  h1 Events
+  .container
+    header.header
+      nav.navbar
+        .logo LOGO
+        ul.nav-links
+          li: a(href='/') MATCHMAKING
+          li: a(href='/calendar') CALENDAR
+          li: a(href='/events') EVENTS
+          li: a(href='/courses') COURSES
+          li: a(href='/messaging') MESSAGING
+          li: a(href='/dashboard') DASHBOARD
 
-  if events && Array.isArray(events) && events.length
-    ul
-      each event in events
-        li
-          strong= event.Title
-          p= event.Date + " at " + event.Time
-          p= "Location: " + (event.Location || "Not specified")
-          a(href=`/events/${event.EventID}`) View Details
-  else
-    p No events found.
+    //- Events Section
+    section.events-section
+      h2 Upcoming Events
+      a(href='/events/create' class='btn btn-primary create-event-btn') Create Event
+
+      //- Event Listings
+      if events && events.length
+        .event-list
+          each event in events
+            .event-box
+              .event-header
+                h3= event.Title
+                span.event-date= event.date + " at " + event.time
+              .event-location
+                p Location: #{event.Location || 'Not specified'}
+              .event-actions
+                a(href=`/events/${event.EventID}` class='btn btn-secondary') View Details
+      else
+        p No upcoming events found.

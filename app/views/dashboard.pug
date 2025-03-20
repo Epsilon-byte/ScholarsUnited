@@ -1,31 +1,76 @@
 extends layout
 
 block content
-  h1 Dashboard
+  .container
+    //- Header / Navigation
+    header.header
+      nav.navbar
+        .logo LOGO
+        ul.nav-links
+          li: a(href='/') MATCHMAKING
+          li: a(href='/calendar') CALENDAR
+          li: a(href='/events') EVENTS
+          li: a(href='/courses') COURSES
+          li: a(href='/messaging') MESSAGING
+          li: a(href='/logout') LOG OUT
 
-  h2 Upcoming Events
-  if upcomingEvents && Array.isArray(upcomingEvents) && upcomingEvents.length
-    ul
-      each event in upcomingEvents
-        li
-          strong= event.name
-          p= event.date + " at " + event.time
-          a(href=`/events/${event.id}`) View Details
-  else
-    p No upcoming events.
+    //- Dashboard Section
+    section.main-content
+      .dashboard-box
+        h1 Welcome to Your Dashboard, #{user.fullName}!
 
-  h2 To-Do List
-  if todoList && Array.isArray(todoList) && todoList.length
-    ul
-      each task in todoList
-        li= task
-  else
-    p No tasks in your to-do list.
+        //- Notifications Section
+        if notifications && notifications.length
+          h2 Notifications
+          table.notifications-table
+            thead
+              tr
+                th Message
+                th Timestamp
+                th Status
+                th Actions
+            tbody
+              each notification in notifications
+                tr(class=notification.Read ? 'read' : 'unread')
+                  td= notification.Message
+                  td= new Date(notification.Timestamp).toLocaleString()
+                  td= notification.Read ? 'Read' : 'Unread'
+                  td
+                    if !notification.Read
+                      form(action=`/notifications/mark-as-read/${notification.NotificationID}` method="POST" style="display: inline;")
+                        button.btn.btn-primary(type="submit") Mark as Read
+                    form(action=`/notifications/delete/${notification.NotificationID}` method="POST" style="display: inline; margin-left: 10px;")
+                      button.btn.btn-danger(type="submit") Delete
+        else
+          p No new notifications.
 
-  h2 Notifications
-  if notifications && Array.isArray(notifications) && notifications.length
-    ul
-      each notification in notifications
-        li= notification
-  else
-    p No notifications.
+        //- Upcoming Events Section
+        h2 Upcoming Events
+        if events && events.length
+          table.events-table
+            thead
+              tr
+                th Date
+                th Time
+                th Event Name
+                th Location
+                th Actions
+            tbody
+              each event in events
+                tr
+                  td= formatDate(event.Date)
+                  td= formatTime(event.Time)
+                  td= event.Title
+                  td= event.Location
+                  td
+                    form(action=`/events/join/${event.EventID}` method="POST" style="display: inline;")
+                      button.btn.btn-primary(type="submit") Join
+        else
+          p No upcoming events.
+
+        //- Quick Links Section
+        h2 Quick Links
+        .quick-links
+          a(href='/events/create' class='btn btn-primary') Create Event
+          a(href='/courses' class='btn btn-secondary') View Courses
+          a(href='/messaging' class='btn btn-secondary') Messages

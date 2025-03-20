@@ -121,6 +121,7 @@ CREATE TABLE Notifications (
     UserID INT,
     Message TEXT,
     Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ReadNotif TINYINT(1) DEFAULT 0,
     FOREIGN KEY (UserID) REFERENCES Users(UserID) ON DELETE CASCADE
 );
 
@@ -217,3 +218,6 @@ INSERT INTO BuddyRequests (RequestID, SenderID, ReceiverID, Status) VALUES
 INSERT INTO Notifications (NotificationID, UserID, Message, Timestamp) VALUES
 (1, 1, 'You have a new message from Bob Smith', '2024-07-11 09:00:00'),
 (2, 2, 'Event reminder: Cybersecurity Hackathon', '2024-07-12 10:00:00');
+
+-- Changes to accommodate the new values in Notifications table
+ALTER TABLE Notifications ADD COLUMN Read BOOLEAN DEFAULT FALSE;

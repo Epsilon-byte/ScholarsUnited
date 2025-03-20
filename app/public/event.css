@@ -1,0 +1,49 @@
+/* events.css */
+.events-section {
+  max-width: 800px; /* Adjust the width of the events section */
+  margin: 0 auto; /* Center the events section */
+  padding: 20px;
+}
+
+.create-event-btn {
+  display: block; /* Make the button a block element */
+  margin: 10px auto 20px; /* Center the button and add space below */
+  text-align: center; /* Center the text inside the button */
+}
+
+.event-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px; /* Add space between event boxes */
+}
+
+.event-box {
+  flex: 1 1 calc(33.333% - 40px); /* Make events take up 1/3 of the width (adjust as needed) */
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.event-header h3 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.event-date {
+  font-size: 0.9em;
+  color: #555;
+}
+
+.event-location {
+  margin: 10px 0;
+  font-size: 0.9em;
+  color: #777;
+}
+
+.event-actions {
+  display: flex;
+  justify-content: center; /* Center the button horizontally */
+  margin-top: 10px; /* Add some space above the button */
+}
