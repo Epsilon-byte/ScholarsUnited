@@ -6,7 +6,7 @@ class Interest {
         this.name = null;
     }
 
-    // Fetch interest details by InterestID
+    // Fetches interest details by InterestID
     async getInterestDetails() {
         const query = "SELECT * FROM Interests WHERE InterestID = ?";
         try {
@@ -21,7 +21,7 @@ class Interest {
         }
     }
 
-    // Fetch all interests
+    // Fetches all interests
     static async getAllInterests() {
         const query = "SELECT * FROM Interests";
         try {

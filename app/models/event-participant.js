@@ -1,4 +1,4 @@
-const db = require("../services/db"); // Import database connection
+const db = require("../services/db"); // Import database connection from services folder
 
 class EventParticipant {
     constructor(userId, eventId) {
@@ -6,13 +6,13 @@ class EventParticipant {
         this.eventId = eventId;
     }
 
-    // Check if a user is participating in an event
+    // Checks if a user is participating in an event
     async isParticipating() {
         const query = "SELECT * FROM EventParticipants WHERE UserID = ? AND EventID = ?";
         return new Promise((resolve, reject) => {
             db.query(query, [this.userId, this.eventId], (err, results) => {
                 if (err) reject(err);
-                resolve(results.length > 0); // Resolve with true if participating, false otherwise
+                resolve(results.length > 0); // Resolves with true if participating, false otherwise
             });
         });
     }
@@ -23,7 +23,7 @@ class EventParticipant {
         return new Promise((resolve, reject) => {
             db.query(query, [userId, eventId], (err, results) => {
                 if (err) reject(err);
-                resolve(results.affectedRows > 0); // Resolve with true if added, false otherwise
+                resolve(results.affectedRows > 0); // Resolves with true if added, false otherwise
             });
         });
     }
@@ -34,7 +34,7 @@ class EventParticipant {
         return new Promise((resolve, reject) => {
             db.query(query, [userId, eventId], (err, results) => {
                 if (err) reject(err);
-                resolve(results.affectedRows > 0); // Resolve with true if removed, false otherwise
+                resolve(results.affectedRows > 0); // Resolves with true if removed, false otherwise
             });
         });
     }

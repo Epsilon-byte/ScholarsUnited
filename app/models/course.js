@@ -6,7 +6,7 @@ class Course {
         this.name = null;
     }
 
-    // Fetch course details by CourseID
+    // Fetches course details by CourseID
     async getCourseDetails() {
         const query = "SELECT * FROM Courses WHERE CourseID = ?";
         try {
@@ -21,19 +21,19 @@ class Course {
         }
     }
 
-    // Fetch all courses
+    // Fetches all courses
     static async getAllCourses() {
         const query = "SELECT CourseID, CourseName FROM Courses";
         try {
-          const [results] = await db.query(query); // Destructure to get only the rows
-          return results || []; // Return an array, even if empty
+          const [results] = await db.query(query); // Destructures the array to get only the rows
+          return results || []; // Returns an array, even if empty
         } catch (err) {
           console.error("Error fetching all courses:", err);
           throw err;
         }
       }
 
-    // Add a new course
+    // Adds a new course
     static async addCourse(courseName) {
         const query = "INSERT INTO Courses (CourseName) VALUES (?)";
         try {
@@ -45,7 +45,7 @@ class Course {
         }
     }
 
-    // Delete a course by ID
+    // Deletes a course by ID
     static async deleteCourse(courseId) {
         const query = "DELETE FROM Courses WHERE CourseID = ?";
         try {
