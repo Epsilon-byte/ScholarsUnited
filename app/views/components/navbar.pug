@@ -1,0 +1,38 @@
+header.navbar
+  .navbar-left
+    img.logo(src="/SB.png", alt="Logo")
+    span.logo-text Scholars United
+
+  button.menu-toggle(onclick="toggleMenu()") ☰
+
+  // Slide-in menu
+  #overlay(onclick="toggleMenu()")
+  nav.menu-drawer(id="menuDrawer")
+    .menu-header
+      span Menu
+      button.menu-close(onclick="toggleMenu()") ✕
+    ul.menu-links
+      li: a(href="/") Matchmaking
+      li: a(href="/calendar") Calendar
+      li: a(href="/events") Events
+      li: a(href="/courses") Courses
+      li: a(href="/messaging") Messaging
+      li: a(href="/dashboard") Dashboard
+    .menu-footer
+      a(href="/profile") Profile
+      a(href="/logout") Logout
+
+  script.
+    function toggleMenu() {
+      const drawer = document.getElementById('menuDrawer');
+      const overlay = document.getElementById('overlay');
+      drawer.classList.toggle('open');
+      overlay.classList.toggle('show');
+    }
+
+    document.querySelectorAll('.menu-links a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.getElementById('menuDrawer').classList.remove('open');
+        document.getElementById('overlay').classList.remove('show');
+      });
+    });
