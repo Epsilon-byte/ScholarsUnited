@@ -2,24 +2,12 @@ extends layout
 
 block content
   .container
-    //- Header / Navigation
-    header.header
-      nav.navbar
-        .logo LOGO
-        ul.nav-links
-          li: a(href='/') MATCHMAKING
-          li: a(href='/calendar') CALENDAR
-          li: a(href='/events') EVENTS
-          li: a(href='/courses') COURSES
-          li: a(href='/messaging') MESSAGING
-          li: a(href='/logout') LOG OUT
-
-    //- Dashboard Section
     section.main-content
       .dashboard-box
-        h1 Welcome to Your Dashboard, #{user.fullName}!
+        h1 Hello, #{user.fullName} 👋
+        p.welcome-text Here's what's happening right now...
 
-        //- Notifications Section
+        // Notifications Section
         if notifications && notifications.length
           h2 Notifications
           table.notifications-table
@@ -37,14 +25,14 @@ block content
                   td= notification.Read ? 'Read' : 'Unread'
                   td
                     if !notification.Read
-                      form(action=`/notifications/mark-as-read/${notification.NotificationID}` method="POST" style="display: inline;")
+                      form(action=`/notifications/mark-as-read/${notification.NotificationID}` method="POST" style="display:inline;")
                         button.btn.btn-primary(type="submit") Mark as Read
-                    form(action=`/notifications/delete/${notification.NotificationID}` method="POST" style="display: inline; margin-left: 10px;")
+                    form(action=`/notifications/delete/${notification.NotificationID}` method="POST" style="display:inline; margin-left: 10px;")
                       button.btn.btn-danger(type="submit") Delete
         else
-          p No new notifications.
+          p.text-muted No new notifications.
 
-        //- Upcoming Events Section
+        // Upcoming Events
         h2 Upcoming Events
         if events && events.length
           table.events-table
@@ -52,7 +40,7 @@ block content
               tr
                 th Date
                 th Time
-                th Event Name
+                th Event
                 th Location
                 th Actions
             tbody
@@ -63,14 +51,14 @@ block content
                   td= event.Title
                   td= event.Location
                   td
-                    form(action=`/events/join/${event.EventID}` method="POST" style="display: inline;")
+                    form(action=`/events/join/${event.EventID}` method="POST" style="display:inline;")
                       button.btn.btn-primary(type="submit") Join
         else
-          p No upcoming events.
+          p.text-muted No upcoming events.
 
-        //- Quick Links Section
-        h2 Quick Links
+        // Quick Links
+        h2 Quick Actions
         .quick-links
-          a(href='/events/create' class='btn btn-primary') Create Event
-          a(href='/courses' class='btn btn-secondary') View Courses
-          a(href='/messaging' class='btn btn-secondary') Messages
+          a(href='/events/create' class='btn btn-primary') + Create Event
+          a(href='/courses' class='btn btn-secondary') 📘 Courses
+          a(href='/messaging' class='btn btn-secondary') 💬 Messages
