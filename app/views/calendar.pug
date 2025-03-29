@@ -2,22 +2,18 @@ extends layout
 
 block content
   .container
-    //- Header / Navigation
-    header.header
-      nav.navbar
-        .logo LOGO
-        ul.nav-links
-          li: a(href='/') MATCHMAKING
-          li: a(href='/calendar') CALENDAR
-          li: a(href='/events') EVENTS
-          li: a(href='/courses') COURSES
-          li: a(href='/messaging') MESSAGING
-          li: a(href='/dashboard') DASHBOARD
-
-    //- Calendar Section
     section.main-content
-      .calendar-box
-        h1 Study Events Calendar
+      .dashboard-box.calendar-box
+        h1 📅 Study Events Calendar
+
+        // 🔍 Filter Form
+        form(action='/calendar', method='GET', class='calendar-filter-form')
+          .form-group
+            label(for='filter') Filter by keyword or date:
+            input(type='text', name='filter', id='filter', placeholder='Search events...', value=filter || '')
+            button.btn.btn-secondary(type='submit') Filter
+
+        // 📅 Calendar Table
         table.calendar-table
           thead
             tr
@@ -33,7 +29,7 @@ block content
                   td= event.time || 'Invalid Time'
                   td= event.Title
                   td
-                    form(action=`/events/join/${event.EventID}` method="POST" style="display: inline;")
+                    form(action=`/events/join/${event.EventID}`, method="POST", style="display:inline;")
                       button.btn.btn-primary(type="submit") Join
             else
               tr

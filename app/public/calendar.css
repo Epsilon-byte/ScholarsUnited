@@ -1,45 +1,87 @@
-/* Calendar Section */
+/* Calendar Container */
 .calendar-box {
-    background-color: #66B89E;
-    color: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    text-align: center;
-    margin: 0 auto 40px auto;
-    width: 80%;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-  }
-  
-  .calendar-box h1 {
-    margin-bottom: 20px;
-    font-size: 2.5em;
-  }
-  
-  /* Calendar Table */
-  .calendar-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background: #fff;
-    color: #333;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .calendar-table thead {
-    background-color: #4c8c78;
-    color: white;
-  }
-  
-  .calendar-table th,
-  .calendar-table td {
-    padding: 15px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .calendar-table tr:hover {
-    background-color: #f1f1f1;
-  }
-  
+  background-color: #66B89E;
+  color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  margin: 0 auto 40px auto;
+  width: 80%;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* Calendar Heading */
+.calendar-box h1 {
+  margin-bottom: 20px;
+  font-size: 2.5em;
+}
+
+/* Calendar Table */
+.calendar-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: #fff;
+  color: #333;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-table thead {
+  background-color: #4c8c78;
+  color: white;
+}
+
+.calendar-table th,
+.calendar-table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.calendar-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Filter Form */
+.calendar-filter-form {
+  margin: 20px auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  max-width: 700px;
+}
+
+.calendar-filter-form .form-group {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.calendar-filter-form input[type="text"] {
+  flex: 1;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.calendar-filter-form button {
+  padding: 10px 16px;
+  border-radius: 6px;
+  background-color: #444;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease;
+}
+
+.calendar-filter-form button:hover {
+  background-color: #333;
+}

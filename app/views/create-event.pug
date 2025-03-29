@@ -2,38 +2,33 @@ extends layout
 
 block content
   .container
-    header.header
-      nav.navbar
-        .logo LOGO
-        ul.nav-links
-          li: a(href='/') MATCHMAKING
-          li: a(href='/calendar') CALENDAR
-          li: a(href='/events') EVENTS
-          li: a(href='/courses') COURSES
-          li: a(href='/messaging') MESSAGING
-          li: a(href='/dashboard') DASHBOARD
-
-    //- Event Creation Form
     section.create-event-section
-      h2 Create a New Event
-      form(action="/events/create", method="POST")
-        .form-group
-          label(for="title") Event Title:
-          input(type="text", id="title", name="title", required)
-        .form-group
-          label(for="description") Description:
-          textarea(id="description", name="description", rows="4", required)
-        .form-group
-          label(for="date") Date:
-          input(type="date", id="date", name="date", required)
-        .form-group
-          label(for="time") Time:
-          input(type="time", id="time", name="time", required)
-        .form-group
-          label(for="location") Location:
-          input(type="text", id="location", name="location", required)
-        .form-group
-          label(for="userId") Your User ID:
-          input(type="number", id="userId", name="userId", required)
-        .form-group
+      .dashboard-box
+        h2 Create a New Event
+
+        form(action="/events/create", method="POST")
+          .form-group
+            label(for="title") Event Title:
+            input(type="text", id="title", name="title", required)
+
+          .form-group
+            label(for="description") Description:
+            textarea(id="description", name="description", rows="4", required)
+
+          .form-group
+            label(for="date") Date:
+            input(type="date", id="date", name="date", required)
+
+          .form-group
+            label(for="time") Time:
+            input(type="time", id="time", name="time", required)
+
+          .form-group
+            label(for="location") Location:
+            input(type="text", id="location", name="location", required)
+
+          // Pass userId from session (optional)
+          if user
+            input(type="hidden", name="userId", value=user.id)
+
           button(type="submit", class="btn btn-primary") Create Event
