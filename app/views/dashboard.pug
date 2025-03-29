@@ -3,62 +3,62 @@ extends layout
 block content
   .container
     section.main-content
-      .dashboard-box
+      // 🌿 Dashboard Header with Greeting + Quick Actions
+      .course-box
         h1 Hello, #{user.fullName} 👋
         p.welcome-text Here's what's happening right now...
 
-        // Notifications Section
-        if notifications && notifications.length
-          h2 Notifications
-          table.notifications-table
-            thead
-              tr
-                th Message
-                th Timestamp
-                th Status
-                th Actions
-            tbody
-              each notification in notifications
-                tr(class=notification.Read ? 'read' : 'unread')
-                  td= notification.Message
-                  td= new Date(notification.Timestamp).toLocaleString()
-                  td= notification.Read ? 'Read' : 'Unread'
-                  td
-                    if !notification.Read
-                      form(action=`/notifications/mark-as-read/${notification.NotificationID}` method="POST" style="display:inline;")
-                        button.btn.btn-primary(type="submit") Mark as Read
-                    form(action=`/notifications/delete/${notification.NotificationID}` method="POST" style="display:inline; margin-left: 10px;")
-                      button.btn.btn-danger(type="submit") Delete
-        else
-          p.text-muted No new notifications.
-
-        // Upcoming Events
-        h2 Upcoming Events
-        if events && events.length
-          table.events-table
-            thead
-              tr
-                th Date
-                th Time
-                th Event
-                th Location
-                th Actions
-            tbody
-              each event in events
-                tr
-                  td= formatDate(event.Date)
-                  td= formatTime(event.Time)
-                  td= event.Title
-                  td= event.Location
-                  td
-                    form(action=`/events/join/${event.EventID}` method="POST" style="display:inline;")
-                      button.btn.btn-primary(type="submit") Join
-        else
-          p.text-muted No upcoming events.
-
-        // Quick Links
         h2 Quick Actions
         .quick-links
           a(href='/events/create' class='btn btn-primary') + Create Event
           a(href='/courses' class='btn btn-secondary') 📘 Courses
           a(href='/messaging' class='btn btn-secondary') 💬 Messages
+
+      // 🔔 Notifications Section
+      if notifications && notifications.length
+        h2 Notifications
+        table.notifications-table
+          thead
+            tr
+              th Message
+              th Timestamp
+              th Status
+              th Actions
+          tbody
+            each notification in notifications
+              tr(class=notification.Read ? 'read' : 'unread')
+                td= notification.Message
+                td= new Date(notification.Timestamp).toLocaleString()
+                td= notification.Read ? 'Read' : 'Unread'
+                td
+                  if !notification.Read
+                    form(action=`/notifications/mark-as-read/${notification.NotificationID}` method="POST" style="display:inline;")
+                      button.btn.btn-primary(type="submit") Mark as Read
+                  form(action=`/notifications/delete/${notification.NotificationID}` method="POST" style="display:inline; margin-left: 10px;")
+                    button.btn.btn-danger(type="submit") Delete
+      else
+        p.text-muted No new notifications.
+
+      // 📅 Upcoming Events Section
+      h2 Upcoming Events
+      if events && events.length
+        table.events-table
+          thead
+            tr
+              th Date
+              th Time
+              th Event
+              th Location
+              th Actions
+          tbody
+            each event in events
+              tr
+                td= formatDate(event.Date)
+                td= formatTime(event.Time)
+                td= event.Title
+                td= event.Location
+                td
+                  form(action=`/events/join/${event.EventID}` method="POST" style="display:inline;")
+                    button.btn.btn-primary.join-btn(type="submit") Join
+      else
+        p.text-muted No upcoming events.
