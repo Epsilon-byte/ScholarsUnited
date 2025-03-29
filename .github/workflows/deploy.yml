@@ -11,15 +11,24 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
-        node-version: '14'
+        node-version: '18' # Consider using current LTS version
+        cache: 'npm'
+
+    - name: Cache node modules
+      uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
 
     - name: Install dependencies
-      run: npm install
+      run: npm ci # More reliable than npm install
 
     - name: Build the project
       run: npm run build
@@ -27,10 +36,9 @@ jobs:
     - name: Deploy to server
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        SERVER: ${{ secrets.SERVER }}
-        USERNAME: ${{ secrets.USERNAME }}
       run: |
-        echo "$SSH_PRIVATE_KEY" | ssh-add -
-        ssh -o StrictHostKeyChecking=no $USERNAME@$SERVER 'mkdir -p ~/app'
-        rsync -avz --delete-after ./build/ $USERNAME@$SERVER:~/app/
-        ssh -o StrictHostKeyChecking=no $USERNAME@$SERVER 'sudo systemctl restart myapp'
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        rsync -avz --delete-after -e "ssh -o StrictHostKeyChecking=no" ./build/ ${{ secrets.USERNAME }}@${{ secrets.SERVER }}:~/app/
+        ssh -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.SERVER }} 'sudo systemctl restart myapp'
