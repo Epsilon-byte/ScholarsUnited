@@ -2,27 +2,41 @@ name: Test
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    
+    # Recommended: Add a timeout to prevent hanging jobs
+    timeout-minutes: 15
+    
+    strategy:
+      # Recommended: Run tests against multiple Node versions
+      matrix:
+        node-version: ['14.x', '16.x', '18.x']
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
+      uses: actions/checkout@v4  # Updated to latest version
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3  # Updated to latest version
       with:
-        node-version: '14'
-
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'  # Automatic npm caching
+        
     - name: Install dependencies
-      run: npm install
-
+      run: npm ci  # More reliable than 'npm install'
+      
     - name: Run tests
       run: npm test
+      env:
+        CI: true  # Important for many test runners
+        
+    # Optional: Add test coverage reporting
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      if: always()  # Upload even if tests fail
