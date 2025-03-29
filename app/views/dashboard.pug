@@ -53,8 +53,8 @@ block content
           tbody
             each event in events
               tr
-                td= formatDate(event.Date)
-                td= formatTime(event.Time)
+                td= event.date
+                td= event.time
                 td= event.Title
                 td= event.Location
                 td

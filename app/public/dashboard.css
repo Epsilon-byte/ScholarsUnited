@@ -44,20 +44,39 @@ body {
   margin-bottom: 24px;
 }
 
+.course-box h2 {
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+/* 💡 Quick Actions (inside green box) */
+.course-box .quick-links {
+  margin-top: 16px;
+  padding-bottom: 8px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.course-box .btn {
+  background-color: #fff;
+  color: #333;
+  font-weight: 600;
+  border: none;
+}
+
+.course-box .btn:hover {
+  background-color: #f1f1f1;
+}
+
 /* Headings */
 h1, h2 {
   color: #333;
   margin-bottom: 16px;
 }
 
-/* Welcome text below greeting */
-.welcome-text {
-  color: #fdfdfd;
-  font-size: 1rem;
-  margin-bottom: 20px;
-}
-
-/* 🔔 Notifications Table */
+/* Notifications Table */
 .notifications-table {
   width: 100%;
   border-collapse: collapse;
@@ -85,7 +104,7 @@ h1, h2 {
   background-color: #f5f5f5;
 }
 
-/* 📅 Events Table */
+/* Events Table */
 .events-table {
   width: 100%;
   border-collapse: collapse;
@@ -108,7 +127,7 @@ h1, h2 {
   background-color: #f5f5f5;
 }
 
-/* 🧩 Buttons */
+/* Buttons */
 .btn {
   padding: 10px 16px;
   font-size: 0.95rem;
@@ -127,7 +146,7 @@ h1, h2 {
   width: 100%;
 }
 
-/* Button Styles */
+/* Button Variants */
 .btn-primary {
   background-color: #66B89E;
   color: white;
@@ -155,9 +174,9 @@ h1, h2 {
   background-color: #b52a37;
 }
 
-/* ⚡ Quick Links */
+/* Legacy Quick Links (if needed outside banner) */
 .quick-links {
-  margin-top: 16px;
+  margin-top: 24px;
   display: flex;
   gap: 12px;
   flex-wrap: wrap;

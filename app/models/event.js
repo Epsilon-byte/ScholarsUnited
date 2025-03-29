@@ -107,14 +107,15 @@ class Event {
     static async getUpcomingEvents() {
         const query = "SELECT * FROM Events WHERE Date >= CURDATE() ORDER BY Date ASC";
         try {
-            const results = await db.query(query);
-            console.log("Fetched Upcoming Events:", results); // Debugging log to see if the fetch was successful
-            return results || []; // Returns an array, even if empty
+            const [rows] = await db.query(query);  // ✅ extract only rows
+            console.log("Fetched Upcoming Events:", rows);
+            return rows || [];
         } catch (err) {
             console.error("Error fetching upcoming events:", err);
             throw err;
         }
     }
+    
 
     static async getEventById(eventId) {
         const query = "SELECT * FROM Events WHERE EventID = ?";

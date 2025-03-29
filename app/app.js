@@ -540,25 +540,27 @@ app.get("/dashboard", ensureAuthenticated, async (req, res) => {
     console.log("Session data:", req.session.user);
 
     try {
-        // Fetches notifications for the logged-in user
         const notifications = await Notification.getNotificationsByUserId(req.session.user.id);
+        let events = await Event.getUpcomingEvents();
 
-        // Fetches upcoming events for the dashboard
-        const events = await Event.getUpcomingEvents();
+        // ✅ Format Date & Time here
+        events = events.map(event => ({
+            ...event,
+            date: formatDate(event.Date),
+            time: formatTime(event.Time)
+        }));
 
-        // Renders the dashboard template with the data
         res.render("dashboard", {
             user: req.session.user,
-            notifications: notifications || [], // Passes notifications to the template
-            events: events || [], // Passes events to the template
-            formatDate, // Passse the formatDate function
-            formatTime, // Passes the formatTime function
+            notifications: notifications || [],
+            events: events || [],
         });
     } catch (err) {
         console.error("Dashboard Error:", err);
         res.status(500).send("Server error");
     }
 });
+
 
 // Starts the server on port 3000
 app.listen(3000, function () {
