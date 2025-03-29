@@ -3,37 +3,40 @@ extends layout
 block content
   .container
     section.main-content
-      // 🌿 Green Banner
+
+      // 🌿 Green Banner Header
       .course-box
-        h1 Study Events Calendar
-        p View and manage your scheduled study sessions.
+        h1 📅 Study Calendar
+        p Browse scheduled events on a real calendar view.
 
-      // 🔍 Filter Form
-      form(action='/calendar', method='GET', class='calendar-filter-form')
-        .form-group
-          label(for='filter') Filter by keyword or date:
-          input(type='text', name='filter', id='filter', placeholder='Search events...', value=filter || '')
-          button.btn.btn-secondary(type='submit') Filter
+      // 🗓️ Calendar Month/Year Selector + Arrows
+      .calendar-header
+        form.calendar-selector(action='/calendar', method='GET')
+          select(name='month')
+            each val, i in ['January','February','March','April','May','June','July','August','September','October','November','December']
+              option(value=i+1 selected=(i+1 == currentMonth))= val
+          select(name='year')
+            each y in yearRange
+              option(value=y selected=(y == currentYear))= y
+          button(type='submit' class='btn') Go
 
-      // 📅 Calendar Table
-      .dashboard-box
-        table.calendar-table
-          thead
-            tr
-              th Date
-              th Time
-              th Event Name
-              th Actions
-          tbody
-            if events && Array.isArray(events) && events.length
-              each event in events
-                tr
-                  td= event.date || 'Invalid Date'
-                  td= event.time || 'Invalid Time'
-                  td= event.Title
-                  td
-                    form(action=`/events/join/${event.EventID}`, method="POST", style="display:inline;")
-                      button.btn.btn-primary(type="submit") Join
-            else
-              tr
-                td(colspan="4") No events available
+        // Optional: arrow nav (can be removed if you prefer dropdown only)
+        a.calendar-nav(href=`/calendar?month=${prevMonth}&year=${prevYear}`) ←
+        h2 #{displayMonth} #{displayYear}
+        a.calendar-nav(href=`/calendar?month=${nextMonth}&year=${nextYear}`) →
+
+      // 📅 Calendar Grid
+      .calendar-grid
+        // Weekday headers
+        each day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+          .day-header= day
+
+        // Day cells
+        each day in calendarDays
+          .calendar-day(class=day.isCurrentMonth ? '' : 'dimmed')
+            span.day-number= day.date.getDate()
+            if day.events.length
+              ul.event-list
+                each e in day.events
+                  li.event-item
+                    a(href=`/events/${e.EventID}`)= e.Title
