@@ -7,16 +7,13 @@ block content
         h1 Available Courses
         p Explore and manage your courses with ease.
 
-    //- Course Cards
-    section.course-list-section
-      .card-container#course-list
-        each course in courses
-          .profile-card
-            .profile-info
-              h3= course.CourseName
-              a(href=`/courses/${course.CourseID}` class='btn btn-primary') View Course
-
-    //- No Courses Available Message
-    if !courses || courses.length === 0
-      section.course-list-section
-        p No courses available at the moment.
+      .dashboard-box
+        if courses && courses.length
+          .card-container#course-list
+            each course in courses
+              .profile-card
+                .profile-info
+                  h3= course.CourseName
+                  a(href=`/courses/${course.CourseID}` class='btn btn-primary') View Course
+        else
+          p.text-muted No courses available at the moment.

@@ -3,17 +3,20 @@ extends layout
 block content
   .container
     section.main-content
-      .dashboard-box.calendar-box
-        h1 📅 Study Events Calendar
+      // 🌿 Green Banner
+      .course-box
+        h1 Study Events Calendar
+        p View and manage your scheduled study sessions.
 
-        // 🔍 Filter Form
-        form(action='/calendar', method='GET', class='calendar-filter-form')
-          .form-group
-            label(for='filter') Filter by keyword or date:
-            input(type='text', name='filter', id='filter', placeholder='Search events...', value=filter || '')
-            button.btn.btn-secondary(type='submit') Filter
+      // 🔍 Filter Form
+      form(action='/calendar', method='GET', class='calendar-filter-form')
+        .form-group
+          label(for='filter') Filter by keyword or date:
+          input(type='text', name='filter', id='filter', placeholder='Search events...', value=filter || '')
+          button.btn.btn-secondary(type='submit') Filter
 
-        // 📅 Calendar Table
+      // 📅 Calendar Table
+      .dashboard-box
         table.calendar-table
           thead
             tr

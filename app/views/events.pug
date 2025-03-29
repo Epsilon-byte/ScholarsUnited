@@ -2,21 +2,24 @@ extends layout
 
 block content
   .container
-    section.green-events
-      h1.green-title Explore Upcoming Events
+    section.main-content
+      .course-box
+        h1 Upcoming Events
+        p Discover, join, or create exciting study events happening near you.
 
-      a(href='/events/create', class='create-event-button') + Create New Event
+      .dashboard-box
+        a(href='/events/create', class='btn btn-primary create-event-btn') + Create New Event
 
-      if events && events.length
-        .event-card-grid
-          each event in events
-            .event-card
-              h2.event-title= event.Title
-              .event-meta
-                p 📅 #{event.date || 'Date N/A'} at 🕒 #{event.time || 'Time N/A'}
-                p 📍 #{event.Location || 'Location N/A'}
-              p.event-description= event.Description || 'No description available'
-              .event-actions
-                a(href=`/events/${event.EventID}` class='btn-view') View Details
-      else
-        p.no-events Sorry, no events are currently scheduled.
+        if events && events.length
+          .event-card-grid
+            each event in events
+              .event-card
+                h2.event-title= event.Title
+                .event-meta
+                  p 📅 #{event.date || 'Date N/A'} at 🕒 #{event.time || 'Time N/A'}
+                  p 📍 #{event.Location || 'Location N/A'}
+                p.event-description= event.Description || 'No description available'
+                .event-actions
+                  a(href=`/events/${event.EventID}` class='btn-view') View Details
+        else
+          p.no-events Sorry, no events are currently scheduled.
