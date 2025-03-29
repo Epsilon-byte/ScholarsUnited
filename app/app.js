@@ -422,29 +422,27 @@ app.post("/register", async (req, res) => {
     const { email, password, fullName, interests, hobbies, academic_info, time_frames } = req.body;
 
     try {
-        // Checks if email already exists
-        const [existingUser] = await db.query("SELECT * FROM Users WHERE Email = ?", [email]);
-        if (existingUser) {
-            req.session.messages = { error: ["Email already in use."] };
-            return res.redirect("/register");
-        }
+        const newUser = await User.register({
+            email,
+            password,
+            fullName,
+            interests,
+            hobbies,
+            academicInfo: academic_info,
+            availableTime: time_frames
+        });
 
-        // Hashes the password using bcrypt
-        const hashedPassword = await bcrypt.hash(password, 10);
-        console.log("Generated Hash for New User:", hashedPassword);
-
-        // Inserts the new user into the database
-        await db.query(
-            "INSERT INTO Users (Email, Password, FullName, Interests, Hobbies, AcademicInfo, AvailableTime) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            [email, hashedPassword, fullName, interests, hobbies, academic_info, time_frames]
-        );
-
-        console.log("✅ User successfully registered!");
+        console.log("✅ New user registered with ID:", newUser.id);
         req.session.messages = { success: ["Registration successful. Please log in."] };
         return res.redirect("/login");
     } catch (err) {
-        console.error("❌ Registration Error:", err);
-        res.status(500).send("Server error");
+        console.error("❌ Registration Error:", err.message);
+        req.session.messages = { 
+            error: [err.message === 'Email already in use' 
+                   ? "Email already in use." 
+                   : "Registration failed. Please try again."]
+        };
+        return res.redirect("/register");
     }
 });
 

@@ -220,4 +220,4 @@ INSERT INTO Notifications (NotificationID, UserID, Message, Timestamp) VALUES
 (2, 2, 'Event reminder: Cybersecurity Hackathon', '2024-07-12 10:00:00');
 
 -- Changes to accommodate the new values in Notifications table
-ALTER TABLE Notifications ADD COLUMN Read BOOLEAN DEFAULT FALSE;
+ALTER TABLE Notifications ADD COLUMN ReadNotif BOOLEAN DEFAULT FALSE;

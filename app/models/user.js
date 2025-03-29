@@ -1,4 +1,5 @@
 const db = require("../services/db"); // Import database connection
+const bcrypt = require('bcryptjs');
 
 class User {
     constructor(id) {
@@ -10,6 +11,41 @@ class User {
         this.academicInfo = null;
         this.availableTime = null;
     }
+
+    static async register({ email, password, fullName, interests, hobbies, academicInfo, availableTime }) {
+        try {
+            // Check if email already exists
+            const existingUser = await User.findByEmail(email);
+            if (existingUser) {
+                throw new Error('Email already in use');
+            }
+
+            // Hash password
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            // Insert new user
+            const [result] = await db.query(
+                `INSERT INTO Users 
+                (Email, Password, FullName, Interests, Hobbies, AcademicInfo, AvailableTime) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [email, hashedPassword, fullName, interests, hobbies, academicInfo, availableTime]
+            );
+
+            if (!result.insertId) {
+                throw new Error('Failed to create user');
+            }
+
+            return {
+                id: result.insertId,
+                email,
+                fullName
+            };
+        } catch (err) {
+            console.error("Registration error:", err);
+            throw err; // Re-throw for route handler to catch
+        }
+    }
+
 
     // Fetch user details by ID
     async getUserDetails() {
@@ -90,6 +126,7 @@ class User {
             throw err;
         }
     }
+    
 }
 
 module.exports = { User };
