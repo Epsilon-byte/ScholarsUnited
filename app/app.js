@@ -331,24 +331,99 @@ app.post("/notifications/delete/:id", ensureAuthenticated, async (req, res) => {
 
 // ========== CALENDAR ROUTE ==========
 // Fetches all events and render the calendar page
-app.get("/calendar", ensureAuthenticated, async function (req, res) {
+const {
+    startOfMonth,
+    endOfMonth,
+    startOfWeek,
+    endOfWeek,
+    addDays,
+    isSameMonth,
+    format,
+    parse,
+  } = require("date-fns");
+  
+  app.get("/calendar", ensureAuthenticated, async function (req, res) {
     try {
-        const events = await Event.getAllEvents();
-
-        // Formats each event's date and time
-        events.forEach(event => {
-            event.date = formatDate(event.Date);
-            event.time = formatTime(event.Time);
+      const rawEvents = await Event.getAllEvents();
+  
+      // Group events by ISO date (YYYY-MM-DD)
+      const eventMap = {};
+      rawEvents.forEach(event => {
+        const isoDate = formatDate(event.Date); // e.g. '2025-03-31'
+        const formattedEvent = {
+          Title: event.Title,
+          EventID: event.EventID,
+        };
+        if (!eventMap[isoDate]) eventMap[isoDate] = [];
+        eventMap[isoDate].push(formattedEvent);
+      });
+  
+      // Get selected month/year from query, fallback to current
+      const month = parseInt(req.query.month) || new Date().getMonth() + 1;
+      const year = parseInt(req.query.year) || new Date().getFullYear();
+  
+      // Build calendar grid range
+      const currentDate = parse(`${year}-${month}-01`, "yyyy-MM-dd", new Date());
+      const monthStart = startOfMonth(currentDate);
+      const monthEnd = endOfMonth(monthStart);
+      const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+      const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+  
+      // Build day cells
+      const calendarDays = [];
+      let day = gridStart;
+      while (day <= gridEnd) {
+        const iso = formatDate(day); // Use same format used for event keys
+        calendarDays.push({
+          date: day,
+          iso,
+          isCurrentMonth: isSameMonth(day, monthStart),
+          events: eventMap[iso] || [],
         });
-
-        // Renders the calendar template with the formatted events
-        res.render("calendar", { events: events || [] });
+        day = addDays(day, 1);
+      }
+  
+      // For dropdown state
+      const currentMonth = month;
+      const currentYear = year;
+  
+      // Year dropdown range (2020–2035)
+      const yearRange = [];
+      for (let y = 2020; y <= 2035; y++) {
+        yearRange.push(y);
+      }
+  
+      // Prev/Next month logic
+      const prevMonth = month - 1 < 1 ? 12 : month - 1;
+      const nextMonth = month + 1 > 12 ? 1 : month + 1;
+      const prevYear = month - 1 < 1 ? year - 1 : year;
+      const nextYear = month + 1 > 12 ? year + 1 : year;
+  
+      // Display string
+      const displayMonth = format(monthStart, "MMMM");
+      const displayYear = format(monthStart, "yyyy");
+  
+      // Render calendar view
+      res.render("calendar", {
+        calendarDays,
+        displayMonth,
+        displayYear,
+        prevMonth,
+        nextMonth,
+        prevYear,
+        nextYear,
+        currentMonth,
+        currentYear,
+        yearRange
+      });
+  
     } catch (err) {
-        console.error("Error fetching events:", err);
-        res.render("calendar", { events: [] });
+      console.error("Error building calendar:", err);
+      res.render("calendar", { calendarDays: [] });
     }
-});
-
+  });
+  
+  
 // Handles joining an event
 app.post("/events/join/:id", ensureAuthenticated, async function (req, res) {
     const eventId = req.params.id;
@@ -422,29 +497,27 @@ app.post("/register", async (req, res) => {
     const { email, password, fullName, interests, hobbies, academic_info, time_frames } = req.body;
 
     try {
-        // Checks if email already exists
-        const [existingUser] = await db.query("SELECT * FROM Users WHERE Email = ?", [email]);
-        if (existingUser) {
-            req.session.messages = { error: ["Email already in use."] };
-            return res.redirect("/register");
-        }
+        const newUser = await User.register({
+            email,
+            password,
+            fullName,
+            interests,
+            hobbies,
+            academicInfo: academic_info,
+            availableTime: time_frames
+        });
 
-        // Hashes the password using bcrypt
-        const hashedPassword = await bcrypt.hash(password, 10);
-        console.log("Generated Hash for New User:", hashedPassword);
-
-        // Inserts the new user into the database
-        await db.query(
-            "INSERT INTO Users (Email, Password, FullName, Interests, Hobbies, AcademicInfo, AvailableTime) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            [email, hashedPassword, fullName, interests, hobbies, academic_info, time_frames]
-        );
-
-        console.log("✅ User successfully registered!");
+        console.log("✅ New user registered with ID:", newUser.id);
         req.session.messages = { success: ["Registration successful. Please log in."] };
         return res.redirect("/login");
     } catch (err) {
-        console.error("❌ Registration Error:", err);
-        res.status(500).send("Server error");
+        console.error("❌ Registration Error:", err.message);
+        req.session.messages = { 
+            error: [err.message === 'Email already in use' 
+                   ? "Email already in use." 
+                   : "Registration failed. Please try again."]
+        };
+        return res.redirect("/register");
     }
 });
 
@@ -467,19 +540,20 @@ app.get("/dashboard", ensureAuthenticated, async (req, res) => {
     console.log("Session data:", req.session.user);
 
     try {
-        // Fetches notifications for the logged-in user
         const notifications = await Notification.getNotificationsByUserId(req.session.user.id);
+        let events = await Event.getUpcomingEvents();
 
-        // Fetches upcoming events for the dashboard
-        const events = await Event.getUpcomingEvents();
+        // ✅ Format Date & Time here
+        events = events.map(event => ({
+            ...event,
+            date: formatDate(event.Date),
+            time: formatTime(event.Time)
+        }));
 
-        // Renders the dashboard template with the data
         res.render("dashboard", {
             user: req.session.user,
-            notifications: notifications || [], // Passes notifications to the template
-            events: events || [], // Passes events to the template
-            formatDate, // Passse the formatDate function
-            formatTime, // Passes the formatTime function
+            notifications: notifications || [],
+            events: events || [],
         });
     } catch (err) {
         console.error("Dashboard Error:", err);
@@ -487,9 +561,8 @@ app.get("/dashboard", ensureAuthenticated, async (req, res) => {
     }
 });
 
+
 // Starts the server on port 3000
-const server = app.listen(3000, () => {
+app.listen(3000, function () {
     console.log(`Server running at http://127.0.0.1:3000/`);
 });
-
-module.exports = { app, server };

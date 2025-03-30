@@ -1,4 +1,5 @@
-
+/* ===== styles.css ===== */
+@import url("variables.css");
 @import url("global.css");
 @import url("navbar.css");
 @import url("homepage.css");
@@ -11,33 +12,42 @@
 @import url("signup.css");
 @import url("login.css");
 @import url("notifications.css");
+@import url("buttons.css");
 
-/* Buttons */
+/* Core button styles */
 .btn {
-    cursor: pointer;
-    border: none;
-    border-radius: 5px;
-    padding: 12px 20px;
-    font-size: 1em;
-    transition: background-color 0.3s ease;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  padding: 12px 20px;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
 }
 
 .btn-primary {
-    background-color: #4c8c78;
-    color: white;
-    font-weight: bold;
+  background-color: #4c8c78;
+  color: white;
+  font-weight: bold;
 }
 
 .btn-primary:hover {
-    background-color: #3a6b5d;
+  background-color: #3a6b5d;
 }
 
 .btn-secondary {
-    background-color: #66B89E;
-    color: #fff;
+  background-color: #66B89E;
+  color: #fff;
 }
 
 .btn-secondary:hover {
-    background-color: #4c8c78;
+  background-color: #4c8c78;
 }
 
+.btn-danger {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}

@@ -1,31 +1,21 @@
 extends layout
 
 block content
-  .container
-    //- Header / Navigation
-    header.header
-      nav.navbar
-        .logo LOGO
-        ul.nav-links
-          li: a(href='/') MATCHMAKING
-          li: a(href='/calendar') CALENDAR
-          li: a(href='/events') EVENTS
-          li: a(href='/courses') COURSES
-          li: a(href='/messaging') MESSAGING
-          li: a(href='/dashboard') DASHBOARD
+  section.login-section
+    .login-box
+      h1 Login
 
-    //- Login Form Section
-    section.login-section
-      .login-box
-        h1 Login
-        form(action="/login" method="post")
-          .form-group
-            input(type="email" name="email" placeholder="Email" required)
-          .form-group
-            input(type="password" name="password" placeholder="Password" required)
-          .form-group
-            button.btn.btn-primary(type="submit") Login
-            a(href="/register" class="btn btn-secondary") Register
+      form(action="/login", method="POST")
+        .form-group
+          input(type="email", name="email", required, placeholder="Your university email")
+        .form-group
+          input(type="password", name="password", required, placeholder="Password")
+        button.btn.btn-primary(type="submit") Login
+
+      p(style="text-align:center; margin-top: 15px")
+        | Don't have an account?
+        a(href="/register" style="color: var(--primary); font-weight: 500; margin-left: 5px") Register
+
 
         //- Flash Messages
         if messages && messages.error

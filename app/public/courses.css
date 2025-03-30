@@ -1,24 +1,149 @@
-/* Course Section */
+/* Container for the top header box */
 .course-box {
-    background-color: #66B89E;
-    color: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    text-align: center;
-    margin: 0 auto 40px auto;
-    width: 80%;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  background-color: #66B89E;
+  color: #fff;
+  padding: 40px;
+  border-radius: 16px;
+  text-align: center;
+  margin: 0 auto 40px auto;
+  width: 80%;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+.course-box h1 {
+  margin-bottom: 15px;
+  font-size: 3em;
+}
+
+.course-box p {
+  font-size: 1.2em;
+}
+
+/* Slideshow container */
+.slideshow-container {
+  max-width: 900px;
+  position: relative;
+  margin: auto;
+}
+
+/* Individual slide style */
+.mySlides {
+  display: none;
+  background-color: #f6f6f6;
+  padding: 60px 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+/* Slide index */
+.mySlides .numbertext {
+  font-size: 1.2em;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Course title */
+.mySlides h2 {
+  font-size: 3.2em;
+  font-weight: 800;
+  margin-bottom: 30px;
+  color: #222;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.08);
+}
+
+.mySlides:hover h2 {
+  transform: scale(1.02);
+  transition: transform 0.3s ease;
+}
+
+/* View Course button */
+.btn-primary {
+  background-color: #4F9D8D;
+  color: white;
+  font-size: 1.2em;
+  font-weight: 600;
+  padding: 14px 28px;
+  border-radius: 14px;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.25s ease;
+}
+
+.btn-primary:hover {
+  background-color: #3d7d71;
+}
+
+/* Navigation buttons */
+.prev, .next {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  width: 50px;
+  height: 50px;
+  padding: 10px;
+  margin-top: -25px;
+  color: white;
+  font-weight: bold;
+  font-size: 24px;
+  background-color: #aaa;
+  border-radius: 50%;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.prev:hover, .next:hover {
+  background-color: #888;
+}
+
+.prev {
+  left: -60px;
+}
+
+.next {
+  right: -60px;
+}
+
+/* Dots for pagination */
+.dot {
+  cursor: pointer;
+  height: 14px;
+  width: 14px;
+  margin: 0 4px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  transition: background-color 0.3s ease;
+}
+
+.active, .dot:hover {
+  background-color: #333;
+}
+
+/* Responsive adjustments */
+@media only screen and (max-width: 768px) {
+  .slideshow-container {
+    width: 95%;
   }
-  
-  .course-box h1 {
-    margin-bottom: 15px;
-    font-size: 2.5em;
+
+  .prev, .next {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    margin-top: -20px;
   }
-  
-  .course-list-section {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    text-align: center;
+
+  .mySlides h2 {
+    font-size: 2em;
   }
-  
+
+  .btn-primary {
+    font-size: 1em;
+    padding: 10px 20px;
+  }
+}

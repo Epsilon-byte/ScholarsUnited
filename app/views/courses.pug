@@ -2,34 +2,54 @@ extends layout
 
 block content
   .container
-    //- Header / Navigation
-    header.header
-      nav.navbar
-        .logo LOGO
-        ul.nav-links
-          li: a(href='/') MATCHMAKING
-          li: a(href='/calendar') CALENDAR
-          li: a(href='/events') EVENTS
-          li: a(href='/courses') COURSES
-          li: a(href='/messaging') MESSAGING
-          li: a(href='/dashboard') DASHBOARD
+    // 🌿 Green Banner
+    .course-box
+      h1 Available Courses
+      p Explore and manage your courses with ease.
 
-    //- Courses Section
-    section.main-content
-      .course-box
-        h1 Available Courses
-        p Explore and manage your courses with ease.
-
-    //- Course Cards
-    section.course-list-section
-      .card-container#course-list
-        each course in courses
-          .profile-card
-            .profile-info
+    // 🎞️ Slideshow
+    if courses && courses.length
+      .slideshow-container
+        each course, index in courses
+          .mySlides.fade
+            .numbertext #{index + 1} / #{courses.length}
+            .course-slide-box
               h3= course.CourseName
-              a(href=`/courses/${course.CourseID}` class='btn btn-primary') View Course
+              a.btn.btn-primary(href=`/courses/${course.CourseID}`) View Course
 
-    //- No Courses Available Message
-    if !courses || courses.length === 0
-      section.course-list-section
-        p No courses available at the moment.
+        a.prev(onclick='plusSlides(-1)') ❮
+        a.next(onclick='plusSlides(1)') ❯
+
+      .dots
+        each course, index in courses
+          span.dot(onclick=`currentSlide(${index + 1})`)
+    else
+      p.text-muted No courses available at the moment.
+
+    // 🧠 Slideshow Logic
+    script.
+      let slideIndex = 1;
+      showSlides(slideIndex);
+
+      function plusSlides(n) {
+        showSlides(slideIndex += n);
+      }
+
+      function currentSlide(n) {
+        showSlides(slideIndex = n);
+      }
+
+      function showSlides(n) {
+        const slides = document.getElementsByClassName("mySlides");
+        const dots = document.getElementsByClassName("dot");
+        if (n > slides.length) slideIndex = 1;
+        if (n < 1) slideIndex = slides.length;
+        for (let i = 0; i < slides.length; i++) {
+          slides[i].style.display = "none";
+        }
+        for (let i = 0; i < dots.length; i++) {
+          dots[i].classList.remove("active");
+        }
+        slides[slideIndex - 1].style.display = "block";
+        dots[slideIndex - 1].classList.add("active");
+      }
