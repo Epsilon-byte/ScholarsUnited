@@ -1,0 +1,9 @@
+feature:
+  - title: '*feat*'
+  - title: '*feature*'
+bug:
+  - title: '*fix*'
+  - title: '*bug*'
+docs:
+  - title: '*doc*'
+  - title: '*readme*'
