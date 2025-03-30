@@ -563,6 +563,8 @@ app.get("/dashboard", ensureAuthenticated, async (req, res) => {
 
 
 // Starts the server on port 3000
-app.listen(3000, function () {
+const server = app.listen(3000, () => {
     console.log(`Server running at http://127.0.0.1:3000/`);
 });
+
+module.exports = { app, server };
