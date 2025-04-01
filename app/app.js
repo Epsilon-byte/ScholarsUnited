@@ -28,10 +28,15 @@ app.use(express.urlencoded({ extended: true }));
 // Configures session middleware
 app.use(
     session({
-        secret: process.env.SESSION_SECRET || "supersecretkey", // Secret key for session encryption
-        resave: false, // Don't save the session if it hasn't been modified
-        saveUninitialized: true, // Save new sessions even if they are unmodified
-        cookie: { maxAge: 3600000 }, // Session cookie expires after 1 hour
+      secret: process.env.SESSION_SECRET || "supersecretkey",
+      resave: false,
+      saveUninitialized: true,
+      cookie: {
+        maxAge: 3600000, // Session cookie expires after 1 hour
+        secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+        httpOnly: true, // Prevents access from JavaScript
+        sameSite: "lax" // Helps protect against CSRF
+      }
     })
 );
 
@@ -240,30 +245,71 @@ app.get("/event-participants/:eventId", ensureAuthenticated, function (req, res)
 });
 
 // ========== MESSAGE ROUTES ==========
-// Fetches messages for a specific user and render the messaging page
-app.get("/messages/:userId", ensureAuthenticated, async function (req, res) {
+// ✅ Route: Show messages for the currently logged-in user
+app.get("/messaging", ensureAuthenticated, async (req, res) => {
+    console.log("✅ /messaging route hit!");
+  
+    const userId = req.session.user.id;
+  
     try {
-        const messages = await Message.getMessages(req.params.userId);
-        res.render("messaging", { messages: messages || [] });
+      const rawMessages = await Message.getMessages(userId);
+  
+      const messages = rawMessages.map(msg => ({
+        sender: msg.SenderName,
+        receiver: msg.ReceiverName,
+        content: msg.Content,
+        timestamp: new Date(msg.Timestamp).toLocaleString()
+      }));
+  
+      res.render("messaging", {
+        messages,
+        user: req.session.user
+      });
     } catch (err) {
-        console.error("Error fetching messages:", err);
-        res.render("messaging", { messages: [] });
+      console.error("❌ Error fetching messages:", err);
+      res.render("messaging", { messages: [], user: req.session.user });
     }
+  });
+  
+// ✅ Route: Show messages for any user (admin/debug purpose)
+app.get("/messages/:userId", ensureAuthenticated, async (req, res) => {
+  try {
+    const rawMessages = await Message.getMessages(req.params.userId);
+
+    const messages = rawMessages.map(msg => ({
+      sender: msg.SenderName,
+      receiver: msg.ReceiverName,
+      content: msg.Content,
+      timestamp: new Date(msg.Timestamp).toLocaleString()
+    }));
+
+    res.render("messaging", {
+      messages,
+      user: req.session.user
+    });
+  } catch (err) {
+    console.error("Error fetching messages:", err);
+    res.render("messaging", { messages: [], user: req.session.user });
+  }
 });
 
-// Handles sending a message
-app.post("/messages/send", ensureAuthenticated, function (req, res) {
-    const { senderId, receiverId, content } = req.body;
+// ✅ Route: Handle sending a new message
+app.post("/messages/send", ensureAuthenticated, async (req, res) => {
+  const { receiverId, content } = req.body;
+  const senderId = req.session.user.id; // Automatically use logged-in user
+
+  try {
     const message = new Message(senderId, receiverId, content);
-    message.sendMessage()
-        .then(() => {
-            res.status(201).send("Message sent successfully");
-        })
-        .catch(err => {
-            console.error(err);
-            res.status(500).send("Error sending message");
-        });
+    await message.sendMessage();
+
+    // Optional: redirect back to /messaging instead of sending a raw response
+    res.redirect("/messaging");
+  } catch (err) {
+    console.error("Error sending message:", err);
+    res.status(500).send("Error sending message");
+  }
 });
+
 
 // ========== BUDDY REQUEST ROUTES ==========
 // Fetches sent buddy requests for a specific user
