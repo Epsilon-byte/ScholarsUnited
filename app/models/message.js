@@ -24,23 +24,31 @@ class Message {
     }
 
     // Static method: fetch all messages for a user
-    static async getMessages(userId) {
-        const query = `
-            SELECT Messages.MessageID, Messages.Content, Messages.Timestamp,
-                   Sender.FullName AS SenderName, Receiver.FullName AS ReceiverName
-            FROM Messages
-            INNER JOIN Users AS Sender ON Messages.SenderID = Sender.UserID
-            INNER JOIN Users AS Receiver ON Messages.ReceiverID = Receiver.UserID
-            WHERE Messages.SenderID = ? OR Messages.ReceiverID = ?
-            ORDER BY Messages.Timestamp DESC`;
-        try {
-            const [results] = await db.query(query, [userId, userId]);
-            return results || [];
-        } catch (err) {
-            console.error("Error fetching messages:", err);
-            throw err;
-        }
+    // In Message model (e.g., models/Message.js)
+static async getMessages(userId) {
+    const query = `
+        SELECT 
+        Messages.MessageID,
+        Messages.Content,
+        Messages.Timestamp,
+        Messages.SenderID,
+        Messages.ReceiverID,
+        Sender.FullName AS SenderName,
+        Receiver.FullName AS ReceiverName
+        FROM Messages
+        INNER JOIN Users AS Sender ON Messages.SenderID = Sender.UserID
+        INNER JOIN Users AS Receiver ON Messages.ReceiverID = Receiver.UserID
+        WHERE Messages.SenderID = ? OR Messages.ReceiverID = ?
+        ORDER BY Messages.Timestamp DESC
+    `;
+    try {
+        const [results] = await db.query(query, [userId, userId]);
+        return results || [];
+    } catch (err) {
+        console.error("Error fetching messages:", err);
+        throw err;
     }
+}
 
     // Fetch details of a specific message
     async getMessageDetails() {

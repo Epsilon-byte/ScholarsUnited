@@ -221,6 +221,8 @@ app.get("/events/:id", async function (req, res) {
   
 
 // ========== MESSAGE ROUTES ==========
+// ========== MESSAGE ROUTES ==========
+
 // Show messages for the current user
 app.get("/messaging", ensureAuthenticated, async (req, res) => {
     console.log("✅ /messaging route hit!");
@@ -233,6 +235,8 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
       const messages = rawMessages.map(msg => ({
         sender: msg.SenderName,
         receiver: msg.ReceiverName,
+        senderId: msg.SenderID,
+        receiverId: msg.ReceiverID,
         content: msg.Content,
         timestamp: new Date(msg.Timestamp).toLocaleString()
       }));
@@ -242,7 +246,7 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
         user: req.session.user
       });
     } catch (err) {
-      console.error(" Error fetching messages:", err);
+      console.error("❌ Error fetching messages:", err);
       res.render("messaging", { messages: [], user: req.session.user });
     }
   });
@@ -257,17 +261,19 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
       const messages = rawMessages.map(msg => ({
         sender: msg.SenderName,
         receiver: msg.ReceiverName,
+        senderId: msg.SenderID,
+        receiverId: msg.ReceiverID,
         content: msg.Content,
         timestamp: new Date(msg.Timestamp).toLocaleString()
       }));
   
-      res.render("messaging", {
+        res.render("messaging", {
         messages,
         user: req.session.user
       });
     } catch (err) {
-      console.error(" Error fetching messages:", err);
-      res.render("messaging", { messages: [], user: req.session.user });
+        console.error("❌ Error fetching messages:", err);
+        res.render("messaging", { messages: [], user: req.session.user });
     }
   });
   
@@ -277,13 +283,13 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
     const senderId = req.session.user.id;
   
     try {
-      const message = new Message(senderId, receiverId, content);
-      await message.sendMessage();
+        const message = new Message(senderId, receiverId, content);
+        await message.sendMessage();
   
-      res.redirect("/messaging");
+        res.redirect("/messaging");
     } catch (err) {
-      console.error("❌ Error sending message:", err);
-      res.status(500).send("Error sending message");
+        console.error("❌ Error sending message:", err);
+        res.status(500).send("Error sending message");
     }
   });
   
