@@ -507,6 +507,7 @@ app.post("/login", async (req, res) => {
     }
 });
 
+
 // ========== REGISTRATION ROUTE ==========
 // Renders the registration page
 app.get("/register", (req, res) => {
