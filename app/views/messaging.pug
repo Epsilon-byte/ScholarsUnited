@@ -7,9 +7,9 @@ block content
     ul
       each message in messages
         li
-          strong Sender: #{message.sender}
+          strong Sender: #{message.sender} (ID: #{message.senderId})
           br
-          strong Receiver: #{message.receiver}
+          strong Receiver: #{message.receiver} (ID: #{message.receiverId})
           p= message.content
           small Sent: #{message.timestamp}
   else
