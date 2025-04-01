@@ -221,7 +221,7 @@ app.get("/events/:id", async function (req, res) {
   
 
 // ========== MESSAGE ROUTES ==========
-// ✅ Route: Show messages for the currently logged-in user
+// Show messages for the current user
 app.get("/messaging", ensureAuthenticated, async (req, res) => {
     console.log("✅ /messaging route hit!");
   
@@ -242,51 +242,51 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
         user: req.session.user
       });
     } catch (err) {
-      console.error("❌ Error fetching messages:", err);
+      console.error(" Error fetching messages:", err);
       res.render("messaging", { messages: [], user: req.session.user });
     }
   });
   
-// ✅ Route: Show messages for any user (admin/debug purpose)
-app.get("/messages/:userId", ensureAuthenticated, async (req, res) => {
-  try {
-    const rawMessages = await Message.getMessages(req.params.userId);
-
-    const messages = rawMessages.map(msg => ({
-      sender: msg.SenderName,
-      receiver: msg.ReceiverName,
-      content: msg.Content,
-      timestamp: new Date(msg.Timestamp).toLocaleString()
-    }));
-
-    res.render("messaging", {
-      messages,
-      user: req.session.user
-    });
-  } catch (err) {
-    console.error("Error fetching messages:", err);
-    res.render("messaging", { messages: [], user: req.session.user });
-  }
-});
-
-// ✅ Route: Handle sending a new message
-app.post("/messages/send", ensureAuthenticated, async (req, res) => {
-  const { receiverId, content } = req.body;
-  const senderId = req.session.user.id; // Automatically use logged-in user
-
-  try {
-    const message = new Message(senderId, receiverId, content);
-    await message.sendMessage();
-
-    // Optional: redirect back to /messaging instead of sending a raw response
-    res.redirect("/messaging");
-  } catch (err) {
-    console.error("Error sending message:", err);
-    res.status(500).send("Error sending message");
-  }
-});
-
-
+  // Show messages for any user (admin/debug)
+  app.get("/messages/:userId", ensureAuthenticated, async (req, res) => {
+    const targetUserId = req.params.userId;
+  
+    try {
+      const rawMessages = await Message.getMessages(targetUserId);
+  
+      const messages = rawMessages.map(msg => ({
+        sender: msg.SenderName,
+        receiver: msg.ReceiverName,
+        content: msg.Content,
+        timestamp: new Date(msg.Timestamp).toLocaleString()
+      }));
+  
+      res.render("messaging", {
+        messages,
+        user: req.session.user
+      });
+    } catch (err) {
+      console.error(" Error fetching messages:", err);
+      res.render("messaging", { messages: [], user: req.session.user });
+    }
+  });
+  
+  // Handle sending a new message
+  app.post("/messages/send", ensureAuthenticated, async (req, res) => {
+    const { receiverId, content } = req.body;
+    const senderId = req.session.user.id;
+  
+    try {
+      const message = new Message(senderId, receiverId, content);
+      await message.sendMessage();
+  
+      res.redirect("/messaging");
+    } catch (err) {
+      console.error("❌ Error sending message:", err);
+      res.status(500).send("Error sending message");
+    }
+  });
+  
 // ========== BUDDY REQUEST ROUTES ==========
 // Fetches sent buddy requests for a specific user
 app.get("/buddyRequests/sent/:userId", ensureAuthenticated, function (req, res) {
