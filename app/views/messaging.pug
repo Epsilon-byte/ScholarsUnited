@@ -8,6 +8,8 @@ block content
       each message in messages
         li
           strong Sender: #{message.sender}
+          br
+          strong Receiver: #{message.receiver}
           p= message.content
           small Sent: #{message.timestamp}
   else
