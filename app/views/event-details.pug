@@ -4,15 +4,28 @@ block content
   .container
     section.event-details-section
       h2= event.Title
+
       .event-info
         p.event-date-time
-          strong Date: 
+          strong Date:
           | #{event.date} at #{event.time}
+
         p.event-location
-          strong Location: 
+          strong Location:
           | #{event.Location || 'Not specified'}
+
         p.event-description
-          strong Description: 
+          strong Description:
           | #{event.Description || 'No description available'}
 
-      a(href='/events' class='btn btn-primary') Back to Events
+      // 🔐 Conditional Join Button
+      if user
+        form(action=`/events/join/${event.EventID}` method="POST")
+          button.btn.btn-primary(type="submit" style="margin-top: 15px") Join Event
+      else
+        p.text-muted(style="margin-top: 15px")
+          | Please 
+          a(href='/login' style='font-weight: bold') log in 
+          | to join this event.
+
+      a(href='/events' class='btn btn-secondary' style="margin-top: 20px") ← Back to Events

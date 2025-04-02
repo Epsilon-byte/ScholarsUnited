@@ -28,10 +28,15 @@ app.use(express.urlencoded({ extended: true }));
 // Configures session middleware
 app.use(
     session({
-        secret: process.env.SESSION_SECRET || "supersecretkey", // Secret key for session encryption
-        resave: false, // Don't save the session if it hasn't been modified
-        saveUninitialized: true, // Save new sessions even if they are unmodified
-        cookie: { maxAge: 3600000 }, // Session cookie expires after 1 hour
+      secret: process.env.SESSION_SECRET || "supersecretkey",
+      resave: false,
+      saveUninitialized: true,
+      cookie: {
+        maxAge: 3600000, // Session cookie expires after 1 hour
+        secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+        httpOnly: true, // Prevents access from JavaScript
+        sameSite: "lax" // Helps protect against CSRF
+      }
     })
 );
 
@@ -165,91 +170,67 @@ app.get("/user-courses/:userId", ensureAuthenticated, function (req, res) {
 });
 
 // ========== EVENT ROUTES ==========
-// Fetches all events and render the events page
-app.get("/events", ensureAuthenticated, async function (req, res) {
+app.get("/events", async function (req, res) {
     try {
-        const events = await Event.getAllEvents();
-
-        // Formats each event's date and time
-        events.forEach(event => {
-            event.date = formatDate(event.Date);
-            event.time = formatTime(event.Time);
-        });
-
-        // Renders the events template with the formatted events
-        res.render("events", { events: events || [] });
-    } catch (err) {
-        console.error("Error fetching events:", err);
-        res.render("events", { events: [] });
-    }
-});
-
-// Renders the event creation form
-app.get("/events/create", ensureAuthenticated, function (req, res) {
-    res.render("create-event");
-});
-
-// Handles event creation form submission
-app.post("/events/create", ensureAuthenticated, async function (req, res) {
-    const { title, description, date, time, location, userId } = req.body;
-
-    try {
-        const eventId = await Event.createEvent(title, description, date, time, location, userId);
-        console.log("Event created with ID:", eventId);
-        res.redirect("/events");
-    } catch (err) {
-        console.error("Error creating event:", err);
-        res.status(500).send("Error creating event");
-    }
-});
-
-// Fetches event details by ID and render the event details page
-app.get("/events/:id", ensureAuthenticated, async function (req, res) {
-    const eventId = req.params.id;
-
-    try {
-        const event = await Event.getEventById(eventId);
-
-        if (!event) {
-            return res.status(404).send("Event not found");
-        }
-
-        // Formats the event's date and time
+      const events = await Event.getAllEvents();
+  
+      // Format dates and times
+      events.forEach(event => {
         event.date = formatDate(event.Date);
         event.time = formatTime(event.Time);
-
-        // Renders the event details template
-        res.render("event-details", { event });
+      });
+  
+      res.render("events", {
+        events,
+        user: req.session.user || null // <-- Optional: pass user to control buttons
+      });
     } catch (err) {
-        console.error("Error fetching event details:", err);
-        res.status(500).send("Error fetching event details");
+      console.error("Error fetching events:", err);
+      res.render("events", { events: [], user: null });
     }
-});
+  });
+  
 
-// ========== EVENT-PARTICIPANT ROUTES ==========
-// Fetches participants for a specific event
-app.get("/event-participants/:eventId", ensureAuthenticated, function (req, res) {
-    EventParticipant.getParticipantsByEventId(req.params.eventId)
-        .then(participants => {
-            res.json(participants);
-        })
-        .catch(err => {
-            console.error(err);
-            res.status(500).send("Error fetching event participants");
-        });
-});
+
+
+app.get("/events/:id", async function (req, res) {
+    const eventId = req.params.id;
+  
+    try {
+      const event = await Event.getEventById(eventId);
+  
+      if (!event) {
+        return res.status(404).send("Event not found");
+      }
+  
+      // Format date and time
+      event.date = formatDate(event.Date);
+      event.time = formatTime(event.Time);
+  
+      // ✅ Pass user to template
+      res.render("event-details", {
+        event,
+        user: req.session.user || null
+      });
+    } catch (err) {
+      console.error("Error fetching event details:", err);
+      res.status(500).send("Error fetching event details");
+    }
+  });
+  
+  
 
 // ========== MESSAGE ROUTES ==========
 
 // Show messages for the current user
 app.get("/messaging", ensureAuthenticated, async (req, res) => {
     console.log("✅ /messaging route hit!");
-
+  
     const userId = req.session.user.id;
-
+  
     try {
       const rawMessages = await Message.getMessages(userId);
-
+  
       const messages = rawMessages.map(msg => ({
         sender: msg.SenderName,
         receiver: msg.ReceiverName,
@@ -258,7 +239,7 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
         content: msg.Content,
         timestamp: new Date(msg.Timestamp).toLocaleString()
       }));
-
+  
       res.render("messaging", {
         messages,
         user: req.session.user
@@ -268,14 +249,14 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
       res.render("messaging", { messages: [], user: req.session.user });
     }
   });
-
+  
   // Show messages for any user (admin/debug)
   app.get("/messages/:userId", ensureAuthenticated, async (req, res) => {
     const targetUserId = req.params.userId;
-
+  
     try {
       const rawMessages = await Message.getMessages(targetUserId);
-
+  
       const messages = rawMessages.map(msg => ({
         sender: msg.SenderName,
         receiver: msg.ReceiverName,
@@ -284,33 +265,34 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
         content: msg.Content,
         timestamp: new Date(msg.Timestamp).toLocaleString()
       }));
-
-        res.render("messaging", {
+  
+      res.render("messaging", {
         messages,
         user: req.session.user
       });
     } catch (err) {
-        console.error("❌ Error fetching messages:", err);
-        res.render("messaging", { messages: [], user: req.session.user });
+      console.error("❌ Error fetching messages:", err);
+      res.render("messaging", { messages: [], user: req.session.user });
     }
   });
-
+  
   // Handle sending a new message
   app.post("/messages/send", ensureAuthenticated, async (req, res) => {
     const { receiverId, content } = req.body;
     const senderId = req.session.user.id;
-
+  
     try {
-        const message = new Message(senderId, receiverId, content);
-        await message.sendMessage();
-
-        res.redirect("/messaging");
+      const message = new Message(senderId, receiverId, content);
+      await message.sendMessage();
+  
+      res.redirect("/messaging");
     } catch (err) {
-        console.error("❌ Error sending message:", err);
-        res.status(500).send("Error sending message");
+      console.error("❌ Error sending message:", err);
+      res.status(500).send("Error sending message");
     }
   });
-// ========== BUDDY REQUEST ROUTES ==========
+  
+  // ========== BUDDY REQUEST ROUTES ==========
 // Fetches sent buddy requests for a specific user
 app.get("/buddyRequests/sent/:userId", ensureAuthenticated, function (req, res) {
     BuddyRequest.getSentRequests(req.params.userId)
@@ -529,6 +511,7 @@ app.post("/login", async (req, res) => {
         res.status(500).send("Internal server error");
     }
 });
+
 
 // ========== REGISTRATION ROUTE ==========
 // Renders the registration page

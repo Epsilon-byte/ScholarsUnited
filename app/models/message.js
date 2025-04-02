@@ -27,7 +27,7 @@ class Message {
     // In Message model (e.g., models/Message.js)
 static async getMessages(userId) {
     const query = `
-        SELECT
+        SELECT 
         Messages.MessageID,
         Messages.Content,
         Messages.Timestamp,
@@ -49,6 +49,7 @@ static async getMessages(userId) {
         throw err;
     }
 }
+
 
     // Fetch details of a specific message
     async getMessageDetails() {
