@@ -2,63 +2,54 @@ extends layout
 
 block content
   .container
-    section.main-content
-      .dashboard-box
-        h1 Hello, #{user.fullName} 👋
-        p.welcome-text Here's what's happening right now...
+    //- Header / Navigation
+    header.header
+      nav.navbar
+        .logo LOGO
+        ul.nav-links
+          li: a(href='/') MATCHMAKING
+          li: a(href='/calendar') CALENDAR
+          li: a(href='/events') EVENTS
+          li: a(href='/courses') COURSES
+          li: a(href='/messaging') MESSAGING
+          li: a(href='/dashboard') DASHBOARD
+   
+    //- Signup Form Section
+    section.signup-section
+      .signup-box
+        h1 Sign Up
+        form(action='/register' method='POST')
+          .form-group
+            label(for='email') Email:
+            input(type='email' name='email' id='email' required)
+          .form-group
+            label(for='password') Password:
+            input(type='password' name='password' id='password' required)
+          .form-group
+            label(for='fullName') Full Name:
+            input(type='text' name='fullName' id='fullName' required)
+          .form-group
+            label(for='interests') Interests:
+            input(type='text' name='interests' id='interests')
+          .form-group
+            label(for='hobbies') Hobbies:
+            input(type='text' name='hobbies' id='hobbies')
+          .form-group
+            label(for='academic_info') Academic Info:
+            input(type='text' name='academic_info' id='academic_info')
+          .form-group
+            label(for='time_frames') Available Time Frames:
+            input(type='text' name='time_frames' id='time_frames')
+          .form-group
+            button.btn.btn-primary(type='submit') Sign Up
 
-        // Quick Links (moved directly under greeting)
-        h2 Quick Actions
-        .quick-links
-          a(href='/events/create' class='btn btn-primary') + Create Event
-          a(href='/courses' class='btn btn-secondary') 📘 Courses
-          a(href='/messaging' class='btn btn-secondary') 💬 Messages
+        //- Flash Messages
+        if messages && messages.error
+          .alert.alert-danger
+            each error in messages.error
+              p= error
 
-        // Notifications Section
-        if notifications && notifications.length
-          h2 Notifications
-          table.notifications-table
-            thead
-              tr
-                th Message
-                th Timestamp
-                th Status
-                th Actions
-            tbody
-              each notification in notifications
-                tr(class=notification.Read ? 'read' : 'unread')
-                  td= notification.Message
-                  td= new Date(notification.Timestamp).toLocaleString()
-                  td= notification.Read ? 'Read' : 'Unread'
-                  td
-                    if !notification.Read
-                      form(action=`/notifications/mark-as-read/${notification.NotificationID}` method="POST" style="display:inline;")
-                        button.btn.btn-primary(type="submit") Mark as Read
-                    form(action=`/notifications/delete/${notification.NotificationID}` method="POST" style="display:inline; margin-left: 10px;")
-                      button.btn.btn-danger(type="submit") Delete
-        else
-          p.text-muted No new notifications.
-
-        // Upcoming Events
-        h2 Upcoming Events
-        if events && events.length
-          table.events-table
-            thead
-              tr
-                th Date
-                th Time
-                th Event
-                th Location
-                th Actions
-            tbody
-              each event in events
-                tr
-                  td= formatDate(event.Date)
-                  td= formatTime(event.Time)
-                  td= event.Title
-                  td= event.Location
-                  td
-                    form(action=`/events/join/${event.EventID}` method="POST" style="display:inline;")
-                      button.btn.btn-primary(type="submit") Join
-        else
-          p.text-muted No upcoming events.
+        if messages && messages.success
+          .alert.alert-success
+            each msg in messages.success
+              p= msg

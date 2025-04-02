@@ -1,38 +1,60 @@
 const db = require("../services/db"); // Import database connection
 
 class Message {
-    constructor(id) {
-        this.id = id;
-        this.senderId = null;
-        this.receiverId = null;
-        this.content = null;
+    constructor(senderId, receiverId, content) {
+        this.senderId = senderId;
+        this.receiverId = receiverId;
+        this.content = content;
         this.timestamp = null;
+        this.id = null; // Will be set after insertion
     }
 
-    // Fetch all messages for a user (sent or received)
-    static async getMessages(userId) {
-        const query = `
-            SELECT Messages.MessageID, Messages.Content, Messages.Timestamp,
-                   Sender.FullName AS SenderName, Receiver.FullName AS ReceiverName
-            FROM Messages
-            INNER JOIN Users AS Sender ON Messages.SenderID = Sender.UserID
-            INNER JOIN Users AS Receiver ON Messages.ReceiverID = Receiver.UserID
-            WHERE Messages.SenderID = ? OR Messages.ReceiverID = ?
-            ORDER BY Messages.Timestamp DESC`;
+    // Instance method: send the message
+    async sendMessage() {
+        const query = "INSERT INTO Messages (SenderID, ReceiverID, Content) VALUES (?, ?, ?)";
         try {
-            const results = await db.query(query, [userId, userId]);
-            return results.length > 0 ? results : [];
+            const [results] = await db.query(query, [this.senderId, this.receiverId, this.content]);
+            this.id = results.insertId;
+            this.timestamp = new Date(); // Optional: for local use
+            return { message: "Message sent successfully", insertedId: this.id };
         } catch (err) {
-            console.error("Error fetching messages:", err);
+            console.error("Error sending message:", err);
             throw err;
         }
     }
+
+    // Static method: fetch all messages for a user
+    // In Message model (e.g., models/Message.js)
+static async getMessages(userId) {
+    const query = `
+        SELECT
+        Messages.MessageID,
+        Messages.Content,
+        Messages.Timestamp,
+        Messages.SenderID,
+        Messages.ReceiverID,
+        Sender.FullName AS SenderName,
+        Receiver.FullName AS ReceiverName
+        FROM Messages
+        INNER JOIN Users AS Sender ON Messages.SenderID = Sender.UserID
+        INNER JOIN Users AS Receiver ON Messages.ReceiverID = Receiver.UserID
+        WHERE Messages.SenderID = ? OR Messages.ReceiverID = ?
+        ORDER BY Messages.Timestamp DESC
+    `;
+    try {
+        const [results] = await db.query(query, [userId, userId]);
+        return results || [];
+    } catch (err) {
+        console.error("Error fetching messages:", err);
+        throw err;
+    }
+}
 
     // Fetch details of a specific message
     async getMessageDetails() {
         const query = "SELECT * FROM Messages WHERE MessageID = ?";
         try {
-            const results = await db.query(query, [this.id]);
+            const [results] = await db.query(query, [this.id]);
             if (!results || results.length === 0) return null;
 
             const message = results[0];
@@ -51,7 +73,7 @@ class Message {
     async getSenderDetails() {
         const query = "SELECT UserID, FullName, Email FROM Users WHERE UserID = ?";
         try {
-            const results = await db.query(query, [this.senderId]);
+            const [results] = await db.query(query, [this.senderId]);
             return results.length > 0 ? results[0] : null;
         } catch (err) {
             console.error("Error fetching sender details:", err);
@@ -59,11 +81,11 @@ class Message {
         }
     }
 
-    // Create a new message
+    // Static version (optional) - create message without instance
     static async createMessage(senderId, receiverId, content) {
         const query = "INSERT INTO Messages (SenderID, ReceiverID, Content) VALUES (?, ?, ?)";
         try {
-            const results = await db.query(query, [senderId, receiverId, content]);
+            const [results] = await db.query(query, [senderId, receiverId, content]);
             return { message: "Message sent successfully", insertedId: results.insertId };
         } catch (err) {
             console.error("Error creating message:", err);
@@ -75,7 +97,7 @@ class Message {
     async updateMessage(newContent) {
         const query = "UPDATE Messages SET Content = ? WHERE MessageID = ?";
         try {
-            const results = await db.query(query, [newContent, this.id]);
+            const [results] = await db.query(query, [newContent, this.id]);
             return results.affectedRows > 0 ? { message: "Message updated successfully" } : null;
         } catch (err) {
             console.error("Error updating message:", err);
@@ -87,7 +109,7 @@ class Message {
     async deleteMessage() {
         const query = "DELETE FROM Messages WHERE MessageID = ?";
         try {
-            const results = await db.query(query, [this.id]);
+            const [results] = await db.query(query, [this.id]);
             return results.affectedRows > 0 ? { message: "Message deleted successfully" } : null;
         } catch (err) {
             console.error("Error deleting message:", err);

@@ -3,20 +3,24 @@ extends layout
 block content
   h1 Messages
 
-  if messages && Array.isArray(messages) && messages.length
+  if messages && messages.length
     ul
       each message in messages
         li
-          strong= message.sender
+          strong Sender: #{message.sender} (ID: #{message.senderId})
+          br
+          strong Receiver: #{message.receiver} (ID: #{message.receiverId})
           p= message.content
-          small= message.timestamp
+          small Sent: #{message.timestamp}
   else
     p No messages available.
 
   h2 Send a Message
   form(action='/messages/send' method='POST')
-    label(for='receiver') To:
-    input(type='text' name='receiver' required)
-    label(for='message') Message:
-    textarea(name='message' required)
+    label(for='receiverId') To (User ID):
+    input(type='text' name='receiverId' required)
+
+    label(for='content') Message:
+    textarea(name='content' required)
+
     button(type='submit') Send Message
