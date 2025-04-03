@@ -170,56 +170,79 @@ app.get("/user-courses/:userId", ensureAuthenticated, function (req, res) {
 });
 
 // ========== EVENT ROUTES ==========
-app.get("/events", async function (req, res) {
+// Fetches all events and render the events page
+app.get("/events", ensureAuthenticated, async function (req, res) {
     try {
-      const events = await Event.getAllEvents();
-  
-      // Format dates and times
-      events.forEach(event => {
+        const events = await Event.getAllEvents();
+
+        // Formats each event's date and time
+        events.forEach(event => {
+            event.date = formatDate(event.Date);
+            event.time = formatTime(event.Time);
+        });
+
+        // Renders the events template with the formatted events
+        res.render("events", { events: events || [] });
+    } catch (err) {
+        console.error("Error fetching events:", err);
+        res.render("events", { events: [] });
+    }
+});
+
+// Renders the event creation form
+app.get("/events/create", ensureAuthenticated, function (req, res) {
+    res.render("create-event");
+});
+
+// Handles event creation form submission
+app.post("/events/create", ensureAuthenticated, async function (req, res) {
+    const { title, description, date, time, location, userId } = req.body;
+
+    try {
+        const eventId = await Event.createEvent(title, description, date, time, location, userId);
+        console.log("Event created with ID:", eventId);
+        res.redirect("/events");
+    } catch (err) {
+        console.error("Error creating event:", err);
+        res.status(500).send("Error creating event");
+    }
+});
+
+// Fetches event details by ID and render the event details page
+app.get("/events/:id", ensureAuthenticated, async function (req, res) {
+    const eventId = req.params.id;
+
+    try {
+        const event = await Event.getEventById(eventId);
+
+        if (!event) {
+            return res.status(404).send("Event not found");
+        }
+
+        // Formats the event's date and time
         event.date = formatDate(event.Date);
         event.time = formatTime(event.Time);
-      });
-  
-      res.render("events", {
-        events,
-        user: req.session.user || null // <-- Optional: pass user to control buttons
-      });
+
+        // Renders the event details template
+        res.render("event-details", { event });
     } catch (err) {
-      console.error("Error fetching events:", err);
-      res.render("events", { events: [], user: null });
+        console.error("Error fetching event details:", err);
+        res.status(500).send("Error fetching event details");
     }
-  });
-  
+});
 
-
-
-app.get("/events/:id", async function (req, res) {
-    const eventId = req.params.id;
-  
-    try {
-      const event = await Event.getEventById(eventId);
-  
-      if (!event) {
-        return res.status(404).send("Event not found");
-      }
-  
-      // Format date and time
-      event.date = formatDate(event.Date);
-      event.time = formatTime(event.Time);
-  
-      // ✅ Pass user to template
-      res.render("event-details", {
-        event,
-        user: req.session.user || null
-      });
-    } catch (err) {
-      console.error("Error fetching event details:", err);
-      res.status(500).send("Error fetching event details");
-    }
-  });
-  
-  
-
+// ========== EVENT-PARTICIPANT ROUTES ==========
+// Fetches participants for a specific event
+app.get("/event-participants/:eventId", ensureAuthenticated, function (req, res) {
+    EventParticipant.getParticipantsByEventId(req.params.eventId)
+        .then(participants => {
+            res.json(participants);
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).send("Error fetching event participants");
+        });
+});
 // ========== MESSAGE ROUTES ==========
 
 // Show messages for the current user
