@@ -2,30 +2,39 @@ extends layout
 
 block content
   .container
-    section.event-details-section
-      h2= event.Title
+    .event-card
+      h2.event-title= event.Title
 
       .event-info
-        p.event-date-time
+        p
           strong Date:
           | #{event.date} at #{event.time}
 
-        p.event-location
+        p
           strong Location:
           | #{event.Location || 'Not specified'}
 
-        p.event-description
+        p
           strong Description:
           | #{event.Description || 'No description available'}
 
-      // 🔐 Conditional Join Button
-      if user
+      // 👥 Participants List
+      if participants.length
+        h3 Participants
+        ul.participant-list
+          each person in participants
+            li= person.FullName
+      else
+        p.text-muted No participants yet.
+
+      // ✅ Conditional Join Button
+      if !hasJoined
         form(action=`/events/join/${event.EventID}` method="POST")
           button.btn.btn-primary(type="submit" style="margin-top: 15px") Join Event
       else
-        p.text-muted(style="margin-top: 15px")
-          | Please 
-          a(href='/login' style='font-weight: bold') log in 
-          | to join this event.
+        p.text-success(style="margin-top: 15px") You have already joined this event.
 
-      a(href='/events' class='btn btn-secondary' style="margin-top: 20px") ← Back to Events
+      // 🔁 Navigation Buttons
+      .nav-buttons
+        a.btn.btn-secondary(href='/dashboard') ← Back to Dashboard
+        a.btn.btn-secondary(href='/events') ← Back to Events

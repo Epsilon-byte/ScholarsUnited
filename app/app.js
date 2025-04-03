@@ -214,17 +214,23 @@ app.get("/events/:id", ensureAuthenticated, async function (req, res) {
 
     try {
         const event = await Event.getEventById(eventId);
+        if (!event) return res.status(404).send("Event not found");
 
-        if (!event) {
-            return res.status(404).send("Event not found");
-        }
-
-        // Formats the event's date and time
         event.date = formatDate(event.Date);
         event.time = formatTime(event.Time);
 
-        // Renders the event details template
-        res.render("event-details", { event });
+        const eventInstance = new Event(eventId);
+        const participants = await eventInstance.getEventParticipants();
+
+        const userId = req.session.user.id;
+        const hasJoined = participants.some(p => p.UserID === userId);
+
+        res.render("event-details", {
+            event,
+            user: req.session.user,
+            participants,
+            hasJoined
+        });
     } catch (err) {
         console.error("Error fetching event details:", err);
         res.status(500).send("Error fetching event details");
