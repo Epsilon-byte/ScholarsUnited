@@ -594,21 +594,26 @@ app.get("/profile", ensureAuthenticated, async (req, res) => {
         return res.redirect("/dashboard");
       }
   
-      // ✅ Inject formatted interests string
       userDetails.Interests = Array.isArray(userInterests)
         ? userInterests.join(", ")
         : userDetails.Interests;
   
-      console.log("✅ userDetails being passed to PUG:");
-      console.log(userDetails);
+      // ✅ Extract then clear messages BEFORE rendering
+      const messages = { ...req.session.messages }; // clone just in case
+      req.session.messages = {}; // clear immediately
+  
+      // ✅ Explicitly remove the "login required" message if user is logged in
+      if (messages.error) {
+        messages.error = messages.error.filter(
+          msg => msg !== "Please log in to access this page."
+        );
+      }
   
       res.render("profile", {
         user: req.session.user,
         userDetails,
-        messages: req.session.messages || {}
+        messages
       });
-  
-      req.session.messages = {};
     } catch (err) {
       console.error("❌ Could not load profile", err);
       req.session.messages = { error: ["Could not load your profile."] };
@@ -617,16 +622,24 @@ app.get("/profile", ensureAuthenticated, async (req, res) => {
   });
   
   
+  
+  
   // POST: Handle Profile Updates
   app.post("/profile/update", ensureAuthenticated, async (req, res) => {
     const userId = req.session.user.id;
-    const { interests, courses, free_time } = req.body;
+    let { interests, courses, free_time } = req.body;
+  
+    // ✅ Fix: If interests is an array, convert it to a comma-separated string
+    if (Array.isArray(interests)) {
+      interests = interests.join(", ");
+    }
   
     try {
       const query = `
         UPDATE Users 
         SET Interests = ?, AcademicInfo = ?, AvailableTime = ?
         WHERE UserID = ?`;
+  
       await db.query(query, [interests, courses, free_time, userId]);
   
       req.session.messages = { success: ["Profile updated successfully!"] };
@@ -638,6 +651,42 @@ app.get("/profile", ensureAuthenticated, async (req, res) => {
     }
   });
   
+  app.post('/profile/reset-password', ensureAuthenticated, async (req, res) => {
+    const userId = req.session.user.id;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+  
+    try {
+      if (newPassword !== confirmPassword) {
+        req.session.messages = { error: ["New passwords do not match."] };
+        return res.redirect('/profile');
+      }
+  
+      // Get the current password hash from DB
+      const [results] = await db.query('SELECT Password FROM Users WHERE UserID = ?', [userId]);
+      if (!results || results.length === 0) {
+        req.session.messages = { error: ["User not found."] };
+        return res.redirect('/profile');
+      }
+  
+      const hashedPassword = results[0].Password;
+      const passwordMatch = await bcrypt.compare(currentPassword, hashedPassword);
+  
+      if (!passwordMatch) {
+        req.session.messages = { error: ["Current password is incorrect."] };
+        return res.redirect('/profile');
+      }
+  
+      const newHashedPassword = await bcrypt.hash(newPassword, 10);
+      await db.query('UPDATE Users SET Password = ? WHERE UserID = ?', [newHashedPassword, userId]);
+  
+      req.session.messages = { success: ["Password updated successfully."] };
+      res.redirect('/profile');
+    } catch (err) {
+      console.error("❌ Error resetting password:", err);
+      req.session.messages = { error: ["Failed to reset password."] };
+      res.redirect('/profile');
+    }
+  }); 
 
 // ========== LOGOUT ROUTE ==========
 // Handles user logout

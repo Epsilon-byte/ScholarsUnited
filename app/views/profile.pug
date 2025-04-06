@@ -4,13 +4,12 @@ block content
   .container
     h1 Profile Overview
 
-    // ✅ Flash success messages
+    // ✅ Flash messages
     if messages && messages.success
       .alert.alert-success
         each msg in messages.success
           p= msg
 
-    // ✅ Flash error messages
     if messages && messages.error
       .alert.alert-danger
         each msg in messages.error
@@ -49,12 +48,10 @@ block content
     form(action='/profile/update' method='POST')
       .form-group
         label(for='interests') Interests:
-        input.form-control(
-          type='text',
-          name='interests',
-          id='interests',
-          value=(userDetails && userDetails.Interests) ? userDetails.Interests : ''
-        )
+        select#interests.form-control(name='interests' multiple)
+          if userDetails.Interests
+            each interest in userDetails.Interests.split(',').map(i => i.trim())
+              option(selected value=interest)= interest
 
       .form-group
         label(for='courses') Academic Info:
@@ -68,12 +65,54 @@ block content
       .form-group
         label(for='free_time') Available Time:
         input.form-control(
-          type='text',
+          type='time',
           name='free_time',
           id='free_time',
           value=(userDetails && userDetails.AvailableTime) ? userDetails.AvailableTime : ''
         )
 
-      button.btn.btn-primary(type='submit') Update Profile
+      button.btn.btn-primary(type='submit') 💾 Update Profile
+
+    hr
+
+    // ✅ Reset Password section
+    h2 Reset Password
+    form(action='/profile/reset-password' method='POST')
+      .form-group
+        label(for='currentPassword') Current Password:
+        input.form-control(type='password', name='currentPassword', required)
+
+      .form-group
+        label(for='newPassword') New Password:
+        input.form-control(type='password', name='newPassword', required)
+
+      .form-group
+        label(for='confirmPassword') Confirm New Password:
+        input.form-control(type='password', name='confirmPassword', required)
+
+      button.btn.btn-warning(type='submit') 🔒 Reset Password
+
+    hr
+
+    // ✅ Delete Account Section
+    form(action='/profile/delete' method='POST' onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.');")
+      button.btn.btn-danger(type='submit') 🗑️ Delete My Account
 
     a.btn.btn-secondary(href='/dashboard' style='margin-top: 20px') ← Back to Dashboard
+
+  // ✅ JS for interests multi-select
+  script(src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js")
+  link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css")
+
+  script.
+    document.addEventListener('DOMContentLoaded', function () {
+      const interestsEl = document.getElementById('interests');
+      if (interestsEl) {
+        new Choices(interestsEl, {
+          removeItemButton: true,
+          placeholder: true,
+          placeholderValue: 'Select or type interests',
+          duplicateItemsAllowed: false
+        });
+      }
+    });
