@@ -175,191 +175,112 @@ app.get("/user-courses/:userId", ensureAuthenticated, function (req, res) {
 // ========== EVENT ROUTES ==========
 // Fetches all events and render the events page
 app.get("/events", ensureAuthenticated, async function (req, res) {
-    try {
-        const events = await Event.getAllEvents();
+  try {
+      const events = await Event.getAllEvents();
 
-        // Formats each event's date and time
-        events.forEach(event => {
-            event.date = formatDate(event.Date);
-            event.time = formatTime(event.Time);
-        });
+      // Formats each event's date and time
+      events.forEach(event => {
+          event.date = formatDate(event.Date);
+          event.time = formatTime(event.Time);
+      });
 
-        // Renders the events template with the formatted events
-        res.render("events", { events: events || [] });
-    } catch (err) {
-        console.error("Error fetching events:", err);
-        res.render("events", { events: [] });
-    }
+      // Renders the events template with the formatted events
+      res.render("events", { events: events || [] });
+  } catch (err) {
+      console.error("Error fetching events:", err);
+      res.render("events", { events: [] });
+  }
 });
 
 // Renders the event creation form
 app.get("/events/create", ensureAuthenticated, function (req, res) {
-    res.render("create-event");
+  res.render("create-event");
 });
 
 // Handles event creation form submission
 app.post("/events/create", ensureAuthenticated, async function (req, res) {
-    const { title, description, date, time, location, userId } = req.body;
+  const { title, description, date, time, location, userId } = req.body;
 
-    try {
-        const eventId = await Event.createEvent(title, description, date, time, location, userId);
-        console.log("Event created with ID:", eventId);
-        res.redirect("/events");
-    } catch (err) {
-        console.error("Error creating event:", err);
-        res.status(500).send("Error creating event");
-    }
+  try {
+      const eventId = await Event.createEvent(title, description, date, time, location, userId);
+      console.log("Event created with ID:", eventId);
+      res.redirect("/events");
+  } catch (err) {
+      console.error("Error creating event:", err);
+      res.status(500).send("Error creating event");
+  }
 });
 
 // Fetches event details by ID and render the event details page
 app.get("/events/:id", ensureAuthenticated, async function (req, res) {
-    const eventId = req.params.id;
-
-    try {
-        const event = await Event.getEventById(eventId);
-        if (!event) return res.status(404).send("Event not found");
-
-        event.date = formatDate(event.Date);
-        event.time = formatTime(event.Time);
-
-        const eventInstance = new Event(eventId);
-        const participants = await eventInstance.getEventParticipants();
-
-        const userId = req.session.user.id;
-        const hasJoined = participants.some(p => p.UserID === userId);
-
-        res.render("event-details", {
-            event,
-            user: req.session.user,
-            participants,
-            hasJoined
-        });
-    } catch (err) {
-        console.error("Error fetching event details:", err);
-        res.status(500).send("Error fetching event details");
-    }
-});
-// 🆕 Renders the edit form for an event
-app.get("/events/:id/edit", ensureAuthenticated, async function (req, res) {
   const eventId = req.params.id;
 
   try {
       const event = await Event.getEventById(eventId);
       if (!event) return res.status(404).send("Event not found");
 
-      // Only the creator can access the edit form
-      if (event.Created_By !== req.session.user.id) {
-          return res.status(403).send("You are not allowed to edit this event.");
-      }
+      event.date = formatDate(event.Date);
+      event.time = formatTime(event.Time);
 
-      res.render("edit-event", { event }); // You need to create this PUG file
+      const eventInstance = new Event(eventId);
+      const participants = await eventInstance.getEventParticipants();
+
+      const userId = req.session.user.id;
+      const hasJoined = participants.some(p => p.UserID === userId);
+
+      res.render("event-details", {
+          event,
+          user: req.session.user,
+          participants,
+          hasJoined
+      });
   } catch (err) {
-      console.error("Error loading event for editing:", err);
-      res.status(500).send("Error loading event for editing.");
-  }
-});
-// Handle the form submission to update the event
-app.post("/events/:id/edit", ensureAuthenticated, async function (req, res) {
-  const eventId = req.params.id;
-  const { title, description, date, time, location } = req.body;
-
-  try {
-      const event = await Event.getEventById(eventId);
-      if (!event) return res.status(404).send("Event not found");
-
-      // Ensure only the creator can update
-      if (event.Created_By !== req.session.user.id) {
-          return res.status(403).send("You are not allowed to update this event.");
-      }
-
-      await Event.updateEvent(eventId, title, description, date, time, location);
-
-      res.redirect(`/events/${eventId}`);
-  } catch (err) {
-      console.error("Error updating event:", err);
-      res.status(500).send("Failed to update event.");
-  }
-});
-app.post("/events/:id/cancel", ensureAuthenticated, async function (req, res) {
-  const eventId = req.params.id;
-
-  try {
-      const event = await Event.getEventById(eventId);
-      if (!event) return res.status(404).send("Event not found");
-
-      if (event.Created_By !== req.session.user.id) {
-          return res.status(403).send("You are not allowed to cancel this event.");
-      }
-
-      await Event.cancelEvent(eventId); // This should set status = 'cancelled'
-
-      res.redirect(`/events/${eventId}`);
-  } catch (err) {
-      console.error("Error cancelling event:", err);
-      res.status(500).send("Failed to cancel event.");
-  }
-});
-app.post("/events/leave/:id", ensureAuthenticated, async function (req, res) {
-  const eventId = req.params.id;
-  const userId = req.session.user.id;
-
-  try {
-    const eventInstance = new Event(eventId);
-    const success = await eventInstance.removeParticipant(userId);
-
-    if (success) {
-      res.redirect(`/events/${eventId}`);
-    } else {
-      res.status(400).send("Could not leave the event. Maybe you're not a participant?");
-    }
-  } catch (err) {
-    console.error("Error removing participant:", err);
-    res.status(500).send("Server error while leaving the event.");
+      console.error("Error fetching event details:", err);
+      res.status(500).send("Error fetching event details");
   }
 });
 
 // Handles updating an existing event
 app.get("/events/edit/:id", ensureAuthenticated, async function (req, res) {
-  const eventId = req.params.id;
-  const { title, description, date, time, location } = req.body;
+const eventId = req.params.id;
+const { title, description, date, time, location } = req.body;
 
-  try {
-      const event = new Event(eventId);
-      const success = await event.updateEvent(title, description, date, time, location);
+try {
+    const event = new Event(eventId);
+    const success = await event.updateEvent(title, description, date, time, location);
 
-      if (success) {
-          res.redirect(`/events/${eventId}`);
-      } else {
-          res.status(400).send("Failed to update event");
-      }
-  } catch (err) {
-      console.error("Error updating event:", err);
-      res.status(500).send("Error updating event");
-  }
+    if (success) {
+        res.redirect(`/events/${eventId}`);
+    } else {
+        res.status(400).send("Failed to update event");
+    }
+} catch (err) {
+    console.error("Error updating event:", err);
+    res.status(500).send("Error updating event");
+}
 });
 
 // Handles deleting an existing event
 app.post("/events/delete/:id", ensureAuthenticated, async function (req, res) {
-  const eventId = req.params.id;
+const eventId = req.params.id;
 
-  try {
-      const event = new Event(eventId);
-      const success = await event.deleteEvent();
-      if (success) {
-          console.log(`Event with ID: ${eventId} has been deleted successfully.`);
-          // Send a JSON response or just a status indicating success
-          res.status(200).json({ message: "Event deleted successfully", eventId: eventId });
-      } else {
-          // Log and respond that no event was found to delete
-          console.log(`No event found with ID: ${eventId}, unable to delete.`);
-          res.status(404).json({ error: "Event not found" });
-      }
-  } catch (err) {
-      console.error("Error deleting event:", err);
-      res.status(500).json({ error: "Server error during event deletion" });
-  }
+try {
+    const event = new Event(eventId);
+    const success = await event.deleteEvent();
+    if (success) {
+        console.log(`Event with ID: ${eventId} has been deleted successfully.`);
+        // Send a JSON response or just a status indicating success
+        res.status(200).json({ message: "Event deleted successfully", eventId: eventId });
+    } else {
+        // Log and respond that no event was found to delete
+        console.log(`No event found with ID: ${eventId}, unable to delete.`);
+        res.status(404).json({ error: "Event not found" });
+    }
+} catch (err) {
+    console.error("Error deleting event:", err);
+    res.status(500).json({ error: "Server error during event deletion" });
+}
 });
-
 
 // ========== EVENT-PARTICIPANT ROUTES ==========
 // Fetches participants for a specific event
