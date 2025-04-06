@@ -49,10 +49,6 @@ static async getMessages(userId) {
         throw err;
     }
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> develop
 
     // Fetch details of a specific message
     async getMessageDetails() {
