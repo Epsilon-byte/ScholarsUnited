@@ -33,11 +33,12 @@
     .form-group
       label(for='free_time') Available Time:
       input.form-control(
-        type='time',
-        name='free_time',
-        id='free_time',
-        value=(userDetails && userDetails.AvailableTime) ? userDetails.AvailableTime : ''
-      )
+      type='text',
+      name='free_time',
+      id='free_time',
+      value=(userDetails && userDetails.AvailableTime) ? userDetails.AvailableTime : ''
+    )
+
 
     .div-button-wrapper.button-wrapper
       button.btn.btn-primary(type='submit') 💾 Update Profile
