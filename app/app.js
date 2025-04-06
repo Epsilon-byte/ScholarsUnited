@@ -228,6 +228,7 @@ app.get("/events/:id", ensureAuthenticated, async (req, res) => {
     const userId = req.session.user.id;
     const hasJoined = participants.some(p => p.UserID === userId);
 
+    // Pass the event object, participants, and other data to the template
     res.render("event-details", {
       event,
       user: req.session.user,
@@ -240,23 +241,40 @@ app.get("/events/:id", ensureAuthenticated, async (req, res) => {
   }
 });
 
-// Render event editing form
+/// Renders the edit form with current values
 app.get("/events/edit/:id", ensureAuthenticated, async (req, res) => {
+  const eventId = req.params.id;
+
+  try {
+    const event = await Event.getEventById(eventId);
+    if (!event) return res.status(404).send("Event not found");
+
+    res.render("edit-event", { event });
+  } catch (err) {
+    console.error("Error loading edit event form:", err);
+    res.status(500).send("Error loading edit form");
+  }
+});
+
+app.post("/events/edit/:id", ensureAuthenticated, async (req, res) => {
   const eventId = req.params.id;
   const { title, description, date, time, location } = req.body;
 
   try {
     const event = new Event(eventId);
-    const success = await event.updateEvent(title, description, date, time, location);
+    const updated = await event.updateEvent(title, description, date, time, location);
 
-    if (success) {
+    if (updated) {
+      req.session.messages = { success: ["Event updated successfully!"] };
       res.redirect(`/events/${eventId}`);
     } else {
-      res.status(400).send("Failed to update event");
+      req.session.messages = { error: ["Event update failed."] };
+      res.redirect(`/events/edit/${eventId}`);
     }
   } catch (err) {
-    console.error("Error updating event:", err);
-    res.status(500).send("Error updating event");
+    console.error("❌ Error updating event:", err);
+    req.session.messages = { error: ["Something went wrong."] };
+    res.redirect(`/events/edit/${eventId}`);
   }
 });
 
