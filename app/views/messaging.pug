@@ -30,7 +30,7 @@ block content
               p #{message.content}
               small Sent: #{message.timestamp}
 
-              // 🔒 Show delete/edit buttons only if current user is the sender
+              //  Show delete/edit buttons only if current user is the sender
               if isSender
                 form(action=`/messages/delete/${message.messageId}`, method="POST")
                   button(type="submit") 🔒 Delete
@@ -41,7 +41,7 @@ block content
     else
       p No messages available.
 
-    // 📤 Message send form
+    //  Message send form
     h2 Send a Message
     form(action='/messages/send', method='POST')
       label(for='receiverId') To (User ID):
