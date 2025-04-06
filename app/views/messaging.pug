@@ -15,7 +15,7 @@ block content
 
           if user && user.id === message.senderId
             form(action=`/messages/delete/${message.messageId}` method="POST" style="display:inline")
-              button(type="submit" style="color: red; background: none; border: none; cursor: pointer") 🗑️ Delete 
+              button(type="submit" style="color: red; background: none; border: none; cursor: pointer") 🗑️ Delete
   else
     p No messages available.
 
@@ -26,6 +26,5 @@ block content
 
     label(for='content') Message:
     textarea(name='content' required)
-
 
     button(type='submit') Send Message
