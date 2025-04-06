@@ -4,115 +4,47 @@ block content
   .container
     h1 Profile Overview
 
-    // ✅ Flash messages
-    if messages && messages.success
-      .alert.alert-success
-        each msg in messages.success
-          p= msg
+    // ✅ Top navigation: Tabs + Back to Dashboard
+    .tab-bar
+      .tabs
+        button.tab-button.active(type='button', data-tab='info') Your Info
+        button.tab-button(type='button', data-tab='edit') Edit Profile
+        button.tab-button(type='button', data-tab='password') Reset Password
+        button.tab-button(type='button', data-tab='delete') Danger Zone
 
-    if messages && messages.error
-      .alert.alert-danger
-        each msg in messages.error
-          p= msg
+      a.btn.btn-secondary.dashboard-link(href='/dashboard') ← Back to Dashboard
 
-    // ✅ User info section
-    if userDetails
-      .profile-info
-        h2 Your Information
-        ul
-          li
-            strong Full Name:
-            | #{userDetails.FullName || 'Not provided'}
-          li
-            strong Email:
-            | #{userDetails.Email || 'Not provided'}
-          li
-            strong Hobbies:
-            | #{userDetails.Hobbies || 'Not provided'}
-          li
-            strong Academic Info:
-            | #{userDetails.AcademicInfo || 'Not provided'}
-          li
-            strong Availability:
-            | #{userDetails.AvailableTime || 'Not set'}
-          li
-            strong Interests:
-            | #{userDetails.Interests && userDetails.Interests.length > 0 ? userDetails.Interests : 'No interests listed'}
-    else
-      p.text-danger No user information available.
+    // ✅ Info Tab
+    .tab-content#info.active
+      if userDetails
+        .profile-card
+          h2.user-name #{userDetails.FullName || 'Not provided'}
+          p.user-email 📧 #{userDetails.Email || 'Not provided'}
+          ul.user-details
+            li 🏷️ Hobbies: #{userDetails.Hobbies || 'Not provided'}
+            li 🎓 Academic Info: #{userDetails.AcademicInfo || 'Not provided'}
+            li ⏰ Availability: #{userDetails.AvailableTime || 'Not set'}
+            li 💡 Interests: #{userDetails.Interests && userDetails.Interests.length > 0 ? userDetails.Interests.join(', ') : 'No interests listed'}
+      else
+        p.text-danger No user information available.
 
-    hr
+    // ✅ Edit Profile Tab
+    .tab-content#edit
+      include profile-update.pug
 
-    // ✅ Profile update form
-    h2 Edit Your Profile (optional)
-    form(action='/profile/update' method='POST')
-      .form-group
-        label(for='interests') Interests:
-        select#interests.form-control(name='interests' multiple)
-          if userDetails.Interests
-            each interest in userDetails.Interests.split(',').map(i => i.trim())
-              option(selected value=interest)= interest
+    // ✅ Reset Password Tab
+    .tab-content#password
+      include password-reset-form.pug
 
-      .form-group
-        label(for='courses') Academic Info:
-        input.form-control(
-          type='text',
-          name='courses',
-          id='courses',
-          value=(userDetails && userDetails.AcademicInfo) ? userDetails.AcademicInfo : ''
-        )
+    // ✅ Delete Account Tab
+    .tab-content#delete
+      .danger-card
+        .alert-green
+          p ⚠️ This action cannot be undone. Deleting your account is permanent.
+        h2 Delete Account
+        form(action='/profile/delete' method='POST' onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.');")
+          .button-wrapper
+            button.btn.btn-danger(type='submit') 🗑️ Delete My Account
 
-      .form-group
-        label(for='free_time') Available Time:
-        input.form-control(
-          type='time',
-          name='free_time',
-          id='free_time',
-          value=(userDetails && userDetails.AvailableTime) ? userDetails.AvailableTime : ''
-        )
-
-      button.btn.btn-primary(type='submit') 💾 Update Profile
-
-    hr
-
-    // ✅ Reset Password section
-    h2 Reset Password
-    form(action='/profile/reset-password' method='POST')
-      .form-group
-        label(for='currentPassword') Current Password:
-        input.form-control(type='password', name='currentPassword', required)
-
-      .form-group
-        label(for='newPassword') New Password:
-        input.form-control(type='password', name='newPassword', required)
-
-      .form-group
-        label(for='confirmPassword') Confirm New Password:
-        input.form-control(type='password', name='confirmPassword', required)
-
-      button.btn.btn-warning(type='submit') 🔒 Reset Password
-
-    hr
-
-    // ✅ Delete Account Section
-    form(action='/profile/delete' method='POST' onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.');")
-      button.btn.btn-danger(type='submit') 🗑️ Delete My Account
-
-    a.btn.btn-secondary(href='/dashboard' style='margin-top: 20px') ← Back to Dashboard
-
-  // ✅ JS for interests multi-select
-  script(src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js")
-  link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css")
-
-  script.
-    document.addEventListener('DOMContentLoaded', function () {
-      const interestsEl = document.getElementById('interests');
-      if (interestsEl) {
-        new Choices(interestsEl, {
-          removeItemButton: true,
-          placeholder: true,
-          placeholderValue: 'Select or type interests',
-          duplicateItemsAllowed: false
-        });
-      }
-    });
+    // ✅ Tab Scripts
+    include profile-scripts.pug
