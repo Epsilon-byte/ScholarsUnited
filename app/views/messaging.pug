@@ -4,27 +4,44 @@ block content
   .messaging-container
     h1 Messages
 
+    //  Check if there are messages
     if messages && messages.length
       ul
         each message in messages
-          li.message-item
-            strong Sender: #{message.sender} (ID: #{message.senderId})
-            br
-            strong Receiver: #{message.receiver} (ID: #{message.receiverId})
-            p= message.content
-            small Sent: #{message.timestamp}
+          //  Define if the current user is the sender
+          - const isSender = message.senderId === user.id;
 
-            // ⚡ Delete button
-            form(action=`/messages/delete/${message.messageId}`, method="POST")
-              button(type="submit") Delete
+          //  Conditional class: sender (align right) or receiver (align left)
+          li(class=`message-wrapper ${isSender ? 'sender' : 'receiver'}`)
+            .message-item
+              // 👤 Sender name in blue-green
+              span.message-sender
+                | 👤 Sender:
+                strong(style="color: #00675b") #{message.sender} (ID: #{message.senderId})
 
-            // ✏️ Edit form
-            form(action=`/messages/update/${message.messageId}`, method="POST")
-              input(type="text", name="newContent", placeholder="Edit message", required)
-              button(type="submit") Save and Resend Edit Messages
+              br
+
+              // 👥 Receiver name in dark gray
+              span.message-receiver
+                | 👥 Receiver:
+                strong(style="color: #555") #{message.receiver} (ID: #{message.receiverId})
+
+              //  Message content and timestamp
+              p #{message.content}
+              small Sent: #{message.timestamp}
+
+              //  Show delete/edit buttons only if current user is the sender
+              if isSender
+                form(action=`/messages/delete/${message.messageId}`, method="POST")
+                  button(type="submit") 🔒 Delete
+
+                form(action=`/messages/update/${message.messageId}`, method="POST")
+                  input(type="text", name="newContent", placeholder="Edit message", required)
+                  button(type="submit") 🖉 Save and Resend Edit Messages
     else
       p No messages available.
 
+    //  Message send form
     h2 Send a Message
     form(action='/messages/send', method='POST')
       label(for='receiverId') To (User ID):
@@ -33,4 +50,4 @@ block content
       label(for='content') Message:
       textarea(name='content', required)
 
-      button(type='submit') Send Message
+      button(type='submit') 📨 Send Message
