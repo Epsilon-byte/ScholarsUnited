@@ -377,96 +377,96 @@ app.get("/event-participants/:eventId", ensureAuthenticated, function (req, res)
 
 // Show messages for the current user
 app.get("/messaging", ensureAuthenticated, async (req, res) => {
-    console.log(" /messaging route hit!");
-  
-    const userId = req.session.user.id;
-  
-    try {
-      const rawMessages = await Message.getMessages(userId);
-  
-      const messages = rawMessages.map(msg => ({
-        messageId: msg.MessageID, //  Needed for delete to work
-        sender: msg.SenderName,
-        receiver: msg.ReceiverName,
-        senderId: msg.SenderID,
-        receiverId: msg.ReceiverID,
-        content: msg.Content,
-        timestamp: new Date(msg.Timestamp).toLocaleString()
-      }));
-      
-  
-      res.render("messaging", {
-        messages,
-        user: req.session.user
-      });
-    } catch (err) {
-      console.error(" Error fetching messages:", err);
-      res.render("messaging", { messages: [], user: req.session.user });
-    }
-  });
-  
-  // Show messages for any user (admin/debug)
-  app.get("/messages/:userId", ensureAuthenticated, async (req, res) => {
-    const targetUserId = req.params.userId;
-  
-    try {
-      const rawMessages = await Message.getMessages(targetUserId);
-  
-      const messages = rawMessages.map(msg => ({
-        messageId: msg.MessageID, //  Needed for delete to work
-        sender: msg.SenderName,
-        receiver: msg.ReceiverName,
-        senderId: msg.SenderID,
-        receiverId: msg.ReceiverID,
-        content: msg.Content,
-        timestamp: new Date(msg.Timestamp).toLocaleString()
-      }));
-      
-  
-      res.render("messaging", {
-        messages,
-        user: req.session.user
-      });
-    } catch (err) {
-      console.error(" Error fetching messages:", err);
-      res.render("messaging", { messages: [], user: req.session.user });
-    }
-  });
-  
-  // Handle sending a new message
-  app.post("/messages/send", ensureAuthenticated, async (req, res) => {
-    const { receiverId, content } = req.body;
-    const senderId = req.session.user.id;
-  
-    try {
-      const message = new Message(senderId, receiverId, content);
-      await message.sendMessage();
-  
-      res.redirect("/messaging");
-    } catch (err) {
-      console.error(" Error sending message:", err);
-      res.status(500).send("Error sending message");
-    }
-  });
-// ========== DELETE MESSAGE ROUTE ==========
-app.post("/messages/delete/:id", ensureAuthenticated, async (req, res) => {
-  const messageId = req.params.id;
+  console.log(" /messaging route hit!");
+
+  const userId = req.session.user.id;
 
   try {
-      const message = new Message(); // No need to pass senderId
-      message.id = messageId;
+    const rawMessages = await Message.getMessages(userId);
 
-      const result = await message.deleteMessage();
+    const messages = rawMessages.map(msg => ({
+      messageId: msg.MessageID, //  Needed for delete to work
+      sender: msg.SenderName,
+      receiver: msg.ReceiverName,
+      senderId: msg.SenderID,
+      receiverId: msg.ReceiverID,
+      content: msg.Content,
+      timestamp: new Date(msg.Timestamp).toLocaleString()
+    }));
+    
 
-      if (result && result.message === "Message deleted successfully") {
-          return res.redirect("/messaging");
-      } else {
-          return res.status(400).send("Failed to delete message");
-      }
+    res.render("messaging", {
+      messages,
+      user: req.session.user
+    });
   } catch (err) {
-      console.error(" Error deleting message:", err);
-      res.status(500).send("Server error deleting message");
+    console.error(" Error fetching messages:", err);
+    res.render("messaging", { messages: [], user: req.session.user });
   }
+});
+
+// Show messages for any user (admin/debug)
+app.get("/messages/:userId", ensureAuthenticated, async (req, res) => {
+  const targetUserId = req.params.userId;
+
+  try {
+    const rawMessages = await Message.getMessages(targetUserId);
+
+    const messages = rawMessages.map(msg => ({
+      messageId: msg.MessageID, //  Needed for delete to work
+      sender: msg.SenderName,
+      receiver: msg.ReceiverName,
+      senderId: msg.SenderID,
+      receiverId: msg.ReceiverID,
+      content: msg.Content,
+      timestamp: new Date(msg.Timestamp).toLocaleString()
+    }));
+    
+
+    res.render("messaging", {
+      messages,
+      user: req.session.user
+    });
+  } catch (err) {
+    console.error(" Error fetching messages:", err);
+    res.render("messaging", { messages: [], user: req.session.user });
+  }
+});
+
+// Handle sending a new message
+app.post("/messages/send", ensureAuthenticated, async (req, res) => {
+  const { receiverId, content } = req.body;
+  const senderId = req.session.user.id;
+
+  try {
+    const message = new Message(senderId, receiverId, content);
+    await message.sendMessage();
+
+    res.redirect("/messaging");
+  } catch (err) {
+    console.error(" Error sending message:", err);
+    res.status(500).send("Error sending message");
+  }
+});
+// ========== DELETE MESSAGE ROUTE ==========
+app.post("/messages/delete/:id", ensureAuthenticated, async (req, res) => {
+const messageId = req.params.id;
+
+try {
+    const message = new Message(); // No need to pass senderId
+    message.id = messageId;
+
+    const result = await message.deleteMessage();
+
+    if (result && result.message === "Message deleted successfully") {
+        return res.redirect("/messaging");
+    } else {
+        return res.status(400).send("Failed to delete message");
+    }
+} catch (err) {
+    console.error(" Error deleting message:", err);
+    res.status(500).send("Server error deleting message");
+}
 });
 
   
