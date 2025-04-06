@@ -13,13 +13,27 @@ block content
         if events && events.length
           .event-card-grid
             each event in events
-              .event-card
-                h2.event-title= event.Title
+              //- Dim style for cancelled events
+              .event-card(class=event.status === 'cancelled' ? 'cancelled' : '')
+                h2.event-title 
+                  = event.Title
+                  if event.status === 'cancelled'
+                    span.badge.bg-danger(style='margin-left:10px') Cancelled
+
                 .event-meta
                   p 📅 #{event.date || 'Date N/A'} at 🕒 #{event.time || 'Time N/A'}
                   p 📍 #{event.Location || 'Location N/A'}
                 p.event-description= event.Description || 'No description available'
+
                 .event-actions
                   a(href=`/events/${event.EventID}` class='btn-view') View Details
+
+                  // ✅ Only show cancel/reschedule if user is creator
+                  if user && event.Created_By === user.id && event.status !== 'cancelled'
+                    form(method="POST", action=`/events/${event.EventID}/cancel`, onsubmit="return confirm('Are you sure you want to cancel this event?')")
+                      button(type="submit" class="btn btn-danger btn-sm") Cancel Event
+
+                    form(method="GET", action=`/events/${event.EventID}/edit`, style='display:inline-block; margin-left:5px')
+                      button(type="submit" class="btn btn-warning btn-sm") Reschedule
         else
           p.no-events Sorry, no events are currently scheduled.
