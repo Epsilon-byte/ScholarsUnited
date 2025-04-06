@@ -17,16 +17,23 @@ class EventParticipant {
         });
     }
 
-    // Static method to add a participant to an event
     static async addParticipant(userId, eventId) {
         const query = "INSERT INTO EventParticipants (UserID, EventID) VALUES (?, ?)";
         return new Promise((resolve, reject) => {
+            console.log("🔄 Attempting to add participant:", { userId, eventId }); // 💡 Add this
+    
             db.query(query, [userId, eventId], (err, results) => {
-                if (err) reject(err);
-                resolve(results.affectedRows > 0); // Resolves with true if added, false otherwise
+                if (err) {
+                    console.error("❌ DB insert error:", err); // 💡 Log DB error if any
+                    return reject(err);
+                }
+    
+                console.log("✅ Insert result:", results); // 💡 Log what happened
+                resolve(results.affectedRows > 0);
             });
         });
     }
+    
 
     // Static method to remove a participant from an event
     static async removeParticipant(userId, eventId) {
