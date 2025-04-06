@@ -322,59 +322,35 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
   });
   
   // Show messages for any user (admin/debug)
-  app.get("/messages/:userId", ensureAuthenticated, async (req, res) => {
-    const targetUserId = req.params.userId;
-  
-    try {
-      const rawMessages = await Message.getMessages(targetUserId);
-  
-      const messages = rawMessages.map(msg => ({
-        sender: msg.SenderName,
-        receiver: msg.ReceiverName,
-        senderId: msg.SenderID,
-        receiverId: msg.ReceiverID,
-        content: msg.Content,
-        timestamp: new Date(msg.Timestamp).toLocaleString()
-      }));
-  
-<<<<<<< HEAD
-        res.render("messaging", {
-=======
-      res.render("messaging", {
-res.render("messaging", {
-  messages,
-  user: req.session.user
-});
-=======
-      console.error("❌ Error fetching messages:", err);
-      res.render("messaging", { messages: [], user: req.session.user });
->>>>>>> develop
-    }
-console.error("❌ Error fetching messages:", err);
-res.render("messaging", { messages: [], user: req.session.user });
-    try {
-<<<<<<< HEAD
-        const message = new Message(senderId, receiverId, content);
-        await message.sendMessage();
-  
-        res.redirect("/messaging");
-    } catch (err) {
-        console.error("❌ Error sending message:", err);
-        res.status(500).send("Error sending message");
-    }
-  });
-  
-// ========== BUDDY REQUEST ROUTES ==========
-=======
-    const message = new Message(senderId, receiverId, content);
-    await message.sendMessage();
+  // Show messages for any user (admin/debug)
+app.get("/messages/:userId", ensureAuthenticated, async (req, res) => {
+  const targetUserId = req.params.userId;
 
-    res.redirect("/messaging");
+  try {
+    const rawMessages = await Message.getMessages(targetUserId);
+
+    const messages = rawMessages.map(msg => ({
+      sender: msg.SenderName,
+      receiver: msg.ReceiverName,
+      senderId: msg.SenderID,
+      receiverId: msg.ReceiverID,
+      content: msg.Content,
+      timestamp: new Date(msg.Timestamp).toLocaleString()
+    }));
+
+    res.render("messaging", {
+      messages,
+      user: req.session.user
+    });
   } catch (err) {
-    console.error("❌ Error sending message:", err);
-    res.status(500).send("Error sending message");
+    console.error("❌ Error fetching messages:", err);
+    res.render("messaging", {
+      messages: [],
+      user: req.session.user
+    });
   }
 });
+
 
 // ========== BUDDY REQUEST ROUTES ==========
 app.get("/buddyRequests/received/:userId", ensureAuthenticated, function (req, res) {
