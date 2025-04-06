@@ -239,6 +239,84 @@ app.get("/events/:id", ensureAuthenticated, async function (req, res) {
         res.status(500).send("Error fetching event details");
     }
 });
+// 🆕 Renders the edit form for an event
+app.get("/events/:id/edit", ensureAuthenticated, async function (req, res) {
+  const eventId = req.params.id;
+
+  try {
+      const event = await Event.getEventById(eventId);
+      if (!event) return res.status(404).send("Event not found");
+
+      // Only the creator can access the edit form
+      if (event.Created_By !== req.session.user.id) {
+          return res.status(403).send("You are not allowed to edit this event.");
+      }
+
+      res.render("edit-event", { event }); // You need to create this PUG file
+  } catch (err) {
+      console.error("Error loading event for editing:", err);
+      res.status(500).send("Error loading event for editing.");
+  }
+});
+// Handle the form submission to update the event
+app.post("/events/:id/edit", ensureAuthenticated, async function (req, res) {
+  const eventId = req.params.id;
+  const { title, description, date, time, location } = req.body;
+
+  try {
+      const event = await Event.getEventById(eventId);
+      if (!event) return res.status(404).send("Event not found");
+
+      // Ensure only the creator can update
+      if (event.Created_By !== req.session.user.id) {
+          return res.status(403).send("You are not allowed to update this event.");
+      }
+
+      await Event.updateEvent(eventId, title, description, date, time, location);
+
+      res.redirect(`/events/${eventId}`);
+  } catch (err) {
+      console.error("Error updating event:", err);
+      res.status(500).send("Failed to update event.");
+  }
+});
+app.post("/events/:id/cancel", ensureAuthenticated, async function (req, res) {
+  const eventId = req.params.id;
+
+  try {
+      const event = await Event.getEventById(eventId);
+      if (!event) return res.status(404).send("Event not found");
+
+      if (event.Created_By !== req.session.user.id) {
+          return res.status(403).send("You are not allowed to cancel this event.");
+      }
+
+      await Event.cancelEvent(eventId); // This should set status = 'cancelled'
+
+      res.redirect(`/events/${eventId}`);
+  } catch (err) {
+      console.error("Error cancelling event:", err);
+      res.status(500).send("Failed to cancel event.");
+  }
+});
+app.post("/events/leave/:id", ensureAuthenticated, async function (req, res) {
+  const eventId = req.params.id;
+  const userId = req.session.user.id;
+
+  try {
+    const eventInstance = new Event(eventId);
+    const success = await eventInstance.removeParticipant(userId);
+
+    if (success) {
+      res.redirect(`/events/${eventId}`);
+    } else {
+      res.status(400).send("Could not leave the event. Maybe you're not a participant?");
+    }
+  } catch (err) {
+    console.error("Error removing participant:", err);
+    res.status(500).send("Server error while leaving the event.");
+  }
+});
 
 // ========== EVENT-PARTICIPANT ROUTES ==========
 // Fetches participants for a specific event
@@ -671,7 +749,29 @@ app.get("/profile", ensureAuthenticated, async (req, res) => {
     }
   });
   
-
+  app.post('/profile/delete', ensureAuthenticated, async (req, res) => {
+    const userId = req.session.user.id;
+  
+    try {
+      // Delete user from database
+      await db.query('DELETE FROM Users WHERE UserID = ?', [userId]);
+  
+      // Clear session and redirect
+      req.session.destroy(err => {
+        if (err) {
+          console.error("Session destroy error:", err);
+          return res.status(500).send("Error ending session after deleting account.");
+        }
+  
+        res.redirect('/login');
+      });
+    } catch (err) {
+      console.error("Error deleting user account:", err);
+      res.status(500).send("Error deleting account.");
+    }
+  });
+  
+  
   app.post('/profile/reset-password', ensureAuthenticated, async (req, res) => {
     const userId = req.session.user.id;
     const { currentPassword, newPassword, confirmPassword } = req.body;
