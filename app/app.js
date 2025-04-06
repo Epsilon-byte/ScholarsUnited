@@ -629,7 +629,7 @@ app.get("/profile", ensureAuthenticated, async (req, res) => {
     const userId = req.session.user.id;
     let { interests, courses, free_time } = req.body;
   
-    // ✅ Fix: If interests is an array, convert it to a comma-separated string
+    // ✅ If interests is an array (from multi-select), convert to comma-separated string
     if (Array.isArray(interests)) {
       interests = interests.join(", ");
     }
@@ -646,25 +646,52 @@ app.get("/profile", ensureAuthenticated, async (req, res) => {
       res.redirect("/profile");
     } catch (err) {
       console.error("❌ Error updating profile:", err);
-      req.session.messages = { error: ["Error updating profile."] };
+  
+      // ✅ Improved, specific error messages
+      if (err.code === 'ER_PARSE_ERROR') {
+        req.session.messages = {
+          error: ["There was a problem with your input. Please check all fields and try again."]
+        };
+      } else if (err.code === 'ER_DUP_ENTRY') {
+        req.session.messages = {
+          error: ["An account with this email or data already exists."]
+        };
+      } else {
+        req.session.messages = {
+          error: ["Something went wrong while updating your profile. Please try again."]
+        };
+  
+        // Optional: add technical details in development mode
+        if (process.env.NODE_ENV !== 'production') {
+          req.session.messages.error.push(`Details: ${err.message}`);
+        }
+      }
+  
       res.redirect("/profile");
     }
   });
   
+
   app.post('/profile/reset-password', ensureAuthenticated, async (req, res) => {
     const userId = req.session.user.id;
     const { currentPassword, newPassword, confirmPassword } = req.body;
   
     try {
+      // ✅ Validate password match
       if (newPassword !== confirmPassword) {
-        req.session.messages = { error: ["New passwords do not match."] };
+        req.session.messages = {
+          error: ["New passwords do not match. Please re-enter both fields."]
+        };
         return res.redirect('/profile');
       }
   
-      // Get the current password hash from DB
+      // ✅ Retrieve current hashed password
       const [results] = await db.query('SELECT Password FROM Users WHERE UserID = ?', [userId]);
+  
       if (!results || results.length === 0) {
-        req.session.messages = { error: ["User not found."] };
+        req.session.messages = {
+          error: ["User not found. Please log in again."]
+        };
         return res.redirect('/profile');
       }
   
@@ -672,21 +699,36 @@ app.get("/profile", ensureAuthenticated, async (req, res) => {
       const passwordMatch = await bcrypt.compare(currentPassword, hashedPassword);
   
       if (!passwordMatch) {
-        req.session.messages = { error: ["Current password is incorrect."] };
+        req.session.messages = {
+          error: ["Current password is incorrect. Please try again."]
+        };
         return res.redirect('/profile');
       }
   
+      // ✅ Update to new password
       const newHashedPassword = await bcrypt.hash(newPassword, 10);
       await db.query('UPDATE Users SET Password = ? WHERE UserID = ?', [newHashedPassword, userId]);
   
-      req.session.messages = { success: ["Password updated successfully."] };
+      req.session.messages = {
+        success: ["Password updated successfully."]
+      };
       res.redirect('/profile');
     } catch (err) {
       console.error("❌ Error resetting password:", err);
-      req.session.messages = { error: ["Failed to reset password."] };
+  
+      // ✅ Friendly fallback message with optional debug info
+      req.session.messages = {
+        error: ["An unexpected error occurred while resetting your password."]
+      };
+  
+      if (process.env.NODE_ENV !== 'production') {
+        req.session.messages.error.push(`Details: ${err.message}`);
+      }
+  
       res.redirect('/profile');
     }
-  }); 
+  });
+  
 
 // ========== LOGOUT ROUTE ==========
 // Handles user logout
