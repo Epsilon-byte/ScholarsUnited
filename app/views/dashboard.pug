@@ -10,8 +10,8 @@ block content
 
         h2 Quick Actions
         .quick-links
-          a(href='/events/create' class='btn btn-primary') + Create Event
-          a(href='/courses' class='btn btn-secondary') 📘 Courses
+          a(href='/events' class='btn btn-primary') 📅 Events  
+          a(href='/courses' class='btn btn-secondary') 📘 Search for Buddy
           a(href='/messaging' class='btn btn-secondary') 💬 Messages
 
       // 🔔 Notifications Section
@@ -55,7 +55,8 @@ block content
               tr
                 td= event.date
                 td= event.time
-                td= event.Title
+                td
+                  a(href=`/events/${event.EventID}`)= event.Title
                 td= event.Location
                 td
                   form(action=`/events/join/${event.EventID}` method="POST" style="display:inline;")

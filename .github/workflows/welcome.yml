@@ -1,0 +1,30 @@
+name: Welcome New Contributors
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Welcome message
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: user } = await github.rest.users.getByUsername({
+              username: context.payload.sender.login
+            });
+            
+            const isFirstTime = context.payload.sender.login === 'first-time contributor';  # (Simplified check)
+            
+            if (isFirstTime) {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `👋 Welcome, @${context.payload.sender.login}! Thanks for your first contribution! 🎉`
+              });
+            }

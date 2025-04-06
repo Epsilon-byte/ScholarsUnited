@@ -13,6 +13,7 @@
 @import url("login.css");
 @import url("notifications.css");
 @import url("buttons.css");
+@import url("event-detail.css");
 
 /* Core button styles */
 .btn {
