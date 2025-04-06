@@ -1,0 +1,43 @@
+.section-form
+  form(action='/profile/update' method='POST')
+    .form-group
+      label(for='fullName') Full Name:
+      input.form-control(type='text', name='fullName', id='fullName', value=(userDetails && userDetails.FullName) ? userDetails.FullName : '')
+
+    .form-group
+      label(for='email') Email:
+      input.form-control(type='email', name='email', id='email', value=(userDetails && userDetails.Email) ? userDetails.Email : '')
+
+    .form-group
+      label(for='hobbies') Hobbies:
+      input.form-control(type='text', name='hobbies', id='hobbies', value=(userDetails && userDetails.Hobbies) ? userDetails.Hobbies : '')
+  
+    .form-group
+      label(for='interests') Interests:
+      input.form-control(
+        type='text',
+        name='interests',
+        id='interests',
+        value=(userDetails && userDetails.Interests) ? userDetails.Interests : ''
+      )
+
+    .form-group
+      label(for='courses') Academic Info:
+      input.form-control(
+        type='text',
+        name='courses',
+        id='courses',
+        value=(userDetails && userDetails.AcademicInfo) ? userDetails.AcademicInfo : ''
+      )
+
+    .form-group
+      label(for='free_time') Available Time:
+      input.form-control(
+        type='time',
+        name='free_time',
+        id='free_time',
+        value=(userDetails && userDetails.AvailableTime) ? userDetails.AvailableTime : ''
+      )
+
+    .div-button-wrapper.button-wrapper
+      button.btn.btn-primary(type='submit') 💾 Update Profile
