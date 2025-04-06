@@ -1,0 +1,112 @@
+/* ================ */
+/* Messaging Styles */
+/* ================ */
+
+.messaging-container {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  /* Individual Message */
+  .message-item {
+    background-color: #f4fff9;
+    border-left: 6px solid #66B89E;
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+  
+  .message-item strong {
+    color: #333;
+  }
+  
+  .message-item small {
+    color: #777;
+    font-size: 0.85rem;
+    display: block;
+    margin-top: 6px;
+  }
+  
+  /* Delete Button */
+  form[action^="/messages/delete"] button {
+    background-color: #dc3545;
+    color: white;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border: none;
+    border-radius: 6px;
+    margin-top: 8px;
+    cursor: pointer;
+  }
+  
+  form[action^="/messages/delete"] button:hover {
+    background-color: #c82333;
+  }
+  
+  /* Edit Form */
+  form[action^="/messages/update"] {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  form[action^="/messages/update"] input {
+    flex: 1;
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+  
+  form[action^="/messages/update"] button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  form[action^="/messages/update"] button:hover {
+    background-color: #218838;
+  }
+  
+  /* New Message Form */
+  form[action="/messages/send"] {
+    margin-top: 30px;
+  }
+  
+  form[action="/messages/send"] label {
+    font-weight: 600;
+    margin-top: 10px;
+    display: block;
+  }
+  
+  form[action="/messages/send"] input,
+  form[action="/messages/send"] textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 6px;
+    margin-bottom: 16px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+  
+  form[action="/messages/send"] button {
+    background-color: #66B89E;
+    color: white;
+    padding: 10px 16px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  form[action="/messages/send"] button:hover {
+    background-color: #4e9d86;
+  }
+  

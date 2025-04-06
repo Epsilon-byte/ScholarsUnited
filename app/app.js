@@ -252,6 +252,7 @@ app.get("/event-participants/:eventId", ensureAuthenticated, function (req, res)
             res.status(500).send("Error fetching event participants");
         });
 });
+
 // ========== MESSAGE ROUTES ==========
 
 // Show messages for the current user
@@ -264,7 +265,7 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
     const rawMessages = await Message.getMessages(userId);
 
     const messages = rawMessages.map(msg => ({
-      messageId: msg.MessageID, //  Needed for delete to work
+      messageId: msg.MessageID, //  Needed for delete/update
       sender: msg.SenderName,
       receiver: msg.ReceiverName,
       senderId: msg.SenderID,
@@ -272,7 +273,6 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
       content: msg.Content,
       timestamp: new Date(msg.Timestamp).toLocaleString()
     }));
-    
 
     res.render("messaging", {
       messages,
@@ -292,7 +292,7 @@ app.get("/messages/:userId", ensureAuthenticated, async (req, res) => {
     const rawMessages = await Message.getMessages(targetUserId);
 
     const messages = rawMessages.map(msg => ({
-      messageId: msg.MessageID, //  Needed for delete to work
+      messageId: msg.MessageID, // Needed for delete/update
       sender: msg.SenderName,
       receiver: msg.ReceiverName,
       senderId: msg.SenderID,
@@ -300,7 +300,6 @@ app.get("/messages/:userId", ensureAuthenticated, async (req, res) => {
       content: msg.Content,
       timestamp: new Date(msg.Timestamp).toLocaleString()
     }));
-    
 
     res.render("messaging", {
       messages,
@@ -327,25 +326,43 @@ app.post("/messages/send", ensureAuthenticated, async (req, res) => {
     res.status(500).send("Error sending message");
   }
 });
-// ========== DELETE MESSAGE ROUTE ==========
-app.post("/messages/delete/:id", ensureAuthenticated, async (req, res) => {
-const messageId = req.params.id;
 
-try {
-    const message = new Message(); // No need to pass senderId
+// Delete message route
+app.post("/messages/delete/:id", ensureAuthenticated, async (req, res) => {
+  const messageId = req.params.id;
+
+  try {
+    const message = new Message();
     message.id = messageId;
 
     const result = await message.deleteMessage();
 
     if (result && result.message === "Message deleted successfully") {
-        return res.redirect("/messaging");
+      return res.redirect("/messaging");
     } else {
-        return res.status(400).send("Failed to delete message");
+      return res.status(400).send("Failed to delete message");
     }
-} catch (err) {
+  } catch (err) {
     console.error(" Error deleting message:", err);
     res.status(500).send("Server error deleting message");
-}
+  }
+});
+
+// Update message route (edit form submission)
+app.post("/messages/update/:id", ensureAuthenticated, async (req, res) => {
+  const messageId = req.params.id;
+  const { newContent } = req.body;
+
+  try {
+    const message = new Message();
+    message.id = messageId;
+    await message.updateMessage(newContent);
+
+    res.redirect("/messaging");
+  } catch (err) {
+    console.error(" Error updating message:", err);
+    res.status(500).send("Server error updating message");
+  }
 });
 
 
