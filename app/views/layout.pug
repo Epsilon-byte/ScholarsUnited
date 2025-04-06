@@ -5,8 +5,9 @@ html
     meta(charset='utf-8')
     meta(name='viewport' content='width=device-width, initial-scale=1.0')
     link(rel='stylesheet' href='/styles.css')
-    link(rel="stylesheet", href="/messaging.css")
-
-  body
+    link(rel='stylesheet' href='/messaging.css')
+  body(data-current-user-id=typeof user !== 'undefined' ? user.id : '')
     include components/navbar
     block content
+    block scripts
+      script(src="/music/messaging-sound.js")
