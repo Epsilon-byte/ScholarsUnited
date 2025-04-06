@@ -8,11 +8,23 @@ class Event {
     this.date = null;
     this.time = null;
     this.location = null;
-    this.createdBy = null;
-    this.status = 'active';
+    this.userId = null;
     this.participants = null;
   }
 
+  static async getUpcomingEvents() {
+    const query = `
+      SELECT * FROM Events 
+      WHERE Date >= CURDATE()
+      ORDER BY Date ASC`;
+    try {
+      const [rows] = await db.query(query);
+      return rows || [];
+    } catch (err) {
+      console.error("Error fetching upcoming events:", err);
+      throw err;
+    }
+  }  
   // Retrieves all participants of the event (joins with Users table)
   async getEventParticipants() {
     const query = `
@@ -31,12 +43,10 @@ class Event {
   }
 
   // Static method: creates a new event in the database
-  static async createEvent(title, description, date, time, location, createdBy) {
-    const query = `
-      INSERT INTO Events (Title, Description, Date, Time, Location, Created_By, Status)
-      VALUES (?, ?, ?, ?, ?, ?, 'active')`;
+  static async createEvent(title, description, date, time, location, userId) {
+    const query = `INSERT INTO Events (Title, Description, Date, Time, Location, UserID) VALUES (?, ?, ?, ?, ?, ?)`;
     try {
-      const [results] = await db.query(query, [title, description, date, time, location, createdBy]);
+      const [results] = await db.query(query, [title, description, date, time, location, userId]);
       return results.insertId;
     } catch (err) {
       console.error("Error creating event:", err);
@@ -44,29 +54,14 @@ class Event {
     }
   }
 
-  // Static method: updates event details
-  static async updateEvent(id, title, description, date, time, location) {
-    const query = `
-      UPDATE Events 
-      SET Title = ?, Description = ?, Date = ?, Time = ?, Location = ? 
-      WHERE EventID = ?`;
+  // Updates the current event with new details
+  async updateEvent(name, description, date, time, location) {
+    const query = `UPDATE Events SET Title = ?, Description = ?, Date = ?, Time = ?, Location = ? WHERE EventID = ?`;
     try {
-      const [results] = await db.query(query, [title, description, date, time, location, id]);
+      const [results] = await db.query(query, [name, description, date, time, location, this.id]);
       return results.affectedRows > 0;
     } catch (err) {
       console.error("Error updating event:", err);
-      throw err;
-    }
-  }
-
-  // Static method: cancels an event by updating its status
-  static async cancelEvent(eventId) {
-    const query = `UPDATE Events SET Status = 'cancelled' WHERE EventID = ?`;
-    try {
-      const [results] = await db.query(query, [eventId]);
-      return results.affectedRows > 0;
-    } catch (err) {
-      console.error("Error cancelling event:", err);
       throw err;
     }
   }
@@ -75,41 +70,17 @@ class Event {
   async deleteEvent() {
     const query = `DELETE FROM Events WHERE EventID = ?`;
     try {
-        const [results] = await db.query(query, [this.id]);
-        return results.affectedRows > 0;
-    } catch (err) {
-        console.error("Error deleting event:", err);
-        throw err;
-    }
-}
-
-  // Adds a user as a participant to this event
-  async addParticipant(userId) {
-    const query = `INSERT INTO EventParticipants (UserID, EventID) VALUES (?, ?)`;
-    try {
-      const [results] = await db.query(query, [userId, this.id]);
+      const [results] = await db.query(query, [this.id]);
       return results.affectedRows > 0;
     } catch (err) {
-      console.error("Error adding participant:", err);
+      console.error("Error deleting event:", err);
       throw err;
     }
   }
 
-  // Removes a user from this event's participants
-  async removeParticipant(userId) {
-    const query = `DELETE FROM EventParticipants WHERE UserID = ? AND EventID = ?`;
-    try {
-      const [results] = await db.query(query, [userId, this.id]);
-      return results.affectedRows > 0;
-    } catch (err) {
-      console.error("Error removing participant:", err);
-      throw err;
-    }
-  }
-
-  // Static method: fetches all events (excluding cancelled)
+  // Static method: fetches all events from the database
   static async getAllEvents() {
-    const query = `SELECT * FROM Events WHERE Status != 'cancelled'`;
+    const query = `SELECT * FROM Events`;
     try {
       const [results] = await db.query(query);
       return results || [];
@@ -119,36 +90,12 @@ class Event {
     }
   }
 
-  // Static method: fetches all upcoming events
-  static async getUpcomingEvents() {
-    const query = `
-      SELECT * FROM Events 
-      WHERE Date >= CURDATE() AND Status != 'cancelled' 
-      ORDER BY Date ASC`;
-    try {
-      const [rows] = await db.query(query);
-      return rows || [];
-    } catch (err) {
-      console.error("Error fetching upcoming events:", err);
-      throw err;
-    }
-  }
-
   // Static method: fetches a specific event by ID
   static async getEventById(eventId) {
     const query = `SELECT * FROM Events WHERE EventID = ?`;
     try {
       const [results] = await db.query(query, [eventId]);
-      const event = results[0] || null;
-
-      // Optional: map SQL fields to match JS naming
-      if (event) {
-        event.Created_By = event.Created_By ?? event.UserID; // backward compatibility
-        event.created_by = event.Created_By;
-        event.status = event.Status;
-      }
-
-      return event;
+      return results[0] || null;
     } catch (err) {
       console.error("Error fetching event by ID:", err);
       throw err;
