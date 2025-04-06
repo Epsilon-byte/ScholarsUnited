@@ -57,13 +57,13 @@ class Event {
   async deleteEvent() {
     const query = `DELETE FROM Events WHERE EventID = ?`;
     try {
-      const [results] = await db.query(query, [this.id]);
-      return results.affectedRows > 0;
+        const [results] = await db.query(query, [this.id]);
+        return results.affectedRows > 0;
     } catch (err) {
-      console.error("Error deleting event:", err);
-      throw err;
+        console.error("Error deleting event:", err);
+        throw err;
     }
-  }
+}
 
   // Adds a user as a participant to this event
   async addParticipant(userId) {

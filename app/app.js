@@ -240,6 +240,49 @@ app.get("/events/:id", ensureAuthenticated, async function (req, res) {
     }
 });
 
+// Handles updating an existing event
+app.get("/events/edit/:id", ensureAuthenticated, async function (req, res) {
+  const eventId = req.params.id;
+  const { title, description, date, time, location } = req.body;
+
+  try {
+      const event = new Event(eventId);
+      const success = await event.updateEvent(title, description, date, time, location);
+
+      if (success) {
+          res.redirect(`/events/${eventId}`);
+      } else {
+          res.status(400).send("Failed to update event");
+      }
+  } catch (err) {
+      console.error("Error updating event:", err);
+      res.status(500).send("Error updating event");
+  }
+});
+
+// Handles deleting an existing event
+app.post("/events/delete/:id", ensureAuthenticated, async function (req, res) {
+  const eventId = req.params.id;
+
+  try {
+      const event = new Event(eventId);
+      const success = await event.deleteEvent();
+      if (success) {
+          console.log(`Event with ID: ${eventId} has been deleted successfully.`);
+          // Send a JSON response or just a status indicating success
+          res.status(200).json({ message: "Event deleted successfully", eventId: eventId });
+      } else {
+          // Log and respond that no event was found to delete
+          console.log(`No event found with ID: ${eventId}, unable to delete.`);
+          res.status(404).json({ error: "Event not found" });
+      }
+  } catch (err) {
+      console.error("Error deleting event:", err);
+      res.status(500).json({ error: "Server error during event deletion" });
+  }
+});
+
+
 // ========== EVENT-PARTICIPANT ROUTES ==========
 // Fetches participants for a specific event
 app.get("/event-participants/:eventId", ensureAuthenticated, function (req, res) {
@@ -619,11 +662,8 @@ app.get("/profile", ensureAuthenticated, async (req, res) => {
       req.session.messages = { error: ["Could not load your profile."] };
       res.redirect("/dashboard");
     }
-  });
-  
-  
-  
-  
+  }); 
+   
   // POST: Handle Profile Updates
   app.post("/profile/update", ensureAuthenticated, async (req, res) => {
     const userId = req.session.user.id;
