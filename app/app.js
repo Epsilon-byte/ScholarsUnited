@@ -264,6 +264,7 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
       const rawMessages = await Message.getMessages(userId);
   
       const messages = rawMessages.map(msg => ({
+        messageId: msg.MessageID, // ✅ Needed for delete to work
         sender: msg.SenderName,
         receiver: msg.ReceiverName,
         senderId: msg.SenderID,
@@ -271,6 +272,7 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
         content: msg.Content,
         timestamp: new Date(msg.Timestamp).toLocaleString()
       }));
+      
   
       res.render("messaging", {
         messages,
@@ -290,6 +292,7 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
       const rawMessages = await Message.getMessages(targetUserId);
   
       const messages = rawMessages.map(msg => ({
+        messageId: msg.MessageID, // ✅ Needed for delete to work
         sender: msg.SenderName,
         receiver: msg.ReceiverName,
         senderId: msg.SenderID,
@@ -297,6 +300,7 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
         content: msg.Content,
         timestamp: new Date(msg.Timestamp).toLocaleString()
       }));
+      
   
       res.render("messaging", {
         messages,
@@ -323,6 +327,27 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
       res.status(500).send("Error sending message");
     }
   });
+// ========== DELETE MESSAGE ROUTE ==========
+app.post("/messages/delete/:id", ensureAuthenticated, async (req, res) => {
+  const messageId = req.params.id;
+
+  try {
+      const message = new Message(); // No need to pass senderId
+      message.id = messageId;
+
+      const result = await message.deleteMessage();
+
+      if (result && result.message === "Message deleted successfully") {
+          return res.redirect("/messaging");
+      } else {
+          return res.status(400).send("Failed to delete message");
+      }
+  } catch (err) {
+      console.error("❌ Error deleting message:", err);
+      res.status(500).send("Server error deleting message");
+  }
+});
+
   
   // ========== BUDDY REQUEST ROUTES ==========
 // Fetches sent buddy requests for a specific user

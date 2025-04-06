@@ -12,6 +12,10 @@ block content
           strong Receiver: #{message.receiver} (ID: #{message.receiverId})
           p= message.content
           small Sent: #{message.timestamp}
+
+          if user && user.id === message.senderId
+            form(action=`/messages/delete/${message.messageId}` method="POST" style="display:inline")
+              button(type="submit" style="color: red; background: none; border: none; cursor: pointer") 🗑️ Delete
   else
     p No messages available.
 
