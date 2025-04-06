@@ -1,35 +1,36 @@
 extends layout
 
 block content
-  h1 Messages
+  .messaging-container
+    h1 Messages
 
-  if messages && messages.length
-    ul
-      each message in messages
-        li
-          strong Sender: #{message.sender} (ID: #{message.senderId})
-          br
-          strong Receiver: #{message.receiver} (ID: #{message.receiverId})
-          p= message.content
-          small Sent: #{message.timestamp}
+    if messages && messages.length
+      ul
+        each message in messages
+          li.message-item
+            strong Sender: #{message.sender} (ID: #{message.senderId})
+            br
+            strong Receiver: #{message.receiver} (ID: #{message.receiverId})
+            p= message.content
+            small Sent: #{message.timestamp}
 
-          // ⚡ Delete button
-          form(action=`/messages/delete/${message.messageId}`, method="POST", style="display:inline")
-            button(type="submit") Delete
+            // ⚡ Delete button
+            form(action=`/messages/delete/${message.messageId}`, method="POST")
+              button(type="submit") Delete
 
-          // ✏️ Edit form
-          form(action=`/messages/update/${message.messageId}`, method="POST", style="margin-top:10px")
-            input(type="text", name="newContent", placeholder="Edit message", required)
-            button(type="submit") Save and Resend Edit Messages
-  else
-    p No messages available.
+            // ✏️ Edit form
+            form(action=`/messages/update/${message.messageId}`, method="POST")
+              input(type="text", name="newContent", placeholder="Edit message", required)
+              button(type="submit") Save and Resend Edit Messages
+    else
+      p No messages available.
 
-  h2 Send a Message
-  form(action='/messages/send' method='POST')
-    label(for='receiverId') To (User ID):
-    input(type='text' name='receiverId' required)
+    h2 Send a Message
+    form(action='/messages/send', method='POST')
+      label(for='receiverId') To (User ID):
+      input(type='text', name='receiverId', required)
 
-    label(for='content') Message:
-    textarea(name='content' required)
+      label(for='content') Message:
+      textarea(name='content', required)
 
-    button(type='submit') Send Message
+      button(type='submit') Send Message
