@@ -13,9 +13,14 @@ block content
           p= message.content
           small Sent: #{message.timestamp}
 
-          if user && user.id === message.senderId
-            form(action=`/messages/delete/${message.messageId}` method="POST" style="display:inline")
-              button(type="submit" style="color: red; background: none; border: none; cursor: pointer") 🗑️ Delete
+          // ⚡ Delete button
+          form(action=`/messages/delete/${message.messageId}`, method="POST", style="display:inline")
+            button(type="submit") Delete
+
+          // ✏️ Edit form
+          form(action=`/messages/update/${message.messageId}`, method="POST", style="margin-top:10px")
+            input(type="text", name="newContent", placeholder="Edit message", required)
+            button(type="submit") Save and Resend Edit Messages
   else
     p No messages available.
 
