@@ -26,6 +26,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Configures session middleware
+const isProduction = process.env.NODE_ENV === "production";
+
 app.use(
     session({
       secret: process.env.SESSION_SECRET || "supersecretkey",
@@ -39,6 +41,7 @@ app.use(
       }
     })
 );
+
 
 // Sets the view engine to Pug and specify the views directory
 app.set('view engine', 'pug');
@@ -577,6 +580,64 @@ app.post("/register", async (req, res) => {
         return res.redirect("/register");
     }
 });
+// GET: Display Profile Page
+app.get("/profile", ensureAuthenticated, async (req, res) => {
+    const userId = req.session.user.id;
+  
+    try {
+      const user = new User(userId);
+      const userDetails = await user.getUserDetails();
+      const userInterests = await user.getUserInterests();
+  
+      if (!userDetails) {
+        req.session.messages = { error: ["User not found."] };
+        return res.redirect("/dashboard");
+      }
+  
+      // ✅ Inject formatted interests string
+      userDetails.Interests = Array.isArray(userInterests)
+        ? userInterests.join(", ")
+        : userDetails.Interests;
+  
+      console.log("✅ userDetails being passed to PUG:");
+      console.log(userDetails);
+  
+      res.render("profile", {
+        user: req.session.user,
+        userDetails,
+        messages: req.session.messages || {}
+      });
+  
+      req.session.messages = {};
+    } catch (err) {
+      console.error("❌ Could not load profile", err);
+      req.session.messages = { error: ["Could not load your profile."] };
+      res.redirect("/dashboard");
+    }
+  });
+  
+  
+  // POST: Handle Profile Updates
+  app.post("/profile/update", ensureAuthenticated, async (req, res) => {
+    const userId = req.session.user.id;
+    const { interests, courses, free_time } = req.body;
+  
+    try {
+      const query = `
+        UPDATE Users 
+        SET Interests = ?, AcademicInfo = ?, AvailableTime = ?
+        WHERE UserID = ?`;
+      await db.query(query, [interests, courses, free_time, userId]);
+  
+      req.session.messages = { success: ["Profile updated successfully!"] };
+      res.redirect("/profile");
+    } catch (err) {
+      console.error("❌ Error updating profile:", err);
+      req.session.messages = { error: ["Error updating profile."] };
+      res.redirect("/profile");
+    }
+  });
+  
 
 // ========== LOGOUT ROUTE ==========
 // Handles user logout

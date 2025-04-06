@@ -1,12 +1,79 @@
 extends layout
 
 block content
-  h1 Update Profile
-  form(action='/profile/update' method='POST')
-    label(for='interests') Interests:
-    input(type='text' name='interests')
-    label(for='courses') Courses:
-    input(type='text' name='courses')
-    label(for='free_time') Free Time Windows:
-    input(type='text' name='free_time')
-    button(type='submit') Update Profile
+  .container
+    h1 Profile Overview
+
+    // ✅ Flash success messages
+    if messages && messages.success
+      .alert.alert-success
+        each msg in messages.success
+          p= msg
+
+    // ✅ Flash error messages
+    if messages && messages.error
+      .alert.alert-danger
+        each msg in messages.error
+          p= msg
+
+    // ✅ User info section
+    if userDetails
+      .profile-info
+        h2 Your Information
+        ul
+          li
+            strong Full Name:
+            | #{userDetails.FullName || 'Not provided'}
+          li
+            strong Email:
+            | #{userDetails.Email || 'Not provided'}
+          li
+            strong Hobbies:
+            | #{userDetails.Hobbies || 'Not provided'}
+          li
+            strong Academic Info:
+            | #{userDetails.AcademicInfo || 'Not provided'}
+          li
+            strong Availability:
+            | #{userDetails.AvailableTime || 'Not set'}
+          li
+            strong Interests:
+            | #{userDetails.Interests && userDetails.Interests.length > 0 ? userDetails.Interests : 'No interests listed'}
+    else
+      p.text-danger No user information available.
+
+    hr
+
+    // ✅ Profile update form
+    h2 Edit Your Profile (optional)
+    form(action='/profile/update' method='POST')
+      .form-group
+        label(for='interests') Interests:
+        input.form-control(
+          type='text',
+          name='interests',
+          id='interests',
+          value=(userDetails && userDetails.Interests) ? userDetails.Interests : ''
+        )
+
+      .form-group
+        label(for='courses') Academic Info:
+        input.form-control(
+          type='text',
+          name='courses',
+          id='courses',
+          value=(userDetails && userDetails.AcademicInfo) ? userDetails.AcademicInfo : ''
+        )
+
+      .form-group
+        label(for='free_time') Available Time:
+        input.form-control(
+          type='text',
+          name='free_time',
+          id='free_time',
+          value=(userDetails && userDetails.AvailableTime) ? userDetails.AvailableTime : ''
+        )
+
+      button.btn.btn-primary(type='submit') Update Profile
+
+    a.btn.btn-secondary(href='/dashboard' style='margin-top: 20px') ← Back to Dashboard
