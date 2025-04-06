@@ -253,11 +253,46 @@ app.get("/event-participants/:eventId", ensureAuthenticated, function (req, res)
         });
 });
 // ========== MESSAGE ROUTES ==========
-<<<<<<< HEAD
-// ========== MESSAGE ROUTES ==========
-=======
->>>>>>> develop
+// Show messages for any user (admin/debug)
+app.get("/messages/:userId", ensureAuthenticated, async (req, res) => {
+  const targetUserId = req.params.userId;
 
+  try {
+    const rawMessages = await Message.getMessages(targetUserId);
+
+    const messages = rawMessages.map(msg => ({
+      sender: msg.SenderName,
+      receiver: msg.ReceiverName,
+      senderId: msg.SenderID,
+      receiverId: msg.ReceiverID,
+      content: msg.Content,
+      timestamp: new Date(msg.Timestamp).toLocaleString()
+    }));
+
+    res.render("messaging", {
+      messages,
+      user: req.session.user
+    });
+  } catch (err) {
+    console.error("❌ Error fetching messages:", err);
+    res.render("messaging", { messages: [], user: req.session.user });
+  }
+});
+
+// Handles sending a message
+app.post("/messages/send", ensureAuthenticated, async (req, res) => {
+  const { senderId, receiverId, content } = req.body;
+
+  try {
+    const message = new Message(senderId, receiverId, content);
+    await message.sendMessage();
+
+    res.redirect("/messaging");
+  } catch (err) {
+    console.error("❌ Error sending message:", err);
+    res.status(500).send("Error sending message");
+  }
+});
 // Show messages for the current user
 app.get("/messaging", ensureAuthenticated, async (req, res) => {
     console.log("✅ /messaging route hit!");
@@ -306,26 +341,17 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
         res.render("messaging", {
 =======
       res.render("messaging", {
->>>>>>> develop
-        messages,
-        user: req.session.user
-      });
-    } catch (err) {
-<<<<<<< HEAD
-        console.error("❌ Error fetching messages:", err);
-        res.render("messaging", { messages: [], user: req.session.user });
+res.render("messaging", {
+  messages,
+  user: req.session.user
+});
 =======
       console.error("❌ Error fetching messages:", err);
       res.render("messaging", { messages: [], user: req.session.user });
 >>>>>>> develop
     }
-  });
-  
-  // Handle sending a new message
-  app.post("/messages/send", ensureAuthenticated, async (req, res) => {
-    const { receiverId, content } = req.body;
-    const senderId = req.session.user.id;
-  
+console.error("❌ Error fetching messages:", err);
+res.render("messaging", { messages: [], user: req.session.user });
     try {
 <<<<<<< HEAD
         const message = new Message(senderId, receiverId, content);
@@ -340,31 +366,17 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
   
 // ========== BUDDY REQUEST ROUTES ==========
 =======
-      const message = new Message(senderId, receiverId, content);
-      await message.sendMessage();
-  
-      res.redirect("/messaging");
-    } catch (err) {
-      console.error("❌ Error sending message:", err);
-      res.status(500).send("Error sending message");
-    }
-  });
-  
-  // ========== BUDDY REQUEST ROUTES ==========
->>>>>>> develop
-// Fetches sent buddy requests for a specific user
-app.get("/buddyRequests/sent/:userId", ensureAuthenticated, function (req, res) {
-    BuddyRequest.getSentRequests(req.params.userId)
-        .then(requests => {
-            res.json(requests);
-        })
-        .catch(err => {
-            console.error(err);
-            res.status(500).send("Error fetching sent buddy requests");
-        });
+    const message = new Message(senderId, receiverId, content);
+    await message.sendMessage();
+
+    res.redirect("/messaging");
+  } catch (err) {
+    console.error("❌ Error sending message:", err);
+    res.status(500).send("Error sending message");
+  }
 });
 
-// Fetches received buddy requests for a specific user
+// ========== BUDDY REQUEST ROUTES ==========
 app.get("/buddyRequests/received/:userId", ensureAuthenticated, function (req, res) {
     BuddyRequest.getReceivedRequests(req.params.userId)
         .then(requests => {
