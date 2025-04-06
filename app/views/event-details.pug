@@ -15,7 +15,7 @@ block content
           p
             strong Description:
             | #{event.Description || 'No description available'}
-          
+
         if participants.length
           h3 Participants
           ul.participant-list
@@ -24,23 +24,24 @@ block content
         else
           p.text-muted No participants yet.
 
-      // Button section grouped
+      // ✅ Button section grouped
       .button-section
         .button-group
           if !hasJoined
             form(action=`/events/join/${event.EventID}` method="POST")
-              button.btn.btn-primary(type="submit") Join Event
+              button.btn.btn-primary(type="submit") ✅ Join Event
           else
-            p.text-success You have already joined this event
+            form(action=`/events/leave/${event.EventID}` method="POST")
+              button.btn.btn-warning(type="submit") 👋 Leave Event
 
-          a.btn.btn-info(href=`/events/edit/${event.EventID}`) Update Event
-          button.btn.btn-danger(type="button" onclick=`openModal(${event.EventID})`) Delete Event
+          a.btn.btn-info(href=`/events/edit/${event.EventID}`) ✏️ Update Event
+          button.btn.btn-danger(type="button" onclick=`openModal(${event.EventID})`) 🗑️ Delete Event
 
         .nav-buttons
           a.btn.btn-secondary(href='/dashboard') ← Back to Dashboard
           a.btn.btn-secondary(href='/events') ← Back to Events
 
-  // Modal for deletion confirmation
+  // ✅ Modal for deletion confirmation
   #deleteModal.modal
     .modal-content
       .modal-header
@@ -51,6 +52,7 @@ block content
         button.btn.btn-danger(type='button' onclick='deleteEvent()') Delete
         button.btn.btn-secondary(type='button' onclick='closeModal()') Cancel
 
+  // ✅ Delete logic JS
   script.
     let modal;
     let eventIdToDelete;

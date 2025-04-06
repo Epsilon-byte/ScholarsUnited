@@ -59,16 +59,19 @@ block content
               button(type="button" class="btn btn-secondary prev-step") Back
               button.btn.btn-primary(type='submit') Sign Up
 
-        // Flash Messages
-        if messages && messages.error
-          .alert.alert-danger
-            each error in messages.error
-              p= error
+        // ✅ Messages Block - handles success and filtered errors
+        if typeof messages !== 'undefined'
+          - const filteredErrors = messages.error ? messages.error.filter(e => e !== "Please log in to access this page.") : []
 
-        if messages && messages.success
-          .alert.alert-success
-            each msg in messages.success
-              p= msg
+          if filteredErrors.length
+            .alert.alert-danger
+              each error in filteredErrors
+                p= error
+
+          if messages.success && messages.success.length
+            .alert.alert-success
+              each msg in messages.success
+                p= msg
 
         // ✅ Already have an account? Log in
         .account-prompt.text-center.mt-4
