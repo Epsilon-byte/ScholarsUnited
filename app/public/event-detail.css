@@ -1,0 +1,92 @@
+/* Container & Card */
+.event-card {
+    background-color: #fff;
+    padding: 32px;
+    border-radius: 16px;
+    max-width: 700px;
+    margin: 40px auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Title */
+  .event-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  
+  /* Info Blocks */
+  .event-info p {
+    font-size: 1rem;
+    color: #444;
+    margin-bottom: 12px;
+  }
+  
+  .event-info strong {
+    color: #222;
+  }
+  
+  /* Participants */
+  .participant-list {
+    list-style-type: disc;
+    padding-left: 24px;
+    margin-top: 16px;
+    color: #333;
+  }
+  
+  .participant-list li {
+    margin-bottom: 6px;
+  }
+  
+  /* Success Text */
+  .text-success {
+    color: #28a745;
+    font-weight: 500;
+  }
+  
+  /* Muted Text */
+  .text-muted {
+    color: #888;
+    font-style: italic;
+  }
+  
+  /* Buttons */
+  .btn {
+    padding: 10px 16px;
+    font-size: 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .btn-primary {
+    background-color: #66B89E;
+    color: #fff;
+    border: none;
+  }
+  
+  .btn-primary:hover {
+    background-color: #559f8b;
+  }
+  
+  .btn-secondary {
+    background-color: #aaaaaa;
+    color: white;
+    border: none;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #888888;
+  }
+  
+  /* Navigation Buttons Row */
+  .nav-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  

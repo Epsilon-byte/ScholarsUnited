@@ -4,9 +4,9 @@ const bcrypt = require('bcryptjs');
 class User {
     constructor(id) {
         this.id = id;
-        this.fullName = fullName;
-        this.email = email;
-        this.interests = [];
+        this.fullName = null;
+        this.email = null;
+        this.interests = null; // Will be set to an array or string
         this.hobbies = null;
         this.academicInfo = null;
         this.availableTime = null;
@@ -14,16 +14,13 @@ class User {
 
     static async register({ email, password, fullName, interests, hobbies, academicInfo, availableTime }) {
         try {
-            // Check if email already exists
             const existingUser = await User.findByEmail(email);
             if (existingUser) {
                 throw new Error('Email already in use');
             }
 
-            // Hash password
             const hashedPassword = await bcrypt.hash(password, 10);
 
-            // Insert new user
             const [result] = await db.query(
                 `INSERT INTO Users 
                 (Email, Password, FullName, Interests, Hobbies, AcademicInfo, AvailableTime) 
@@ -42,24 +39,25 @@ class User {
             };
         } catch (err) {
             console.error("Registration error:", err);
-            throw err; // Re-throw for route handler to catch
+            throw err;
         }
     }
 
-
-    // Fetch user details by ID
     async getUserDetails() {
         const query = "SELECT * FROM Users WHERE UserID = ?";
         try {
-            const results = await db.query(query, [this.id]);
+            const [results] = await db.query(query, [this.id]); // ✅ Destructure properly
             if (!results || results.length === 0) return null;
 
             const user = results[0];
+
             this.fullName = user.FullName;
             this.email = user.Email;
+            this.interests = user.Interests;
             this.hobbies = user.Hobbies;
             this.academicInfo = user.AcademicInfo;
             this.availableTime = user.AvailableTime;
+
             return user;
         } catch (err) {
             console.error("Error fetching user details:", err);
@@ -67,19 +65,6 @@ class User {
         }
     }
 
-    // Fetch user by email (for login authentication)
-    static async findByEmail(email) {
-        const query = "SELECT * FROM Users WHERE Email = ?";
-        try {
-          const [results] = await db.query(query, [email]);
-          return results[0] || null; // Return the first user or null if not found
-        } catch (err) {
-          console.error("Error finding user by email:", err);
-          throw err;
-        }
-      }
-      
-    // Fetch user interests
     async getUserInterests() {
         const query = `
             SELECT Interests.InterestName 
@@ -87,7 +72,7 @@ class User {
             INNER JOIN Interests ON UserInterests.InterestID = Interests.InterestID
             WHERE UserInterests.UserID = ?`;
         try {
-            const results = await db.query(query, [this.id]);
+            const [results] = await db.query(query, [this.id]); // ✅ Destructure for consistency
             this.interests = results.map(row => row.InterestName);
             return this.interests;
         } catch (err) {
@@ -96,11 +81,21 @@ class User {
         }
     }
 
-    // Delete a user account
+    static async findByEmail(email) {
+        const query = "SELECT * FROM Users WHERE Email = ?";
+        try {
+            const [results] = await db.query(query, [email]);
+            return results[0] || null;
+        } catch (err) {
+            console.error("Error finding user by email:", err);
+            throw err;
+        }
+    }
+
     static async deleteUser(userId) {
         const query = "DELETE FROM Users WHERE UserID = ?";
         try {
-            const results = await db.query(query, [userId]);
+            const [results] = await db.query(query, [userId]);
             return { message: `User ${userId} deleted successfully.` };
         } catch (err) {
             console.error("Error deleting user:", err);
@@ -108,7 +103,6 @@ class User {
         }
     }
 
-    // Search users by name, interests, or availability
     static async searchUsers(query) {
         const sql = `
             SELECT DISTINCT Users.UserID, Users.FullName, Users.Email, Users.AvailableTime
@@ -119,14 +113,13 @@ class User {
             LIMIT 20`;
         const searchQuery = `%${query}%`;
         try {
-            const results = await db.query(sql, [searchQuery, searchQuery, searchQuery]);
+            const [results] = await db.query(sql, [searchQuery, searchQuery, searchQuery]);
             return results.length > 0 ? results : [];
         } catch (err) {
             console.error("Error searching users:", err);
             throw err;
         }
     }
-    
 }
 
 module.exports = { User };

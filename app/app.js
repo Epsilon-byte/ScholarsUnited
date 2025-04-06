@@ -26,6 +26,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Configures session middleware
+const isProduction = process.env.NODE_ENV === "production";
+
 app.use(
     session({
       secret: process.env.SESSION_SECRET || "supersecretkey",
@@ -39,6 +41,7 @@ app.use(
       }
     })
 );
+
 
 // Sets the view engine to Pug and specify the views directory
 app.set('view engine', 'pug');
@@ -170,58 +173,90 @@ app.get("/user-courses/:userId", ensureAuthenticated, function (req, res) {
 });
 
 // ========== EVENT ROUTES ==========
-app.get("/events", async function (req, res) {
+// Fetches all events and render the events page
+app.get("/events", ensureAuthenticated, async function (req, res) {
     try {
-      const events = await Event.getAllEvents();
-  
-      // Format dates and times
-      events.forEach(event => {
+        const events = await Event.getAllEvents();
+
+        // Formats each event's date and time
+        events.forEach(event => {
+            event.date = formatDate(event.Date);
+            event.time = formatTime(event.Time);
+        });
+
+        // Renders the events template with the formatted events
+        res.render("events", { events: events || [] });
+    } catch (err) {
+        console.error("Error fetching events:", err);
+        res.render("events", { events: [] });
+    }
+});
+
+// Renders the event creation form
+app.get("/events/create", ensureAuthenticated, function (req, res) {
+    res.render("create-event");
+});
+
+// Handles event creation form submission
+app.post("/events/create", ensureAuthenticated, async function (req, res) {
+    const { title, description, date, time, location, userId } = req.body;
+
+    try {
+        const eventId = await Event.createEvent(title, description, date, time, location, userId);
+        console.log("Event created with ID:", eventId);
+        res.redirect("/events");
+    } catch (err) {
+        console.error("Error creating event:", err);
+        res.status(500).send("Error creating event");
+    }
+});
+
+// Fetches event details by ID and render the event details page
+app.get("/events/:id", ensureAuthenticated, async function (req, res) {
+    const eventId = req.params.id;
+
+    try {
+        const event = await Event.getEventById(eventId);
+        if (!event) return res.status(404).send("Event not found");
+
         event.date = formatDate(event.Date);
         event.time = formatTime(event.Time);
-      });
-  
-      res.render("events", {
-        events,
-        user: req.session.user || null // <-- Optional: pass user to control buttons
-      });
+
+        const eventInstance = new Event(eventId);
+        const participants = await eventInstance.getEventParticipants();
+
+        const userId = req.session.user.id;
+        const hasJoined = participants.some(p => p.UserID === userId);
+
+        res.render("event-details", {
+            event,
+            user: req.session.user,
+            participants,
+            hasJoined
+        });
     } catch (err) {
-      console.error("Error fetching events:", err);
-      res.render("events", { events: [], user: null });
+        console.error("Error fetching event details:", err);
+        res.status(500).send("Error fetching event details");
     }
-  });
-  
+});
 
-
-
-app.get("/events/:id", async function (req, res) {
-    const eventId = req.params.id;
-  
-    try {
-      const event = await Event.getEventById(eventId);
-  
-      if (!event) {
-        return res.status(404).send("Event not found");
-      }
-  
-      // Format date and time
-      event.date = formatDate(event.Date);
-      event.time = formatTime(event.Time);
-  
-      // ✅ Pass user to template
-      res.render("event-details", {
-        event,
-        user: req.session.user || null
-      });
-    } catch (err) {
-      console.error("Error fetching event details:", err);
-      res.status(500).send("Error fetching event details");
-    }
-  });
-  
-  
-
+// ========== EVENT-PARTICIPANT ROUTES ==========
+// Fetches participants for a specific event
+app.get("/event-participants/:eventId", ensureAuthenticated, function (req, res) {
+    EventParticipant.getParticipantsByEventId(req.params.eventId)
+        .then(participants => {
+            res.json(participants);
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).send("Error fetching event participants");
+        });
+});
 // ========== MESSAGE ROUTES ==========
+<<<<<<< HEAD
 // ========== MESSAGE ROUTES ==========
+=======
+>>>>>>> develop
 
 // Show messages for the current user
 app.get("/messaging", ensureAuthenticated, async (req, res) => {
@@ -267,13 +302,22 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
         timestamp: new Date(msg.Timestamp).toLocaleString()
       }));
   
+<<<<<<< HEAD
         res.render("messaging", {
+=======
+      res.render("messaging", {
+>>>>>>> develop
         messages,
         user: req.session.user
       });
     } catch (err) {
+<<<<<<< HEAD
         console.error("❌ Error fetching messages:", err);
         res.render("messaging", { messages: [], user: req.session.user });
+=======
+      console.error("❌ Error fetching messages:", err);
+      res.render("messaging", { messages: [], user: req.session.user });
+>>>>>>> develop
     }
   });
   
@@ -283,6 +327,7 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
     const senderId = req.session.user.id;
   
     try {
+<<<<<<< HEAD
         const message = new Message(senderId, receiverId, content);
         await message.sendMessage();
   
@@ -294,6 +339,19 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
   });
   
 // ========== BUDDY REQUEST ROUTES ==========
+=======
+      const message = new Message(senderId, receiverId, content);
+      await message.sendMessage();
+  
+      res.redirect("/messaging");
+    } catch (err) {
+      console.error("❌ Error sending message:", err);
+      res.status(500).send("Error sending message");
+    }
+  });
+  
+  // ========== BUDDY REQUEST ROUTES ==========
+>>>>>>> develop
 // Fetches sent buddy requests for a specific user
 app.get("/buddyRequests/sent/:userId", ensureAuthenticated, function (req, res) {
     BuddyRequest.getSentRequests(req.params.userId)
@@ -549,6 +607,155 @@ app.post("/register", async (req, res) => {
         return res.redirect("/register");
     }
 });
+// GET: Display Profile Page
+app.get("/profile", ensureAuthenticated, async (req, res) => {
+    const userId = req.session.user.id;
+  
+    try {
+      const user = new User(userId);
+      const userDetails = await user.getUserDetails();
+      const userInterests = await user.getUserInterests();
+  
+      if (!userDetails) {
+        req.session.messages = { error: ["User not found."] };
+        return res.redirect("/dashboard");
+      }
+  
+      userDetails.Interests = Array.isArray(userInterests)
+        ? userInterests.join(", ")
+        : userDetails.Interests;
+  
+      // ✅ Extract then clear messages BEFORE rendering
+      const messages = { ...req.session.messages }; // clone just in case
+      req.session.messages = {}; // clear immediately
+  
+      // ✅ Explicitly remove the "login required" message if user is logged in
+      if (messages.error) {
+        messages.error = messages.error.filter(
+          msg => msg !== "Please log in to access this page."
+        );
+      }
+  
+      res.render("profile", {
+        user: req.session.user,
+        userDetails,
+        messages
+      });
+    } catch (err) {
+      console.error("❌ Could not load profile", err);
+      req.session.messages = { error: ["Could not load your profile."] };
+      res.redirect("/dashboard");
+    }
+  });
+  
+  
+  
+  
+  // POST: Handle Profile Updates
+  app.post("/profile/update", ensureAuthenticated, async (req, res) => {
+    const userId = req.session.user.id;
+    let { interests, courses, free_time } = req.body;
+  
+    // ✅ If interests is an array (from multi-select), convert to comma-separated string
+    if (Array.isArray(interests)) {
+      interests = interests.join(", ");
+    }
+  
+    try {
+      const query = `
+        UPDATE Users 
+        SET Interests = ?, AcademicInfo = ?, AvailableTime = ?
+        WHERE UserID = ?`;
+  
+      await db.query(query, [interests, courses, free_time, userId]);
+  
+      req.session.messages = { success: ["Profile updated successfully!"] };
+      res.redirect("/profile");
+    } catch (err) {
+      console.error("❌ Error updating profile:", err);
+  
+      // ✅ Improved, specific error messages
+      if (err.code === 'ER_PARSE_ERROR') {
+        req.session.messages = {
+          error: ["There was a problem with your input. Please check all fields and try again."]
+        };
+      } else if (err.code === 'ER_DUP_ENTRY') {
+        req.session.messages = {
+          error: ["An account with this email or data already exists."]
+        };
+      } else {
+        req.session.messages = {
+          error: ["Something went wrong while updating your profile. Please try again."]
+        };
+  
+        // Optional: add technical details in development mode
+        if (process.env.NODE_ENV !== 'production') {
+          req.session.messages.error.push(`Details: ${err.message}`);
+        }
+      }
+  
+      res.redirect("/profile");
+    }
+  });
+  
+
+  app.post('/profile/reset-password', ensureAuthenticated, async (req, res) => {
+    const userId = req.session.user.id;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+  
+    try {
+      // ✅ Validate password match
+      if (newPassword !== confirmPassword) {
+        req.session.messages = {
+          error: ["New passwords do not match. Please re-enter both fields."]
+        };
+        return res.redirect('/profile');
+      }
+  
+      // ✅ Retrieve current hashed password
+      const [results] = await db.query('SELECT Password FROM Users WHERE UserID = ?', [userId]);
+  
+      if (!results || results.length === 0) {
+        req.session.messages = {
+          error: ["User not found. Please log in again."]
+        };
+        return res.redirect('/profile');
+      }
+  
+      const hashedPassword = results[0].Password;
+      const passwordMatch = await bcrypt.compare(currentPassword, hashedPassword);
+  
+      if (!passwordMatch) {
+        req.session.messages = {
+          error: ["Current password is incorrect. Please try again."]
+        };
+        return res.redirect('/profile');
+      }
+  
+      // ✅ Update to new password
+      const newHashedPassword = await bcrypt.hash(newPassword, 10);
+      await db.query('UPDATE Users SET Password = ? WHERE UserID = ?', [newHashedPassword, userId]);
+  
+      req.session.messages = {
+        success: ["Password updated successfully."]
+      };
+      res.redirect('/profile');
+    } catch (err) {
+      console.error("❌ Error resetting password:", err);
+  
+      // ✅ Friendly fallback message with optional debug info
+      req.session.messages = {
+        error: ["An unexpected error occurred while resetting your password."]
+      };
+  
+      if (process.env.NODE_ENV !== 'production') {
+        req.session.messages.error.push(`Details: ${err.message}`);
+      }
+  
+      res.redirect('/profile');
+    }
+  });
+  
 
 // ========== LOGOUT ROUTE ==========
 // Handles user logout
