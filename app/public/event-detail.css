@@ -94,44 +94,11 @@ a.btn {
 }
 
 /* Specific Button Colors */
-.btn-primary-join {
-  background-color: #4c8c78
-}
+
 .btn-primary:hover {
   background-color: #559f8b;
 }
 
-.btn-warning {
-  background-color: #ffc107;
-  color: #212529;
-}
-.btn-warning:hover {
-  background-color: #e0a800;
-}
-
-.btn-info {
-  background-color: #17a2b8;
-  color: white;
-}
-.btn-info:hover {
-  background-color: #138496;
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  color: white;
-}
-.btn-danger:hover {
-  background-color: #c82333;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-.btn-secondary:hover {
-  background-color: #5a6268;
-}
 
 /* Layout for Button Group */
 .button-section {

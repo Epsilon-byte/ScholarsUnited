@@ -29,7 +29,7 @@ block content
         .button-group
           if !hasJoined
             form(action=`/events/join/${event.EventID}` method="POST")
-              button.btn.btn-primary-join(type="submit") ✅ Join Event
+              button.btn.btn-primary(type="submit") ✅ Join Event
           else
             form(action=`/events/leave/${event.EventID}` method="POST")
               button.btn.btn-warning(type="submit") 👋 Leave Event
