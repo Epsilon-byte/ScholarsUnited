@@ -21,24 +21,6 @@
   margin-bottom: 30px;
 }
 
-.create-event-button {
-  display: inline-block;
-  padding: 12px 24px;
-  background-color: #4c8c78;;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  text-decoration: none;
-  margin-bottom: 40px;
-  transition: background-color 0.2s ease;
-}
-
-.create-event-button:hover {
-  background-color: #559f8b;
-}
-
 .event-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
