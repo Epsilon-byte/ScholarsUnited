@@ -169,19 +169,3 @@ form[action="/messages/send"] button:hover {
   font-size: 1.2rem;
   margin-right: 4px;
 }
-
-/* Optional - subtle animation */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.message-item {
-  animation: fadeInUp 0.25s ease-in-out;
-}
