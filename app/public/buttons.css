@@ -1,57 +1,60 @@
 /* Core button styles */
 .btn {
-    cursor: pointer;
-    border: none;
-    border-radius: 10px;
-    padding: 12px 12px;
-    font-size: 1em;
-    transition: background-color 0.3s ease;
+  cursor: pointer;
+  border: none;
+  border-radius: 10px; /* Rounded corners for a softer UI feel */
+  padding: 12px 12px;
+  font-size: 1em;
+  transition: background-color 0.3s ease; /* Smooth color transition on hover */
 }
-  
+
+/* Primary action button */
 .btn-primary {
-    background-color: #4c8c78;
-    color: white;
-    font-weight: bold;
+  background-color: #4c8c78;
+  color: white;
+  font-weight: bold; /* Emphasize main action */
 }
-  
 .btn-primary:hover {
-    background-color: #3a6b5d;
+  background-color: #3a6b5d; /* Darker shade on hover for feedback */
 }
-  
+
+/* Secondary action button */
 .btn-secondary {
-    background-color: #66B89E;
-    color: #fff;
+  background-color: #66B89E;
+  color: #fff;
 }
-  
 .btn-secondary:hover {
-    background-color: #4c8c78;
+  background-color: #4c8c78; /* Matches primary default to unify hover feel */
 }
-  
+
+/* Destructive action button */
 .btn-danger {
-    background-color: #dc3545;
-    color: #fff;
-  }
-  
-.btn-danger:hover {
-    background-color: #c82333;
+  background-color: #dc3545;
+  color: #fff;
 }
-  
+.btn-danger:hover {
+  background-color: #c82333; /* Slightly darker red for danger feedback */
+}
+
+/* Informational action button */
 .btn-info {
-      background-color: #17a2b8;
-      color: white;
+  background-color: #17a2b8;
+  color: white;
 }
 .btn-info:hover {
-      background-color: #138496;
+  background-color: #138496; /* Deeper tone to indicate interactivity */
 }
 
+/* Warning action button */
 .btn-warning {
   background-color: #ffc107;
-  color: #212529;
+  color: #212529; /* High contrast for legibility */
 }
 .btn-warning:hover {
-  background-color: #e0a800;
+  background-color: #e0a800; /* Slightly muted for hover feedback */
 }
 
+/* Special "view" button - visually distinct */
 .btn-view {
   background-color: #4c8c78;
   color: white;
@@ -63,10 +66,8 @@
   cursor: pointer;
   text-decoration: none;
   transition: background-color 0.2s ease;
-  align-items: center;
+  align-items: center; /* Supports flex layout use cases */
 }
-
 .btn-view:hover {
-  background-color: #559f8b;
+  background-color: #559f8b; /* Lighter hover state */
 }
-  

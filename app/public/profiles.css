@@ -224,21 +224,3 @@ body.profile-page {
   flex-wrap: wrap;
   margin-top: 0;
 }
-
-.dashboard-link {
-  white-space: nowrap;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-weight: 600;
-  background-color: #66B89E;
-  color: white;
-  text-decoration: none;
-  transition: background 0.2s ease;
-}
-
-.dashboard-link:hover {
-  background-color: #4c8c78;
-}
-.container h1 {
-  margin-top: 0.25px; /* Reduce this value */
-}
