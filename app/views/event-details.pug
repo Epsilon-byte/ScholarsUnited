@@ -24,24 +24,26 @@ block content
         else
           p.text-muted No participants yet.
 
+      // ✅ Button section grouped
       .button-section
         .button-group
           if !hasJoined
             form(action=`/events/join/${event.EventID}` method="POST")
-              button.btn.btn-primary(type="submit") ✅ Join Event
+              button.btn.btn-primary-join(type="submit") ✅ Join Event
           else
             form(action=`/events/leave/${event.EventID}` method="POST")
               button.btn.btn-warning(type="submit") 👋 Leave Event
 
           a.btn.btn-info(href=`/events/edit/${event.EventID}`) ✏️ Update Event
           button.btn.btn-danger(type="button" onclick=`openModal(${event.EventID})`) 🗑️ Delete Event
+  
+  // ✅ Navigation buttons OUTSIDE the card
+  .nav-buttons
+    a.btn.btn-secondary(href='/dashboard') ← Back to Dashboard
+    a.btn.btn-secondary(href='/events') ← Back to Events
 
-    // Navigation buttons moved outside the .event-card-detail
-    .nav-buttons
-      a.btn.btn-secondary(href='/dashboard') ← Back to Dashboard
-      a.btn.btn-secondary(href='/events') ← Back to Events
 
-  // Modal for deletion confirmation
+  // ✅ Modal for deletion confirmation
   #deleteModal.modal
     .modal-content
       .modal-header
@@ -52,7 +54,7 @@ block content
         button.btn.btn-danger(type='button' onclick='deleteEvent()') Delete
         button.btn.btn-secondary(type='button' onclick='closeModal()') Cancel
 
-  // JavaScript for Modal Logic
+block scripts
   script.
     let modal;
     let eventIdToDelete;
@@ -74,7 +76,7 @@ block content
             alert(data.error);
           } else {
             console.log(data.message);
-            window.location.href = '/events';
+            window.location.href = '/events'; // Redirect to events page after deletion
           }
         })
         .catch(error => {
@@ -82,6 +84,7 @@ block content
           alert('Error deleting the event.');
           modal.classList.remove('show');
         });
+    }
 
     function closeModal() {
       modal.classList.remove('show');

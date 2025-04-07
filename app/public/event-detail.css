@@ -10,6 +10,14 @@
   justify-content: space-between;
   align-items: start;
 }
+/* Navigation Buttons (below the card) */
+.nav-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
 
 /* Title */
 .event-title-detail {
@@ -60,7 +68,7 @@
 /* Button Base Styling */
 .btn {
   display: inline-flex;
-  align-items: center;
+  align-items: left;
   justify-content: center;
   width: 200px;
   height: 50px;
@@ -86,8 +94,8 @@ a.btn {
 }
 
 /* Specific Button Colors */
-.btn-primary {
-  background-color: #66B89E;
+.btn-primary-join {
+  background-color: #4c8c78
 }
 .btn-primary:hover {
   background-color: #559f8b;
@@ -138,14 +146,6 @@ a.btn {
   flex-direction: column;
   gap: 10px;
   align-items: flex-end;
-}
-
-/* Navigation Buttons (below the card) */
-.nav-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 30px;
 }
 
 /* Modal Backdrop Container */

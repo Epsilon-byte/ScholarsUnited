@@ -15,6 +15,7 @@
 @import url("buttons.css");
 @import url("event-detail.css");
 @import url("messaging.css");
+@import url("event-update.css");
 
 /* Core button styles */
 .btn {

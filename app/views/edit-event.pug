@@ -2,28 +2,30 @@ extends layout
 
 block content
   .container
-    h2 Edit Event
+    .edit-event-card
+      h2.edit-event-title ✏️ Edit Event
 
-    form(method="POST", action=`/events/edit/${event.EventID}`)
-      .form-group
-        label(for='title') Title:
-        input(type='text', name='title', id='title', value=event.Title required)
+      form(method="POST", action=`/events/edit/${event.EventID}`)
+        .form-group
+          label(for='title') Title:
+          input(type='text', name='title', id='title', value=event.Title required)
 
-      .form-group
-        label(for='description') Description:
-        textarea(name='description', id='description')= event.Description
+        .form-group
+          label(for='description') Description:
+          textarea(name='description', id='description')= event.Description
 
-      .form-group
-        label(for='date') Date:
-        input(type='date', name='date', id='date', value=event.Date)
+        .form-group
+          label(for='date') Date:
+          input(type='date', name='date', id='date', value=event.Date)
 
-      .form-group
-        label(for='time') Time:
-        input(type='time', name='time', id='time', value=event.Time)
+        .form-group
+          label(for='time') Time:
+          input(type='time', name='time', id='time', value=event.Time)
 
-      .form-group
-        label(for='location') Location:
-        input(type='text', name='location', id='location', value=event.Location)
+        .form-group
+          label(for='location') Location:
+          input(type='text', name='location', id='location', value=event.Location)
 
-      button.btn.btn-primary(type='submit') Save Changes
-      a.btn.btn-secondary(href=`/events/${event.EventID}`) Cancel
+        .form-buttons
+          button.btn.btn-primary(type='submit') 💾 Save Changes
+          a.btn.btn-secondary(href=`/events/${event.EventID}`) Cancel
