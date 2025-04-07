@@ -131,24 +131,6 @@ button.btn {
   border: none;
 }
 
-.btn-primary {
-  background-color: #66B89E;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #559f8b;
-}
-
-.btn-secondary {
-  background-color: #AAAAAA;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background-color: #888888;
-}
-
 /* Flash Messages */
 .alert {
   padding: 12px 16px;

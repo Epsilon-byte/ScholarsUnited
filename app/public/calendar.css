@@ -45,22 +45,6 @@
   border: 1px solid #ccc;
 }
 
-.calendar-selector button.btn {
-  background-color: #4c8c78;
-  color: #fff;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.calendar-selector button.btn:hover {
-  background-color: #3a6b5d;
-}
-
 /* Centered Month + Arrows */
 .calendar-title {
   display: flex;
@@ -177,21 +161,3 @@
   text-decoration: underline;
 }
 
-/* === Responsive Adjustments === */
-@media (max-width: 768px) {
-  .calendar-controls {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    text-align: center;
-  }
-
-  .calendar-selector {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .calendar-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
