@@ -39,10 +39,6 @@
   margin-bottom: 12px;
 }
 
-.event-info strong {
-  color: #222;
-}
-
 /* Participants Dropdown */
 .participant-dropdown {
   width: 100%;
@@ -67,24 +63,12 @@
 
 /* Button Base Styling */
 .btn {
-  display: inline-flex;
-  align-items: left;
-  justify-content: center;
-  width: 200px;
-  height: 50px;
-  padding: 0 16px;
+  display: auto;
+  align-items: center;
+  justify-content: center;  
   font-size: 1rem;
   font-weight: 600;
-  border: none;
-  border-radius: 10px;
-  text-decoration: none;
-  color: white;
-  background-color: #333; /* fallback */
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  text-align: center;
-  white-space: nowrap;
-  box-sizing: border-box;
+  text-align: center;  
 }
 
 /* If it's a <a> styled as a button */
@@ -93,26 +77,11 @@ a.btn {
   color: inherit;
 }
 
-/* Specific Button Colors */
-
-.btn-primary:hover {
-  background-color: #559f8b;
-}
-
-
-/* Layout for Button Group */
-.button-section {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  align-items: flex-end;
-}
-
 .button-group {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  align-items: flex-end;
+  align-items: center;
 }
 
 /* Modal Backdrop Container */

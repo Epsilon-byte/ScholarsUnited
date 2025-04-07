@@ -25,8 +25,7 @@ block content
           p.text-muted No participants yet.
 
       // ✅ Button section grouped
-      .button-section
-        .button-group
+      .button-group
           if !hasJoined
             form(action=`/events/join/${event.EventID}` method="POST")
               button.btn.btn-primary(type="submit") ✅ Join Event
