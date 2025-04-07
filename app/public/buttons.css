@@ -6,50 +6,67 @@
     padding: 12px 12px;
     font-size: 1em;
     transition: background-color 0.3s ease;
-  }
+}
   
-  .btn-primary {
+.btn-primary {
     background-color: #4c8c78;
     color: white;
     font-weight: bold;
-  }
+}
   
-  .btn-primary:hover {
+.btn-primary:hover {
     background-color: #3a6b5d;
-  }
+}
   
-  .btn-secondary {
+.btn-secondary {
     background-color: #66B89E;
     color: #fff;
-  }
+}
   
-  .btn-secondary:hover {
+.btn-secondary:hover {
     background-color: #4c8c78;
-  }
+}
   
-  .btn-danger {
+.btn-danger {
     background-color: #dc3545;
     color: #fff;
   }
   
-  .btn-danger:hover {
+.btn-danger:hover {
     background-color: #c82333;
-  }
+}
   
-  .btn-info {
+.btn-info {
       background-color: #17a2b8;
       color: white;
-    }
-    .btn-info:hover {
+}
+.btn-info:hover {
       background-color: #138496;
-    }
+}
 
-    .btn-warning {
+.btn-warning {
   background-color: #ffc107;
   color: #212529;
 }
 .btn-warning:hover {
   background-color: #e0a800;
 }
-    
+
+.btn-view {
+  background-color: #4c8c78;
+  color: white;
+  padding: 10px 16px;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+  align-items: center;
+}
+
+.btn-view:hover {
+  background-color: #559f8b;
+}
   

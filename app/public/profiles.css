@@ -150,44 +150,6 @@ button.btn {
   border: none;
 }
 
-.btn-primary-profile {
-  background-color: #4c8c78;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #3a6b5d;
-}
-
-.btn-warning {
-  background-color: #4A90E2;
-  color: #000;
-}
-
-.btn-warning:hover {
-  background-color: #e0a800;
-}
-
-.btn-danger {
-  background-color: #dc3545 !important;
-  color: #fff !important;
-  font-weight: bold;
-}
-
-.btn-danger:hover {
-  background-color: #c82333 !important;
-}
-
-.btn-secondary {
-  background-color: #66B89E !important;
-  color: #fff !important;
-  font-weight: bold;
-}
-
-.btn-secondary:hover {
-  background-color: #4c8c78 !important;
-}
-
 /* === Body override (optional) === */
 body.profile-page {
   background-color: #f2f2f2 !important;
