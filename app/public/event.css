@@ -47,6 +47,10 @@
 }
 
 .event-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
   background-color: #ffffff;
   border: 1px solid #AAAAAA;
   border-radius: 12px;
@@ -80,7 +84,7 @@
 
 .event-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .btn-view {
@@ -94,6 +98,7 @@
   cursor: pointer;
   text-decoration: none;
   transition: background-color 0.2s ease;
+  align-items: center;
 }
 
 .btn-view:hover {
