@@ -45,11 +45,21 @@ block content
 
     //  Message send form
     h2 Send a Message
-    form(action='/messages/send', method='POST')
-      label(for='receiverId') To (User ID):
-      input(type='text', name='receiverId', required)
+      form(action='/messages/send', method='POST')
+        label(for='receiverId') To (User ID):
+        input(
+          type='text', 
+          name='receiverId', 
+          id='receiverId',
+          value=receiverId || '',
+          required,
+          readonly=receiverId ? true : false
+        )
+        
+        if receiverName
+          span (#{receiverName})
 
-      label(for='content') Message:
-      textarea(name='content', required)
+        label(for='content') Message:
+        textarea(name='content', id='content', required)
 
-      button(type='submit') 📨 Send Message
+        button(type='submit') 📨 Send Message

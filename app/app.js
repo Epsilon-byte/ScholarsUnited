@@ -159,6 +159,84 @@ app.get("/courses", ensureAuthenticated, async function (req, res) {
     }
 });
 
+// Add this route to your app.js or routes file
+app.get('/courses/:courseId', async (req, res) => {
+  try {
+      const courseId = req.params.courseId;
+      
+      // 1. Get course details
+      const [course] = await db.query(
+          'SELECT * FROM Courses WHERE CourseID = ?', 
+          [courseId]
+      );
+      
+      if (!course || course.length === 0) {
+          return res.status(404).send('Course not found');
+      }
+
+      // 2. Get users enrolled in this course
+      const [enrolledUsers] = await db.query(`
+          SELECT Users.UserID, Users.FullName, Users.Email 
+          FROM UserCourses
+          JOIN Users ON UserCourses.UserID = Users.UserID
+          WHERE UserCourses.CourseID = ?
+      `, [courseId]);
+
+      // 3. Get related events for this course
+      const [events] = await db.query(`
+          SELECT * FROM Events
+          WHERE Title LIKE ? OR Description LIKE ?
+          ORDER BY Date DESC
+      `, [`%${course[0].CourseName}%`, `%${course[0].CourseName}%`]);
+
+      res.render('courseDetail', {
+          title: course[0].CourseName,
+          course: course[0],
+          enrolledUsers,
+          events
+      });
+      
+  } catch (error) {
+      console.error('Error fetching course details:', error);
+      res.status(500).send('Internal Server Error');
+  }
+});
+
+// Enrollment routes
+app.post('/courses/enroll', ensureAuthenticated, async (req, res) => {
+  try {
+      const { courseId } = req.body;
+      const userId = req.session.user.id;
+      
+      await db.query(
+          'INSERT INTO UserCourses (UserID, CourseID) VALUES (?, ?)',
+          [userId, courseId]
+      );
+      
+      res.sendStatus(200);
+  } catch (error) {
+      console.error('Error enrolling in course:', error);
+      res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/courses/leave', ensureAuthenticated, async (req, res) => {
+  try {
+      const { courseId } = req.body;
+      const userId = req.session.user.id;
+      
+      await db.query(
+          'DELETE FROM UserCourses WHERE UserID = ? AND CourseID = ?',
+          [userId, courseId]
+      );
+      
+      res.sendStatus(200);
+  } catch (error) {
+      console.error('Error leaving course:', error);
+      res.status(500).send('Internal Server Error');
+  }
+});
+
 // ========== USER-COURSE ROUTES ==========
 // Fetches courses for a specific user
 app.get("/user-courses/:userId", ensureAuthenticated, function (req, res) {
@@ -338,18 +416,24 @@ app.post("/events/join/:id", ensureAuthenticated, async (req, res) => {
 
 
 // ========== MESSAGE ROUTES ==========
-
 // Show messages for the current user
 app.get("/messaging", ensureAuthenticated, async (req, res) => {
   console.log(" /messaging route hit!");
-
+  
   const userId = req.session.user.id;
+  const receiverId = req.query.receiverId;
+  let receiver = null;
 
   try {
-    const rawMessages = await Message.getMessages(userId);
+    // Get receiver details if receiverId is provided
+    if (receiverId) {
+      receiver = await User.getUserById(receiverId);
+    }
 
+    const rawMessages = await Message.getMessages(userId);
+    
     const messages = rawMessages.map(msg => ({
-      messageId: msg.MessageID, //  Needed for delete/update
+      messageId: msg.MessageID,
       sender: msg.SenderName,
       receiver: msg.ReceiverName,
       senderId: msg.SenderID,
@@ -360,11 +444,18 @@ app.get("/messaging", ensureAuthenticated, async (req, res) => {
 
     res.render("messaging", {
       messages,
-      user: req.session.user
+      user: req.session.user,
+      receiver: receiver, // Pass the whole receiver object
+      receiverId: receiverId || null
     });
   } catch (err) {
     console.error(" Error fetching messages:", err);
-    res.render("messaging", { messages: [], user: req.session.user });
+    res.render("messaging", { 
+      messages: [], 
+      user: req.session.user,
+      receiver: null,
+      receiverId: receiverId || null
+    });
   }
 });
 
@@ -914,6 +1005,68 @@ app.get("/dashboard", ensureAuthenticated, async (req, res) => {
         console.error("Dashboard Error:", err);
         res.status(500).send("Server error");
     }
+});
+
+// ========== MATCHMAKING ROUTE ==========
+// Renders the matchmaking page
+// In your app.js or routes file
+
+// Matchmaking page route
+app.get('/matchmaking', async (req, res) => {
+  try {
+      const users = await User.getAllUsers();
+      
+      res.render('matchmaking', { 
+          title: 'Find Study Buddies',
+          users: users,
+          searchPerformed: false
+      });
+  } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).send('Internal Server Error');
+  }
+});
+
+// Search route
+app.post('/matchmaking/search', async (req, res) => {
+  try {
+      const { searchTerm, searchType } = req.body;
+      
+      let users;
+      
+      switch(searchType) {
+          case 'name':
+              users = await User.searchByName(searchTerm);
+              break;
+              
+          case 'academic':
+              users = await User.searchByAcademicInfo(searchTerm);
+              break;
+              
+          case 'interest':
+              users = await User.searchByInterest(searchTerm);
+              break;
+              
+          case 'course':
+              users = await User.searchByCourse(searchTerm);
+              break;
+              
+          default:
+              users = await User.getAllUsers();
+      }
+      
+      res.render('matchmaking', { 
+          title: 'Search Results',
+          users: users,
+          searchPerformed: true,
+          searchTerm: searchTerm,
+          searchType: searchType
+      });
+      
+  } catch (error) {
+      console.error('Search error:', error);
+      res.status(500).send('Internal Server Error');
+  }
 });
 
 

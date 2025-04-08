@@ -120,6 +120,91 @@ class User {
             throw err;
         }
     }
+
+
+    static async searchByName(name) {
+        const sql = `
+            SELECT UserID, FullName, Email, AcademicInfo, Interests, AvailableTime 
+            FROM Users 
+            WHERE FullName LIKE ?`;
+        try {
+            const [results] = await db.query(sql, [`%${name}%`]);
+            return results;
+        } catch (err) {
+            console.error("Error searching by name:", err);
+            throw err;
+        }
+    }
+
+    static async searchByAcademicInfo(academicInfo) {
+        const sql = `
+            SELECT UserID, FullName, Email, AcademicInfo, Interests, AvailableTime 
+            FROM Users 
+            WHERE AcademicInfo LIKE ?`;
+        try {
+            const [results] = await db.query(sql, [`%${academicInfo}%`]);
+            return results;
+        } catch (err) {
+            console.error("Error searching by academic info:", err);
+            throw err;
+        }
+    }
+
+    static async searchByInterest(interest) {
+        const sql = `
+            SELECT DISTINCT Users.UserID, Users.FullName, Users.Email, Users.AcademicInfo, Users.Interests, Users.AvailableTime
+            FROM Users
+            JOIN UserInterests ON Users.UserID = UserInterests.UserID
+            JOIN Interests ON UserInterests.InterestID = Interests.InterestID
+            WHERE Interests.InterestName LIKE ?`;
+        try {
+            const [results] = await db.query(sql, [`%${interest}%`]);
+            return results;
+        } catch (err) {
+            console.error("Error searching by interest:", err);
+            throw err;
+        }
+    }
+
+    static async searchByCourse(course) {
+        const sql = `
+            SELECT DISTINCT Users.UserID, Users.FullName, Users.Email, Users.AcademicInfo, Users.Interests, Users.AvailableTime
+            FROM Users
+            JOIN UserCourses ON Users.UserID = UserCourses.UserID
+            JOIN Courses ON UserCourses.CourseID = Courses.CourseID
+            WHERE Courses.CourseName LIKE ?`;
+        try {
+            const [results] = await db.query(sql, [`%${course}%`]);
+            return results;
+        } catch (err) {
+            console.error("Error searching by course:", err);
+            throw err;
+        }
+    }
+
+    static async getAllUsers() {
+        const sql = `
+            SELECT UserID, FullName, Email, AcademicInfo, Interests, AvailableTime 
+            FROM Users`;
+        try {
+            const [results] = await db.query(sql);
+            return results;
+        } catch (err) {
+            console.error("Error fetching all users:", err);
+            throw err;
+        }
+    }
+    
+    static async getUserById(userId) {
+        const sql = "SELECT UserID, FullName, Email FROM Users WHERE UserID = ?";
+        try {
+            const [results] = await db.query(sql, [userId]);
+            return results[0] || null;
+        } catch (err) {
+            console.error("Error fetching user by ID:", err);
+            throw err;
+        }
+    }
 }
 
 module.exports = { User };

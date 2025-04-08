@@ -1,0 +1,58 @@
+extends layout
+
+block content
+  .container
+    // Course Header
+    .course-header
+      a.btn.btn-secondary(href="/courses") ← Back to All Courses
+      h1.mt-3= course.CourseName
+
+    // Course Details Grid
+    .course-details
+      .detail-card
+        h4 Course Info
+        ul
+          li
+            strong ID: 
+            | #{course.CourseID}
+          li
+            strong Name: 
+            | #{course.CourseName}
+          li
+            strong Enrolled Users: 
+            | #{enrolledUsers.length}
+
+    // Join/Leave Buttons
+    .action-buttons
+      if isEnrolled
+        button.btn.btn-danger#leaveCourse Leave Course
+      else
+        button.btn.btn-success#joinCourse Join Course
+
+block scripts
+  script.
+    document.getElementById('joinCourse')?.addEventListener('click', async () => {
+      try {
+        const response = await fetch('/courses/enroll', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ courseId: #{course.CourseID} })
+        });
+        if (response.ok) location.reload();
+      } catch (error) {
+        console.error('Error joining course:', error);
+      }
+    });
+
+    document.getElementById('leaveCourse')?.addEventListener('click', async () => {
+      try {
+        const response = await fetch('/courses/leave', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ courseId: #{course.CourseID} })
+        });
+        if (response.ok) location.reload();
+      } catch (error) {
+        console.error('Error leaving course:', error);
+      }
+    });
