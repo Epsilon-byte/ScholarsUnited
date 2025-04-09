@@ -59,6 +59,23 @@
   transition: transform 0.3s ease;
 }
 
+/* View Course button */
+.btn-primary {
+  background-color: #4F9D8D;
+  color: white;
+  font-size: 1.2em;
+  font-weight: 600;
+  padding: 14px 28px;
+  border-radius: 14px;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.25s ease;
+}
+
+.btn-primary:hover {
+  background-color: #3d7d71;
+}
+
 /* Navigation buttons */
 .prev, .next {
   cursor: pointer;
