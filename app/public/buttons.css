@@ -1,73 +1,73 @@
-/* Core button styles */
+/* === Core button styles shared by all buttons === */
 .btn {
-  cursor: pointer;
-  border: none;
-  border-radius: 10px; /* Rounded corners for a softer UI feel */
-  padding: 12px 12px;
-  font-size: 1em;
-  transition: background-color 0.3s ease; /* Smooth color transition on hover */
+  cursor: pointer; /* Makes the mouse cursor a pointer to indicate it's clickable */
+  border: none; /* Removes default button border */
+  border-radius: 10px; /* Rounds the corners to create a softer look */
+  padding: 12px 12px; /* Adds space inside the button for a comfortable click area */
+  font-size: 1em; /* Uses the base font size (usually 16px) for consistency */
+  transition: background-color 0.3s ease; /* Smooth background color change when hovering */
 }
 
-/* Primary action button */
+/* === Primary action button (main actions like Submit, Save) === */
 .btn-primary {
-  background-color: #4c8c78;
-  color: white;
-  font-weight: bold; /* Emphasize main action */
+  background-color: #4c8c78; /* Teal color background for primary buttons */
+  color: white; /* Makes the text white for good contrast */
+  font-weight: bold; /* Makes the text thicker to draw attention */
 }
 .btn-primary:hover {
-  background-color: #3a6b5d; /* Darker shade on hover for feedback */
+  background-color: #3a6b5d; /* Slightly darker background when hovered */
 }
 
-/* Secondary action button */
+/* === Secondary action button (less emphasized than primary) === */
 .btn-secondary {
-  background-color: #66B89E;
-  color: #fff;
+  background-color: #66B89E; /* Lighter green background */
+  color: #fff; /* White text for contrast */
 }
 .btn-secondary:hover {
-  background-color: #4c8c78; /* Matches primary default to unify hover feel */
+  background-color: #4c8c78; /* Changes to match primary color on hover */
 }
 
-/* Destructive action button */
+/* === Destructive action button (used for actions like Delete) === */
 .btn-danger {
-  background-color: #dc3545;
-  color: #fff;
+  background-color: #dc3545; /* Red background to signal danger */
+  color: #fff; /* White text for contrast */
 }
 .btn-danger:hover {
-  background-color: #c82333; /* Slightly darker red for danger feedback */
+  background-color: #c82333; /* Darker red on hover to intensify feedback */
 }
 
-/* Informational action button */
+/* === Informational action button (used for info-related actions) === */
 .btn-info {
-  background-color: #17a2b8;
-  color: white;
+  background-color: #17a2b8; /* Blue shade to represent info */
+  color: white; /* White text to contrast the blue */
 }
 .btn-info:hover {
-  background-color: #138496; /* Deeper tone to indicate interactivity */
+  background-color: #138496; /* Darker blue on hover */
 }
 
-/* Warning action button */
+/* === Warning action button (used for alerts or caution) === */
 .btn-warning {
-  background-color: #ffc107;
-  color: #212529; /* High contrast for legibility */
+  background-color: #ffc107; /* Bright yellow background for warning */
+  color: #212529; /* Dark text for maximum legibility */
 }
 .btn-warning:hover {
-  background-color: #e0a800; /* Slightly muted for hover feedback */
+  background-color: #e0a800; /* Slightly darker yellow when hovered */
 }
 
-/* Special "view" button - visually distinct */
+/* === Custom view button (used for "View" or preview actions) === */
 .btn-view {
-  background-color: #4c8c78;
-  color: white;
-  padding: 10px 16px;
-  font-size: 1rem;
-  font-weight: 500;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background-color 0.2s ease;
-  align-items: center; /* Supports flex layout use cases */
+  background-color: #4c8c78; /* Reuses primary background color */
+  color: white; /* White text */
+  padding: 10px 16px; /* More padding for this button to look balanced */
+  font-size: 1rem; /* Regular font size */
+  font-weight: 500; /* Slightly bold text to emphasize but not too strong */
+  border: none; /* No default border */
+  border-radius: 8px; /* Slightly less rounded than other buttons */
+  cursor: pointer; /* Makes the mouse pointer show it's clickable */
+  text-decoration: none; /* Removes underline if used as a link */
+  transition: background-color 0.2s ease; /* Faster transition on hover */
+  align-items: center; /* Used when inside a flex container to center contents */
 }
 .btn-view:hover {
-  background-color: #559f8b; /* Lighter hover state */
+  background-color: #559f8b; /* Slightly lighter teal on hover */
 }
