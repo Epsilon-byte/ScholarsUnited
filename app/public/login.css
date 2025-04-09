@@ -1,73 +1,74 @@
-/* Login Section */
+/* === Login Section Wrapper (takes full screen height) === */
 .login-section {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: #f9f9f9;
+  display: flex;                          /* Flexbox layout for centering */
+  justify-content: center;               /* Horizontally center the box */
+  align-items: center;                   /* Vertically center the box */
+  min-height: 100vh;                     /* Full viewport height */
+  background-color: #f9f9f9;             /* Light gray background */
 }
 
-/* Login Box Container */
+/* === Login Box Container === */
 .login-box {
-  background-color: #fff;
-  padding: 36px 32px;
-  border-radius: 20px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
-  width: 100%;
-  max-width: 400px;
+  background-color: #fff;                /* White background for card */
+  padding: 36px 32px;                    /* Top-bottom and side padding */
+  border-radius: 20px;                   /* Large rounded corners */
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05); /* Soft shadow */
+  width: 100%;                           /* Responsive width */
+  max-width: 400px;                      /* Limits the size on large screens */
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: column;               /* Stack items vertically */
+  align-items: center;                  /* Center-align children */
 }
 
-/* Heading */
+/* === Login Title Heading === */
 .login-box h1 {
   text-align: center;
-  font-size: 2rem;
-  margin-bottom: 24px;
-  color: var(--gray-dark);
+  font-size: 2rem;                       /* Large readable heading */
+  margin-bottom: 24px;                   /* Space below heading */
+  color: var(--gray-dark);              /* Uses CSS variable for color */
 }
 
-/* Form Group */
+/* === Input Field Container === */
 .form-group {
   margin-bottom: 16px;
   width: 100%;
   max-width: 300px;
-  margin-left: auto;
+  margin-left: auto;                    /* Center the form group */
   margin-right: auto;
 }
 
-/* Input Fields */
+/* === Input Fields === */
 .form-group input {
-  width: 100%;
-  padding: 12px 30px;
-  background-color: #eaf0fe;
-  border: 1px solid #d0d0d0;
-  border-radius: 8px;
+  width: 100%;                           /* Fills full width of form group */
+  padding: 12px 30px;                    /* Padding for clickable area */
+  background-color: #eaf0fe;            /* Light blue-ish background */
+  border: 1px solid #d0d0d0;            /* Light gray border */
+  border-radius: 8px;                   /* Rounded corners */
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.3s ease;   /* Smooth focus border transition */
   display: block;
 }
 
+/* === Focused Input Effect === */
 .form-group input:focus {
-  border-color: var(--primary);
-  outline: none;
+  border-color: var(--primary);         /* Highlight border with primary color */
+  outline: none;                        /* Removes default focus ring */
 }
 
-/* Login Button */
+/* === Login Submit Button === */
 button.btn {
   width: 100%;
-  max-width: 300px;
+  max-width: 300px;                      /* Consistent with input width */
   padding: 12px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 600;                      /* Slightly bold text */
   border-radius: 8px;
   margin-top: 8px;
   display: block;
-  cursor: pointer;
+  cursor: pointer;                      /* Indicates it's clickable */
 }
 
-/* Optional bottom text spacing */
+/* === Bottom paragraph (e.g., "Don't have an account?") === */
 .login-box p {
   margin-top: 20px;
   text-align: center;
