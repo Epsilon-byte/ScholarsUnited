@@ -1,10 +1,10 @@
-require("dotenv").config();
+require("dotenv").config(); // Load environment variables from .env file
 
 
-const mysql = require('mysql2');
+const mysql = require('mysql2'); // Import mysql2 package
 
 
-const db = mysql.createPool({
+const db = mysql.createPool({ // Create a connection pool
   host: process.env.DB_CONTAINER,
     port: process.env.DB_PORT,
     user: process.env.MYSQL_ROOT_USER,

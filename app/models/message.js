@@ -1,5 +1,8 @@
 const db = require("../services/db"); // Import database connection
 
+// Message model class
+// This class handles operations related to messages in the database
+// It includes methods for sending, fetching, updating, and deleting messages
 class Message {
     constructor(senderId, receiverId, content) {
         this.senderId = senderId;
@@ -10,6 +13,8 @@ class Message {
     }
 
     // Instance method: send the message
+    // This method inserts a new message into the database
+    // It returns a success message and the ID of the inserted message
     async sendMessage() {
         const query = "INSERT INTO Messages (SenderID, ReceiverID, Content) VALUES (?, ?, ?)";
         try {
@@ -23,35 +28,38 @@ class Message {
         }
     }
 
-    // Static method: fetch all messages for a user
-    // In Message model (e.g., models/Message.js)
-static async getMessages(userId) {
-    const query = `
-        SELECT 
-        Messages.MessageID,
-        Messages.Content,
-        Messages.Timestamp,
-        Messages.SenderID,
-        Messages.ReceiverID,
-        Sender.FullName AS SenderName,
-        Receiver.FullName AS ReceiverName
-        FROM Messages
-        INNER JOIN Users AS Sender ON Messages.SenderID = Sender.UserID
-        INNER JOIN Users AS Receiver ON Messages.ReceiverID = Receiver.UserID
-        WHERE Messages.SenderID = ? OR Messages.ReceiverID = ?
-        ORDER BY Messages.Timestamp DESC
-    `;
-    try {
-        const [results] = await db.query(query, [userId, userId]);
-        return results || [];
-    } catch (err) {
-        console.error("Error fetching messages:", err);
-        throw err;
+    // Fetch all messages for a user
+    // This method retrieves all messages sent or received by the user
+    // It returns an array of message objects if found, otherwise an empty array
+    static async getMessages(userId) {
+        const query = `
+            SELECT 
+            Messages.MessageID,
+            Messages.Content,
+            Messages.Timestamp,
+            Messages.SenderID,
+            Messages.ReceiverID,
+            Sender.FullName AS SenderName,
+            Receiver.FullName AS ReceiverName
+            FROM Messages
+            INNER JOIN Users AS Sender ON Messages.SenderID = Sender.UserID
+            INNER JOIN Users AS Receiver ON Messages.ReceiverID = Receiver.UserID
+            WHERE Messages.SenderID = ? OR Messages.ReceiverID = ?
+            ORDER BY Messages.Timestamp DESC
+        `;
+        try {
+            const [results] = await db.query(query, [userId, userId]);
+            return results || [];
+        } catch (err) {
+            console.error("Error fetching messages:", err);
+            throw err;
+        }
     }
-}
 
 
     // Fetch details of a specific message
+    // This method retrieves the message details based on the MessageID
+    // It returns the message object if found, otherwise null
     async getMessageDetails() {
         const query = "SELECT * FROM Messages WHERE MessageID = ?";
         try {
@@ -71,6 +79,8 @@ static async getMessages(userId) {
     }
 
     // Fetch sender details
+    // This method retrieves the sender's details based on the SenderID
+    // It returns the sender object if found, otherwise null
     async getSenderDetails() {
         const query = "SELECT UserID, FullName, Email FROM Users WHERE UserID = ?";
         try {
@@ -82,7 +92,8 @@ static async getMessages(userId) {
         }
     }
 
-    // Static version (optional) - create message without instance
+    // Fetch receiver details
+    // This method retrieves the receiver's details based on the ReceiverID
     static async createMessage(senderId, receiverId, content) {
         const query = "INSERT INTO Messages (SenderID, ReceiverID, Content) VALUES (?, ?, ?)";
         try {
@@ -95,6 +106,8 @@ static async getMessages(userId) {
     }
 
     // Update an existing message
+    // This method modifies the content of a message based on the MessageID
+    // It returns a success message if the update is successful
     async updateMessage(newContent) {
         const query = "UPDATE Messages SET Content = ? WHERE MessageID = ?";
         try {
@@ -107,6 +120,8 @@ static async getMessages(userId) {
     }
 
     // Delete a message
+    // This method removes a message from the database based on the MessageID
+    // It returns a success message if the deletion is successful
     async deleteMessage() {
         const query = "DELETE FROM Messages WHERE MessageID = ?";
         try {

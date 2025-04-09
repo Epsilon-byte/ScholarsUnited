@@ -50,7 +50,7 @@ app.set('views', './app/views');
 // Imports database functions from db.js
 const db = require('./services/db');
 
-// ========== ROUTES ==========
+// ========== ROUTES ========== //
 
 // Root route - Redirect to login if not authenticated
 app.get("/", (req, res) => {
@@ -159,13 +159,13 @@ app.get("/courses", ensureAuthenticated, async function (req, res) {
     }
 });
 
-// Add this route to your app.js or routes file
+// Fetches course details by ID and render the course detail page
 app.get('/courses/:courseId', async (req, res) => {
   try {
-      const courseId = req.params.courseId;
+      const courseId = req.params.courseId; // Get course ID from URL parameter
       
-      // 1. Get course details
-      const [course] = await db.query(
+      
+      const [course] = await db.query( 
           'SELECT * FROM Courses WHERE CourseID = ?', 
           [courseId]
       );
@@ -174,7 +174,7 @@ app.get('/courses/:courseId', async (req, res) => {
           return res.status(404).send('Course not found');
       }
 
-      // 2. Get users enrolled in this course
+      // Retrieve enrolled users for this course
       const [enrolledUsers] = await db.query(`
           SELECT Users.UserID, Users.FullName, Users.Email 
           FROM UserCourses
@@ -182,7 +182,7 @@ app.get('/courses/:courseId', async (req, res) => {
           WHERE UserCourses.CourseID = ?
       `, [courseId]);
 
-      // 3. Get related events for this course
+      // Retrieve events related to this course
       const [events] = await db.query(`
           SELECT * FROM Events
           WHERE Title LIKE ? OR Description LIKE ?
@@ -220,6 +220,7 @@ app.post('/courses/enroll', ensureAuthenticated, async (req, res) => {
   }
 });
 
+// Leave course route
 app.post('/courses/leave', ensureAuthenticated, async (req, res) => {
   try {
       const { courseId } = req.body;
@@ -251,7 +252,6 @@ app.get("/user-courses/:userId", ensureAuthenticated, function (req, res) {
 });
 
 // ========== EVENT ROUTES ==========
-
 // Fetch and render all events
 app.get("/events", ensureAuthenticated, async (req, res) => {
   try {
@@ -319,7 +319,7 @@ app.get("/events/:id", ensureAuthenticated, async (req, res) => {
   }
 });
 
-/// Renders the edit form with current values
+// Renders the edit form with current values
 app.get("/events/edit/:id", ensureAuthenticated, async (req, res) => {
   const eventId = req.params.id;
 
@@ -334,6 +334,7 @@ app.get("/events/edit/:id", ensureAuthenticated, async (req, res) => {
   }
 });
 
+// Handle event edit form submission
 app.post("/events/edit/:id", ensureAuthenticated, async (req, res) => {
   const eventId = req.params.id;
   const { title, description, date, time, location } = req.body;
@@ -539,10 +540,8 @@ app.post("/messages/update/:id", ensureAuthenticated, async (req, res) => {
     res.status(500).send("Server error updating message");
   }
 });
-
-
   
-  // ========== BUDDY REQUEST ROUTES ==========
+// ========== BUDDY REQUEST ROUTES ==========
 // Fetches sent buddy requests for a specific user
 app.get("/buddyRequests/sent/:userId", ensureAuthenticated, function (req, res) {
     BuddyRequest.getSentRequests(req.params.userId)
@@ -567,7 +566,7 @@ app.get("/buddyRequests/received/:userId", ensureAuthenticated, function (req, r
         });
 });
 
-// ========== NOTIFICATION ROUTES ==========
+// ========== NOTIFICATION ROUTES ========== //
 // Marks a notification as read
 app.post("/notifications/mark-as-read/:id", ensureAuthenticated, async (req, res) => {
     const notificationId = req.params.id;
@@ -606,7 +605,7 @@ app.post("/notifications/delete/:id", ensureAuthenticated, async (req, res) => {
     }
 });
 
-// ========== CALENDAR ROUTE ==========
+// ========== CALENDAR ROUTE ========== //
 // Fetches all events and render the calendar page
 const {
     startOfMonth,
@@ -619,6 +618,7 @@ const {
     parse,
   } = require("date-fns");
   
+  // Fetches all events and renders the calendar page
   app.get("/calendar", ensureAuthenticated, async function (req, res) {
     try {
       const rawEvents = await Event.getAllEvents();
@@ -721,7 +721,7 @@ app.post("/events/join/:id", ensureAuthenticated, async function (req, res) {
     }
 });
 
-// ========== LOGIN ROUTE ==========
+// ========== LOGIN ROUTE ========== //
 // Renders the login page
 app.get("/login", (req, res) => {
     res.render("login", { messages: req.session.messages });
@@ -763,7 +763,7 @@ app.post("/login", async (req, res) => {
 });
 
 
-// ========== REGISTRATION ROUTE ==========
+// ========== REGISTRATION ROUTE ========== //
 // Renders the registration page
 app.get("/register", (req, res) => {
     res.render("register", { messages: req.session.messages });
@@ -798,7 +798,9 @@ app.post("/register", async (req, res) => {
         return res.redirect("/register");
     }
 });
-// GET: Display Profile Page
+
+// ========== PROFILE ROUTE ========== //
+// Renders the user profile page
 app.get("/profile", ensureAuthenticated, async (req, res) => {
     const userId = req.session.user.id;
   
@@ -875,8 +877,7 @@ app.get("/profile", ensureAuthenticated, async (req, res) => {
         req.session.messages = {
           error: ["Something went wrong while updating your profile. Please try again."]
         };
-  
-        // Optional: add technical details in development mode
+
         if (process.env.NODE_ENV !== 'production') {
           req.session.messages.error.push(`Details: ${err.message}`);
         }
@@ -967,7 +968,7 @@ app.get("/profile", ensureAuthenticated, async (req, res) => {
   });
   
 
-// ========== LOGOUT ROUTE ==========
+// ========== LOGOUT ROUTE ========== //
 // Handles user logout
 app.get("/logout", (req, res) => {
     req.session.destroy(() => {
@@ -975,7 +976,7 @@ app.get("/logout", (req, res) => {
     });
 });
 
-// ========== DASHBOARD ROUTE ==========
+// ========== DASHBOARD ROUTE ========== //
 // Renders the dashboard page
 app.get("/dashboard", ensureAuthenticated, async (req, res) => {
     if (!req.session.user || !req.session.user.id) {
@@ -1007,11 +1008,8 @@ app.get("/dashboard", ensureAuthenticated, async (req, res) => {
     }
 });
 
-// ========== MATCHMAKING ROUTE ==========
+// ========== MATCHMAKING ROUTE ========== //
 // Renders the matchmaking page
-// In your app.js or routes file
-
-// Matchmaking page route
 app.get('/matchmaking', async (req, res) => {
   try {
       const users = await User.getAllUsers();
@@ -1028,6 +1026,7 @@ app.get('/matchmaking', async (req, res) => {
 });
 
 // Search route
+// Handles searching for users based on different criteria
 app.post('/matchmaking/search', async (req, res) => {
   try {
       const { searchTerm, searchType } = req.body;

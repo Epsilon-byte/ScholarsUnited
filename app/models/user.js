@@ -1,6 +1,8 @@
 const db = require("../services/db"); // Import database connection
 const bcrypt = require('bcryptjs');
 
+// User class to manage user-related operations
+// This class provides methods for user registration, fetching user details, and searching users
 class User {
     constructor(id) {
         this.id = id;
@@ -12,6 +14,8 @@ class User {
         this.availableTime = null;
     }
 
+    // Register a new user
+    // This method inserts a new user into the Users table
     static async register({ email, password, fullName, interests, hobbies, academicInfo, availableTime }) {
         try {
             const existingUser = await User.findByEmail(email);
@@ -43,6 +47,9 @@ class User {
         }
     }
 
+    // Fetch user details
+    // This method retrieves user details from the database using the user ID
+    // It returns the user object or null if not found
     async getUserDetails() {
         const query = "SELECT * FROM Users WHERE UserID = ?";
         try {
@@ -65,6 +72,8 @@ class User {
         }
     }
 
+    // Retrieve user interests
+    // This method fetches the user's interests from the database
     async getUserInterests() {
         const query = `
             SELECT Interests.InterestName 
@@ -81,6 +90,8 @@ class User {
         }
     }
 
+    // Finds a user by their email address
+    // This method retrieves a user from the database using their email
     static async findByEmail(email) {
         const query = "SELECT * FROM Users WHERE Email = ?";
         try {
@@ -92,6 +103,8 @@ class User {
         }
     }
 
+    // Delete a user
+    // This method removes a user from the database
     static async deleteUser(userId) {
         const query = "DELETE FROM Users WHERE UserID = ?";
         try {
@@ -103,6 +116,8 @@ class User {
         }
     }
 
+    // Searches for users based on a query string
+    // This method retrieves users whose names, interests, or available times match the query
     static async searchUsers(query) {
         const sql = `
             SELECT DISTINCT Users.UserID, Users.FullName, Users.Email, Users.AvailableTime
@@ -121,7 +136,8 @@ class User {
         }
     }
 
-
+    // Searches for users by name
+    // This method retrieves users whose names match the provided name
     static async searchByName(name) {
         const sql = `
             SELECT UserID, FullName, Email, AcademicInfo, Interests, AvailableTime 
@@ -136,6 +152,8 @@ class User {
         }
     }
 
+    // Searches for users by academic information
+    // This method retrieves users whose academic information matches the provided info
     static async searchByAcademicInfo(academicInfo) {
         const sql = `
             SELECT UserID, FullName, Email, AcademicInfo, Interests, AvailableTime 
@@ -150,6 +168,9 @@ class User {
         }
     }
 
+    // Searches for users by interest
+    // This method retrieves users whose interests match the provided interest
+    // It uses a JOIN to connect Users with Interests through UserInterests
     static async searchByInterest(interest) {
         const sql = `
             SELECT DISTINCT Users.UserID, Users.FullName, Users.Email, Users.AcademicInfo, Users.Interests, Users.AvailableTime
@@ -166,6 +187,8 @@ class User {
         }
     }
 
+    // Searches for users by course
+    // This method retrieves users whose courses match the provided course name
     static async searchByCourse(course) {
         const sql = `
             SELECT DISTINCT Users.UserID, Users.FullName, Users.Email, Users.AcademicInfo, Users.Interests, Users.AvailableTime
@@ -182,6 +205,8 @@ class User {
         }
     }
 
+    // Fetches all users from the database
+    // This method retrieves all users and their details
     static async getAllUsers() {
         const sql = `
             SELECT UserID, FullName, Email, AcademicInfo, Interests, AvailableTime 
@@ -195,6 +220,8 @@ class User {
         }
     }
     
+    //Fetches a user by their ID
+    // This method retrieves a user from the database using their user ID
     static async getUserById(userId) {
         const sql = "SELECT UserID, FullName, Email FROM Users WHERE UserID = ?";
         try {
