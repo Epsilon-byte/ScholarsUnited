@@ -378,19 +378,6 @@ app.post("/events/delete/:id", ensureAuthenticated, async (req, res) => {
   }
 });
 
-// ========== EVENT-PARTICIPANT ROUTES ==========
-// Fetches participants for a specific event
-app.get("/event-participants/:eventId", ensureAuthenticated, function (req, res) {
-  EventParticipant.getParticipantsByEventId(req.params.eventId)
-      .then(participants => {
-          res.json(participants);
-      })
-      .catch(err => {
-          console.error(err);
-          res.status(500).send("Error fetching event participants");
-      });
-});
-
 // Join an event
 app.post("/events/join/:id", ensureAuthenticated, async (req, res) => {
   const userId = req.session.user.id;
@@ -414,6 +401,20 @@ app.post("/events/join/:id", ensureAuthenticated, async (req, res) => {
     res.redirect(`/events/${eventId}`);
   }
 });
+
+// ========== EVENT-PARTICIPANT ROUTES ==========
+// Fetches participants for a specific event
+app.get("/event-participants/:eventId", ensureAuthenticated, function (req, res) {
+  EventParticipant.getParticipantsByEventId(req.params.eventId)
+      .then(participants => {
+          res.json(participants);
+      })
+      .catch(err => {
+          console.error(err);
+          res.status(500).send("Error fetching event participants");
+      });
+});
+
 
 
 // ========== MESSAGE ROUTES ==========

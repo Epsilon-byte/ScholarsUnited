@@ -131,35 +131,6 @@ h1, h2 {
   max-width: 160px;
   width: 100%;
 }
-
-/* Button Variants */
-.btn-primary {
-  background-color: #66B89E;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #559f8b;
-}
-
-.btn-secondary {
-  background-color: #AAAAAA;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background-color: #888888;
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  color: white;
-}
-
-.btn-danger:hover {
-  background-color: #b52a37;
-}
-
 /* Legacy Quick Links (if needed outside banner) */
 .quick-links {
   margin-top: 24px;
