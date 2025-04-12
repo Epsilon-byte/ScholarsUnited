@@ -1,0 +1,25 @@
+/* === Edit Event Card Container === */
+.edit-event-card {
+  background-color: #fff;                        /* White background for clean UI */
+  max-width: 700px;                              /* Limits the card width */
+  margin: 40px auto;                             /* Centers the card and adds top/bottom spacing */
+  padding: 32px;                                 /* Space inside the card */
+  border-radius: 16px;                           /* Rounded corners for soft look */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);    /* Subtle shadow for depth */
+}
+
+/* === Title inside Edit Card === */
+.edit-event-title {
+  text-align: center;                            /* Centers the title text */
+  font-size: 2rem;                               /* Large text size */
+  font-weight: 600;                              /* Semi-bold for emphasis */
+  margin-bottom: 30px;                           /* Spacing below title */
+  color: #333;                                   /* Dark gray color */
+}
+
+/* === Form Button Row === */
+.form-buttons {
+  display: flex;                                 /* Horizontal layout for buttons */
+  justify-content: space-around;                /* Evenly spaces buttons with space around */
+  gap: 16px;                                     /* Space between buttons */
+}

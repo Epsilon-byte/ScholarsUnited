@@ -2,6 +2,16 @@ header.navbar
   .navbar-left
     img.logo(src="/SB.png", alt="Logo")
     span.logo-text Scholars United
+  
+  .navbar-right
+    .theme-switch-wrapper
+      span.theme-icon.sun-icon
+        i.fas.fa-sun
+      label.theme-switch
+        input#theme-toggle-checkbox(type="checkbox")
+        span.slider
+      span.theme-icon.moon-icon
+        i.fas.fa-moon
 
   button.menu-toggle(onclick="toggleMenu()") ☰
 
@@ -12,12 +22,12 @@ header.navbar
       span Menu
       button.menu-close(onclick="toggleMenu()") ✕
     ul.menu-links
-      li: a(href="/") Matchmaking
-      li: a(href="/calendar") Calendar
-      li: a(href="/events") Events
-      li: a(href="/courses") Courses
-      li: a(href="/messaging") Messaging
       li: a(href="/dashboard") Dashboard
+      li: a(href="/calendar") Study Calendar
+      li: a(href="/events") Upcoming Events
+      li: a(href="/courses") Courses
+      li: a(href="/messaging") Messaging      
+      li: a(href="/matchmaking") Matchmaking
     .menu-footer
       a(href="/profile") Profile
       a(href="/logout") Logout

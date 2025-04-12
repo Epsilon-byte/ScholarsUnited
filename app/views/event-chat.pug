@@ -1,0 +1,150 @@
+extends layout
+
+block content
+  .container
+    .event-chat-container
+      .event-header
+        h2.event-title= event.Title
+        p.event-date
+          i.fas.fa-calendar
+          | #{event.date} at #{event.time}
+        p.event-location
+          i.fas.fa-map-marker-alt
+          | #{event.Location || 'No location specified'}
+      
+      .participants-section
+        h3 Participants (#{participants.length})
+        .participants-list
+          each participant in participants
+            .participant
+              .participant-avatar
+                img(src=`https://ui-avatars.com/api/?name=${encodeURIComponent(participant.FullName)}&background=random` alt=participant.FullName)
+              .participant-name= participant.FullName
+      
+      .chat-section
+        .chat-messages#chatMessages
+          if messages.length === 0
+            .empty-chat
+              p No messages yet. Be the first to send a message!
+          else
+            each message in messages
+              .message(class=message.SenderID == user.id ? 'message-mine' : '')
+                .message-avatar
+                  img(src=`https://ui-avatars.com/api/?name=${encodeURIComponent(message.SenderName)}&background=random` alt=message.SenderName)
+                .message-content
+                  .message-sender= message.SenderName
+                  .message-text= message.Content
+                  .message-time= new Date(message.Timestamp).toLocaleString()
+        
+        if isParticipant
+          form.message-form#messageForm
+            input(type="hidden" name="eventId" value=event.EventID)
+            input(type="hidden" name="userId" value=user.id)
+            .input-group
+              textarea.form-control#messageInput(name="message" placeholder="Type your message here..." required)
+              button.btn.btn-primary(type="submit") Send
+        else
+          .join-prompt
+            p You need to join this event to participate in the chat.
+            form(action=`/events/join/${event.EventID}` method="POST")
+              button.btn.btn-primary(type="submit") Join Event
+      
+      .event-actions
+        a.btn.btn-secondary(href=`/events/${event.EventID}`) Back to Event Details
+        a.btn.btn-secondary(href='/events') Back to All Events
+
+block scripts
+  script.
+    // Connect to Socket.IO
+    const socket = io();
+    
+    // DOM elements
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+    const chatMessages = document.getElementById('chatMessages');
+    
+    // Only run this code if the user is a participant
+    if (messageForm) {
+      // Authenticate with socket
+      const userId = #{user.id};
+      socket.emit('authenticate', userId);
+      
+      // Join event room
+      const eventId = #{event.EventID};
+      socket.emit('joinEventRoom', { userId, eventId });
+      
+      // Handle form submission
+      messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const message = messageInput.value.trim();
+        if (!message) return;
+        
+        // Send message to server
+        fetch('/api/events/message', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            eventId,
+            content: message
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Clear input field
+            messageInput.value = '';
+          } else {
+            console.error('Error sending message:', data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+      });
+      
+      // Listen for new messages
+      socket.on('eventMessage', function(data) {
+        addMessageToChat(data);
+      });
+      
+      // Clean up when leaving the page
+      window.addEventListener('beforeunload', function() {
+        socket.emit('leaveEventRoom', { userId, eventId });
+      });
+    }
+    
+    // Function to add a new message to the chat
+    function addMessageToChat(data) {
+      // Remove empty chat message if present
+      const emptyChat = chatMessages.querySelector('.empty-chat');
+      if (emptyChat) {
+        emptyChat.remove();
+      }
+      
+      // Create message element
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message';
+      if (data.userId == #{user.id}) {
+        messageDiv.classList.add('message-mine');
+      }
+      
+      // Format the message
+      const timestamp = new Date(data.timestamp).toLocaleString();
+      messageDiv.innerHTML = `
+        <div class="message-avatar">
+          <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(data.senderName)}&background=random" alt="${data.senderName}">
+        </div>
+        <div class="message-content">
+          <div class="message-sender">${data.senderName}</div>
+          <div class="message-text">${data.message}</div>
+          <div class="message-time">${timestamp}</div>
+        </div>
+      `;
+      
+      // Add to chat and scroll to bottom
+      chatMessages.appendChild(messageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }

@@ -2,39 +2,98 @@ extends layout
 
 block content
   .container
-    .event-card
-      h2.event-title= event.Title
+    .event-card-detail 
+      .event-details
+        h2.event-title-detail= event.Title 
+        .event-info
+          p
+            strong Date:
+            | #{event.date} at #{event.time}
+          p
+            strong Location:
+            | #{event.Location || 'Not specified'}
+          p
+            strong Description:
+            | #{event.Description || 'No description available'}
 
-      .event-info
-        p
-          strong Date:
-          | #{event.date} at #{event.time}
+        if participants.length
+          h3 Participants
+          select.participant-dropdown(name='participants')
+            each person in participants
+              option(value=person.FullName)= person.FullName
+        else
+          p.text-muted No participants yet.
 
-        p
-          strong Location:
-          | #{event.Location || 'Not specified'}
+      // ✅ Button section grouped
+      .button-group
+          if !hasJoined
+            form(action=`/events/join/${event.EventID}` method="POST")
+              button.btn.btn-primary(type="submit") ✅ Join Event
+          else
+            .event-actions-joined
+              a.btn.btn-primary(href=`/events/${event.EventID}/chat`) 💬 Event Chat
+              form(action=`/events/leave/${event.EventID}` method="POST" style="display: inline-block;")
+                button.btn.btn-warning(type="submit") 👋 Leave Event
 
-        p
-          strong Description:
-          | #{event.Description || 'No description available'}
+          a.btn.btn-info(href=`/events/edit/${event.EventID}`) ✏️ Update Event
+          button.btn.btn-danger(type="button" onclick=`openModal(${event.EventID})`) 🗑️ Delete Event
+  
+  // ✅ Navigation buttons OUTSIDE the card
+  .nav-buttons
+    a.btn.btn-secondary(href='/dashboard') ← Back to Dashboard
+    a.btn.btn-secondary(href='/events') ← Back to Events
 
-      // 👥 Participants List
-      if participants.length
-        h3 Participants
-        ul.participant-list
-          each person in participants
-            li= person.FullName
-      else
-        p.text-muted No participants yet.
 
-      // ✅ Conditional Join Button
-      if !hasJoined
-        form(action=`/events/join/${event.EventID}` method="POST")
-          button.btn.btn-primary(type="submit" style="margin-top: 15px") Join Event
-      else
-        p.text-success(style="margin-top: 15px") You have already joined this event.
+  // ✅ Modal for deletion confirmation
+  #deleteModal.modal
+    .modal-content
+      .modal-header
+        h5.modal-title Are you sure you want to delete this event?
+      .modal-body
+        p This action cannot be undone.
+      .modal-footer
+        button.btn.btn-danger(type='button' onclick='deleteEvent()') Delete
+        button.btn.btn-secondary(type='button' onclick='closeModal()') Cancel
 
-      // 🔁 Navigation Buttons
-      .nav-buttons
-        a.btn.btn-secondary(href='/dashboard') ← Back to Dashboard
-        a.btn.btn-secondary(href='/events') ← Back to Events
+block scripts
+  script.
+    let modal;
+    let eventIdToDelete;
+
+    function openModal(eventId) {
+      modal = document.getElementById('deleteModal');
+      eventIdToDelete = eventId;
+      modal.classList.add('show');
+    }
+
+    function deleteEvent() {
+      if (!eventIdToDelete) return;
+
+      fetch(`/events/delete/${eventIdToDelete}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          modal.classList.remove('show');
+          if (data.error) {
+            alert(data.error);
+          } else {
+            console.log(data.message);
+            window.location.href = '/events'; // Redirect to events page after deletion
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Error deleting the event.');
+          modal.classList.remove('show');
+        });
+    }
+
+    function closeModal() {
+      modal.classList.remove('show');
+    }
+
+    window.onclick = function(event) {
+      const modalEl = document.getElementById('deleteModal');
+      if (event.target === modalEl) {
+        closeModal();
+      }
+    };

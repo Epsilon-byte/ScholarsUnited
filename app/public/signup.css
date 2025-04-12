@@ -1,26 +1,26 @@
-/* Signup Section: Match login layout */
+/* === Signup Page Layout (matches login layout) === */
 .signup-section {
-  display: flex;
+  display: flex;                         /* Center box horizontally */
   justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: #f9f9f9;
+  align-items: center;                   /* Center box vertically */
+  min-height: 100vh;                     /* Full screen height */
+  background-color: #f9f9f9;             /* Light background */
 }
 
-/* Signup Box: Match login box */
+/* === Signup Box === */
 .signup-box {
-  background-color: #fff;
+  background-color: #fff;                /* White card background */
   padding: 36px 32px;
-  border-radius: 20px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+  border-radius: 20px;                   /* Rounded corners */
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05); /* Subtle shadow */
   width: 100%;
-  max-width: 500px;
+  max-width: 500px;                      /* Limit width on larger screens */
   display: flex;
-  flex-direction: column;
+  flex-direction: column;               /* Stack children vertically */
   align-items: center;
 }
 
-/* Heading */
+/* === Signup Title === */
 .signup-box h1 {
   font-size: 2rem;
   font-weight: 600;
@@ -28,7 +28,7 @@
   text-align: center;
 }
 
-/* Progress Bar */
+/* === Progress Bar (multi-step indicator) === */
 .progress-bar {
   display: flex;
   justify-content: space-between;
@@ -46,11 +46,13 @@
   position: relative;
 }
 
+/* === Active Step Highlighting === */
 .progress-step.active {
   color: #66B89E;
   font-weight: 600;
 }
 
+/* === Connect each step with a line (except last) === */
 .progress-step:not(:last-child)::after {
   content: '';
   position: absolute;
@@ -62,9 +64,9 @@
   z-index: -1;
 }
 
-/* Form Step Wrapper */
+/* === Form Step (only one step visible at a time) === */
 .form-step {
-  display: none;
+  display: none;                        /* Hidden by default */
   width: 100%;
   background-color: #fff;
 }
@@ -73,7 +75,7 @@
   display: block;
 }
 
-/* Form Group */
+/* === Form Group Wrapper === */
 .form-group {
   margin-bottom: 16px;
   width: 100%;
@@ -92,7 +94,7 @@
 .form-group input {
   width: 100%;
   padding: 12px 30px;
-  background-color: #eaf0fe;
+  background-color: #eaf0fe;            /* Light blue input background */
   border: 1px solid #d0d0d0;
   border-radius: 8px;
   font-size: 1rem;
@@ -100,12 +102,13 @@
   display: block;
 }
 
+/* === Input Focus === */
 .form-group input:focus {
   border-color: #66B89E;
   outline: none;
 }
 
-/* Navigation Buttons */
+/* === Navigation Buttons (Next, Back) === */
 .form-nav {
   display: flex;
   justify-content: space-between;
@@ -117,7 +120,7 @@
   width: 100%;
 }
 
-/* Buttons */
+/* === Buttons (Continue, Submit, etc.) === */
 button.btn {
   width: 100%;
   max-width: 300px;
@@ -131,25 +134,7 @@ button.btn {
   border: none;
 }
 
-.btn-primary {
-  background-color: #66B89E;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #559f8b;
-}
-
-.btn-secondary {
-  background-color: #AAAAAA;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background-color: #888888;
-}
-
-/* Flash Messages */
+/* === Flash Messages (Success / Error) === */
 .alert {
   padding: 12px 16px;
   margin-top: 24px;
@@ -170,7 +155,7 @@ button.btn {
   color: #155724;
 }
 
-/* Log In Prompt */
+/* === Prompt for Already Registered Users === */
 .account-prompt {
   text-align: center;
   margin-top: 2px;

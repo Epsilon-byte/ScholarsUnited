@@ -1,54 +1,17 @@
 /* ===== styles.css ===== */
 @import url("variables.css");
-@import url("global.css");
 @import url("navbar.css");
-@import url("homepage.css");
 @import url("profiles.css");
 @import url("calendar.css");
 @import url("courses.css");
-@import url("responsive.css");
 @import url("event.css");
 @import url("dashboard.css");
 @import url("signup.css");
 @import url("login.css");
 @import url("notifications.css");
-@import url("buttons.css");
 @import url("event-detail.css");
-
-/* Core button styles */
-.btn {
-  cursor: pointer;
-  border: none;
-  border-radius: 5px;
-  padding: 12px 20px;
-  font-size: 1em;
-  transition: background-color 0.3s ease;
-}
-
-.btn-primary {
-  background-color: #4c8c78;
-  color: white;
-  font-weight: bold;
-}
-
-.btn-primary:hover {
-  background-color: #3a6b5d;
-}
-
-.btn-secondary {
-  background-color: #66B89E;
-  color: #fff;
-}
-
-.btn-secondary:hover {
-  background-color: #4c8c78;
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  color: #fff;
-}
-
-.btn-danger:hover {
-  background-color: #c82333;
-}
+@import url("messaging.css");
+@import url("event-update.css");
+@import url("buttons.css");
+@import url("matchmaking.css");
+@import url("courseDetail.css");

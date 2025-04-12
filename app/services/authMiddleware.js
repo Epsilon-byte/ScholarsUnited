@@ -1,3 +1,5 @@
+// A function to check if a user is authenticated
+// This middleware checks if the user is authenticated by checking the session
 function ensureAuthenticated(req, res, next) {
   if (req.session && req.session.user) {
     return next(); // ✅ User is authenticated

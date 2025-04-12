@@ -3,27 +3,28 @@ extends layout
 block content
   .container
     section.main-content
-
       // 🌿 Green Banner Header
       .course-box
         h1 📅 Study Calendar
         p Browse scheduled events on a real calendar view.
 
-      // 🗓️ Calendar Month/Year Selector + Arrows
-      .calendar-header
+      // 🗓️ Calendar Controls
+      .calendar-controls
         form.calendar-selector(action='/calendar', method='GET')
-          select(name='month')
-            each val, i in ['January','February','March','April','May','June','July','August','September','October','November','December']
-              option(value=i+1 selected=(i+1 == currentMonth))= val
-          select(name='year')
-            each y in yearRange
-              option(value=y selected=(y == currentYear))= y
-          button(type='submit' class='btn') Go
+          .selector-group
+            select(name='month')
+              each val, i in ['January','February','March','April','May','June','July','August','September','October','November','December']
+                option(value=i+1 selected=(i+1 == currentMonth))= val
+            select(name='year')
+              each y in yearRange
+                option(value=y selected=(y == currentYear))= y
+            button.btn.btn-primary(type='submit') Go
 
-        // Optional: arrow nav (can be removed if you prefer dropdown only)
-        a.calendar-nav(href=`/calendar?month=${prevMonth}&year=${prevYear}`) ←
-        h2 #{displayMonth} #{displayYear}
-        a.calendar-nav(href=`/calendar?month=${nextMonth}&year=${nextYear}`) →
+        // Month Heading + Arrows
+        .calendar-title
+          a.calendar-nav(href=`/calendar?month=${prevMonth}&year=${prevYear}`) ←
+          h2 #{displayMonth} #{displayYear}
+          a.calendar-nav(href=`/calendar?month=${nextMonth}&year=${nextYear}`) →
 
       // 📅 Calendar Grid
       .calendar-grid
@@ -33,7 +34,7 @@ block content
 
         // Day cells
         each day in calendarDays
-          .calendar-day(class=day.isCurrentMonth ? '' : 'dimmed')
+          .calendar-day(class=[day.isCurrentMonth ? '' : 'dimmed', day.isToday ? 'today' : ''].join(' '))
             span.day-number= day.date.getDate()
             if day.events.length
               ul.event-list

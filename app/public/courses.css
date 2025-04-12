@@ -1,149 +1,144 @@
-/* Container for the top header box */
+/* === Container for the top header box === */
 .course-box {
-  background-color: #66B89E;
-  color: #fff;
-  padding: 40px;
-  border-radius: 16px;
-  text-align: center;
-  margin: 0 auto 40px auto;
-  width: 80%;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  background-color: #66B89E;           /* Calming green background */
+  color: #fff;                         /* White text for contrast */
+  padding: 40px;                       /* Inner spacing for content breathing room */
+  border-radius: 16px;                 /* Rounded corners for modern feel */
+  text-align: center;                  /* Center-aligns all inner content */
+  margin: 0 auto 40px auto;            /* Centers the box and adds space below */
+  width: 80%;                          /* Makes it responsive and not full width */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15); /* Subtle shadow for depth */
 }
 
 .course-box h1 {
-  margin-bottom: 15px;
-  font-size: 3em;
+  margin-bottom: 15px;                 /* Space below the heading */
+  font-size: 3em;                      /* Large heading size */
 }
 
 .course-box p {
-  font-size: 1.2em;
+  font-size: 1.2em;                    /* Slightly larger paragraph for emphasis */
 }
 
-/* Slideshow container */
+/* === Slideshow container === */
 .slideshow-container {
-  max-width: 900px;
-  position: relative;
-  margin: auto;
+  max-width: 900px;                    /* Limits container width */
+  position: relative;                  /* Enables positioning of navigation buttons */
+  margin: auto;                        /* Centers horizontally */
 }
 
-/* Individual slide style */
+/* === Individual slide style === */
 .mySlides {
-  display: none;
-  background-color: #f6f6f6;
-  padding: 60px 40px;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  text-align: center;
-  transition: all 0.3s ease;
+  display: none;                       /* Hides all slides by default */
+  background-color: #f6f6f6;           /* Light gray background */
+  padding: 60px 40px;                  /* Comfortable inner spacing */
+  border-radius: 20px;                 /* Fully rounded edges for card feel */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08); /* Soft shadow */
+  text-align: center;                  /* Centers content inside */
+  transition: all 0.3s ease;           /* Smooth transition for hover/slide effects */
 }
 
-/* Slide index */
+/* === Slide index text === */
 .mySlides .numbertext {
-  font-size: 1.2em;
-  color: #333;
-  margin-bottom: 20px;
+  font-size: 1.2em;                    /* Slightly larger index text */
+  color: #333;                         /* Dark gray text for readability */
+  margin-bottom: 20px;                /* Spacing before title */
 }
 
-/* Course title */
+/* === Course title in slide === */
 .mySlides h2 {
-  font-size: 3.2em;
-  font-weight: 800;
-  margin-bottom: 30px;
-  color: #222;
-  letter-spacing: 0.5px;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.08);
+  font-size: 3.2em;                    /* Very large title */
+  font-weight: 800;                    /* Boldest weight for emphasis */
+  margin-bottom: 30px;                /* Space below title */
+  color: #222;                         /* Nearly black for contrast */
+  letter-spacing: 0.5px;              /* Slight spacing between letters */
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.08); /* Adds soft depth */
 }
 
+/* === Title animation on hover === */
 .mySlides:hover h2 {
-  transform: scale(1.02);
-  transition: transform 0.3s ease;
+  transform: scale(1.02);             /* Slight zoom effect */
+  transition: transform 0.3s ease;    /* Smooth scale transition */
 }
 
-/* View Course button */
+/* === View Course button === */
 .btn-primary {
-  background-color: #4F9D8D;
-  color: white;
-  font-size: 1.2em;
-  font-weight: 600;
-  padding: 14px 28px;
-  border-radius: 14px;
-  text-decoration: none;
-  display: inline-block;
-  transition: background-color 0.25s ease;
+  background-color: #4F9D8D;          /* Teal-themed button */
+  color: white;                       /* White text */
+  font-size: 1.2em;                   /* Larger for visibility */
+  font-weight: 600;                   /* Semi-bold for emphasis */
+  padding: 14px 28px;                 /* Comfortable padding */
+  border-radius: 14px;                /* Fully rounded edges */
+  text-decoration: none;             /* Removes underline */
+  display: inline-block;             /* Lets it behave like a block while inline */
+  transition: background-color 0.25s ease; /* Smooth hover effect */
 }
 
 .btn-primary:hover {
-  background-color: #3d7d71;
+  background-color: #3d7d71;          /* Slightly darker on hover */
 }
 
-/* Navigation buttons */
+/* === Navigation buttons (prev/next arrows) === */
 .prev, .next {
-  cursor: pointer;
-  position: absolute;
-  top: 50%;
+  cursor: pointer;                    /* Indicates clickable */
+  position: absolute;                 /* Allows placing relative to parent */
+  top: 50%;                           /* Vertically centers the button */
   width: 50px;
   height: 50px;
   padding: 10px;
-  margin-top: -25px;
+  margin-top: -25px;                  /* Offset to align perfectly at center */
   color: white;
   font-weight: bold;
   font-size: 24px;
-  background-color: #aaa;
-  border-radius: 50%;
-  user-select: none;
-  display: flex;
+  background-color: #aaa;             /* Neutral gray background */
+  border-radius: 50%;                 /* Makes them circular */
+  user-select: none;                  /* Prevents text selection */
+  display: flex;                      /* Flex for perfect centering */
   align-items: center;
   justify-content: center;
   transition: background-color 0.3s ease;
 }
 
 .prev:hover, .next:hover {
-  background-color: #888;
+  background-color: #888;             /* Darker on hover for feedback */
 }
 
 .prev {
-  left: -60px;
+  left: -60px;                        /* Moves left button outside the container */
 }
 
 .next {
-  right: -60px;
+  right: -60px;                       /* Moves right button outside the container */
 }
 
-/* Dots for pagination */
+/* === Pagination dots === */
 .dot {
   cursor: pointer;
   height: 14px;
   width: 14px;
   margin: 0 4px;
-  background-color: #bbb;
-  border-radius: 50%;
+  background-color: #bbb;            /* Neutral background */
+  border-radius: 50%;                /* Circular dots */
   display: inline-block;
   transition: background-color 0.3s ease;
 }
 
+/* === Active dot or hovered dot === */
 .active, .dot:hover {
-  background-color: #333;
+  background-color: #333;            /* Darker dot for selected or hovered */
 }
-
-/* Responsive adjustments */
-@media only screen and (max-width: 768px) {
-  .slideshow-container {
-    width: 95%;
-  }
 
   .prev, .next {
     width: 40px;
     height: 40px;
     font-size: 20px;
-    margin-top: -20px;
+    margin-top: -20px;               /* Adjusts for smaller height */
   }
 
   .mySlides h2 {
-    font-size: 2em;
+    font-size: 2em;                  /* Smaller title for small screens */
   }
 
   .btn-primary {
-    font-size: 1em;
-    padding: 10px 20px;
+    font-size: 1em;                  /* Smaller button text */
+    padding: 10px 20px;             /* Less padding for fit */
   }
-}

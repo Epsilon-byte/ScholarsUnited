@@ -1,76 +1,89 @@
 extends layout
 
 block content
-  .container
-    // Signup Form Section
-    section.signup-section
-      .signup-box
-        h1 Sign Up
+  section.signup-section
+    .signup-box
+      h1 Sign Up
 
-        // Progress Bar
-        .progress-bar
-          .progress-step.active Step 1
-          .progress-step Step 2
-          .progress-step Step 3
-          .progress-step Step 4
+      // Progress Bar
+      .progress-bar
+        .progress-step.active Step 1
+        .progress-step Step 2
+        .progress-step Step 3
+        .progress-step Step 4
 
-        form(id="signup-form" action='/register' method='POST')
-          // Step 1: Email + Password
-          .form-step.active
-            .form-group
-              label(for='email') Email:
-              input(type='email' name='email' id='email' required)
-            .form-group
-              label(for='password') Password:
-              input(type='password' name='password' id='password' required)
-            .form-group
-              button(type="button" class="btn btn-primary next-step") Next
+      form(id="signup-form" action='/register' method='POST')
+        // Step 1: Email + Password
+        .form-step.active
+          .form-group
+            label(for='email') Email:
+            input(type='email' name='email' id='email' required)
+          .form-group
+            label(for='password') Password:
+            input(type='password' name='password' id='password' required)
+            .password-strength-meter
+              .meter-bar
+                .meter-fill
+              .meter-text Password strength: Too weak
+          .form-group
+            label(for='confirmPassword') Confirm Password:
+            input(type='password' name='confirmPassword' id='confirmPassword' required)
+          .form-nav
+            button(type="button" class="btn btn-secondary next-step") Next
 
-          // Step 2: Full Name + Interests
-          .form-step
-            .form-group
-              label(for='fullName') Full Name:
-              input(type='text' name='fullName' id='fullName' required)
-            .form-group
-              label(for='interests') Interests:
-              input(type='text' name='interests' id='interests' placeholder='e.g., Math, AI, Psychology')
-            .form-nav
-              button(type="button" class="btn btn-secondary prev-step") Back
-              button(type="button" class="btn btn-primary next-step") Next
+        // Step 2: Full Name + Interests
+        .form-step
+          .form-group
+            label(for='fullName') Full Name:
+            input(type='text' name='fullName' id='fullName' required)
+          .form-group
+            label(for='interests') Interests:
+            input(type='text' name='interests' id='interests' placeholder='e.g., Math, AI, Psychology')
+          .form-nav
+            button(type="button" class="btn btn-secondary prev-step") Back
+            button(type="button" class="btn btn-primary next-step") Next
 
-          // Step 3: Hobbies + Academic Info
-          .form-step
-            .form-group
-              label(for='hobbies') Hobbies:
-              input(type='text' name='hobbies' id='hobbies')
-            .form-group
-              label(for='academic_info') Academic Info:
-              input(type='text' name='academic_info' id='academic_info')
-            .form-nav
-              button(type="button" class="btn btn-secondary prev-step") Back
-              button(type="button" class="btn btn-primary next-step") Next
+        // Step 3: Hobbies + Academic Info
+        .form-step
+          .form-group
+            label(for='hobbies') Hobbies:
+            input(type='text' name='hobbies' id='hobbies')
+          .form-group
+            label(for='academic_info') Academic Info:
+            input(type='text' name='academic_info' id='academic_info')
+          .form-nav
+            button(type="button" class="btn btn-secondary prev-step") Back
+            button(type="button" class="btn btn-primary next-step") Next
 
-          // Step 4: Availability + Submit
-          .form-step
-            .form-group
-              label(for='time_frames') Available Time Frames:
-              input(type='text' name='time_frames' id='time_frames' placeholder='e.g., Weekdays after 5PM or weekends')
-            .form-nav
-              button(type="button" class="btn btn-secondary prev-step") Back
-              button.btn.btn-primary(type='submit') Sign Up
+        // Step 4: Availability + CAPTCHA + Submit
+        .form-step
+          .form-group
+            label(for='time_frames') Available Time Frames:
+            input(type='text' name='time_frames' id='time_frames' placeholder='e.g., Weekdays after 5PM or weekends')
+          .form-group.captcha-container
+            label(for='captcha') Verify you're human:
+            .captcha-image
+              != captchaSvg
+            input#captcha(type="text", name="captcha", required, placeholder="Enter text shown above")
+          .form-nav
+            button(type="button" class="btn btn-secondary prev-step") Back
+            button.btn.btn-primary(type='submit') Sign Up
 
-        // Flash Messages
-        if messages && messages.error
-          .alert.alert-danger
-            each error in messages.error
-              p= error
+        // Messages Block - handles success and filtered errors
+        if typeof messages !== 'undefined'
+          - const filteredErrors = messages.error ? messages.error.filter(e => e !== "Please log in to access this page.") : []
 
-        if messages && messages.success
-          .alert.alert-success
-            each msg in messages.success
-              p= msg
+          if filteredErrors.length
+            .alert.alert-danger
+              each error in filteredErrors
+                p= error
 
-        // ✅ Already have an account? Log in
+          if messages.success && messages.success.length
+            .alert.alert-success
+              each msg in messages.success
+                p= msg
+
+        // Already have an account? Log in
         .account-prompt.text-center.mt-4
           | Already have an account?
           a(href='/login') Log in
@@ -108,4 +121,67 @@ block content
       });
 
       updateStepDisplay(); // Initial call to show the first step
+    });
+
+  // Password strength meter script
+  script.
+    document.addEventListener('DOMContentLoaded', function() {
+      const passwordInput = document.getElementById('password');
+      const confirmPasswordInput = document.getElementById('confirmPassword');
+      const meterFill = document.querySelector('.meter-fill');
+      const meterText = document.querySelector('.meter-text');
+      
+      // Password strength criteria
+      const hasMinLength = password => password.length >= 8;
+      const hasUppercase = password => /[A-Z]/.test(password);
+      const hasLowercase = password => /[a-z]/.test(password);
+      const hasNumber = password => /[0-9]/.test(password);
+      const hasSpecial = password => /[^A-Za-z0-9]/.test(password);
+      
+      // Update password strength meter
+      passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        let score = 0;
+        let message = '';
+        
+        // Calculate score
+        if (hasMinLength(password)) score++;
+        if (hasUppercase(password)) score++;
+        if (hasLowercase(password)) score++;
+        if (hasNumber(password)) score++;
+        if (hasSpecial(password)) score++;
+        
+        // Set meter fill width based on score
+        const percentage = (score / 5) * 100;
+        meterFill.style.width = `${percentage}%`;
+        
+        // Set color and message based on score
+        if (score === 0) {
+          meterFill.style.backgroundColor = '#ff4d4d';
+          message = 'Too weak';
+        } else if (score <= 2) {
+          meterFill.style.backgroundColor = '#ffaa00';
+          message = 'Weak';
+        } else if (score <= 3) {
+          meterFill.style.backgroundColor = '#ffff00';
+          message = 'Fair';
+        } else if (score <= 4) {
+          meterFill.style.backgroundColor = '#aaff00';
+          message = 'Good';
+        } else {
+          meterFill.style.backgroundColor = '#00ff00';
+          message = 'Strong';
+        }
+        
+        meterText.textContent = `Password strength: ${message}`;
+      });
+      
+      // Check password match
+      confirmPasswordInput.addEventListener('input', function() {
+        if (this.value !== passwordInput.value) {
+          this.setCustomValidity('Passwords do not match');
+        } else {
+          this.setCustomValidity('');
+        }
+      });
     });

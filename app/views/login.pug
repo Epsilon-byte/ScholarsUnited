@@ -5,25 +5,52 @@ block content
     .login-box
       h1 Login
 
+      //- Flash Messages
+      if messages && messages.error
+        .alert.alert-danger
+          each error in messages.error
+            p= error
+
+      if messages && messages.success
+        .alert.alert-success
+          each msg in messages.success
+            p= msg
+
       form(action="/login", method="POST")
         .form-group
           input(type="email", name="email", required, placeholder="Your university email")
         .form-group
           input(type="password", name="password", required, placeholder="Password")
+        
+        //- CAPTCHA
+        .form-group.captcha-container
+          label(for="captcha") Solve the math problem:
+          .captcha-image
+            != captchaSvg
+          input#captcha(type="text", name="captcha", required, placeholder="Enter answer")
+        
         button.btn.btn-primary(type="submit") Login
+        
+        .form-group.mt-2.text-center
+          a(href="/forgot-password" style="color: var(--primary);") Forgot your password?
 
       p(style="text-align:center; margin-top: 15px")
         | Don't have an account?
         a(href="/register" style="color: var(--primary); font-weight: 500; margin-left: 5px") Register
 
-
-        //- Flash Messages
-        if messages && messages.error
-          .alert.alert-danger
-            each error in messages.error
-              p= error
-
-        if messages && messages.success
-          .alert.alert-success
-            each msg in messages.success
-              p= msg
+block scripts
+  script.
+    document.addEventListener('DOMContentLoaded', function() {
+      const loginForm = document.getElementById('loginForm');
+      
+      if (!loginForm) return;
+      
+      // Prevent default form submission if CAPTCHA is not solved
+      loginForm.addEventListener('submit', function(e) {
+        const captchaInput = document.getElementById('captcha');
+        if (captchaInput.value === '') {
+          e.preventDefault();
+          alert('Please solve the math problem by entering the correct answer.');
+        }
+      });
+    });

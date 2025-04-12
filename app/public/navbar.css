@@ -1,63 +1,71 @@
+/* === Top Navigation Bar === */
 .navbar {
-  display: flex;
-  justify-content: space-between;
+  display: flex;                         /* Horizontal layout */
+  justify-content: space-between;       /* Space between left and right items */
   align-items: center;
   padding: 1rem 2rem;
-  background-color: var(--gray-dark);
-  color: white;
-  position: sticky;
+  background-color: var(--gray-dark);   /* Uses CSS variable for dark background */
+  color: white;                          /* White text */
+  position: sticky;                      /* Sticks to top during scroll */
   top: 0;
-  z-index: 1000;
+  z-index: 1000;                         /* Keeps navbar above other elements */
 }
 
+/* === Left Side of Navbar (logo + text) === */
 .navbar-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 12px;                             /* Space between logo and text */
 }
 
+/* === Logo Image === */
 .logo {
   height: 48px;
-  width: auto;
+  width: auto;                          /* Maintain aspect ratio */
 }
 
+/* === Logo Text === */
 .logo-text {
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 600;                     /* Semi-bold for emphasis */
 }
 
+/* === Hamburger Button for Opening Menu === */
 .menu-toggle {
-  background: none;
+  background: none;                     /* No default button style */
   border: none;
   color: white;
-  font-size: 1.5rem;
+  font-size: 1.5rem;                    /* Bigger icon size */
   cursor: pointer;
 }
 
+/* === Slide-in Menu Drawer === */
 .menu-drawer {
-  position: fixed;
+  position: fixed;                      /* Sticks to screen regardless of scroll */
   top: 0;
-  right: -300px;
+  right: -300px;                        /* Start hidden offscreen */
   width: 300px;
   height: 100vh;
   background-color: white;
   color: #333;
-  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.2);
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.2); /* Shadow on left side */
   transition: transform 0.4s ease, opacity 0.3s ease;
   z-index: 2000;
   display: flex;
   flex-direction: column;
   padding: 20px;
   opacity: 0;
-  transform: translateX(100%);
+  transform: translateX(100%);          /* Slide from right */
 }
 
+/* === Menu is visible when 'open' class added === */
 .menu-drawer.open {
   right: 0;
-  transform: translateX(0);
+  transform: translateX(0);             /* Slide into view */
   opacity: 1;
 }
 
+/* === Menu Header (title + close button) === */
 .menu-header {
   display: flex;
   justify-content: space-between;
@@ -68,6 +76,7 @@
   padding-bottom: 10px;
 }
 
+/* === Close Button for Drawer === */
 .menu-close {
   background: none;
   border: none;
@@ -76,10 +85,11 @@
   color: #666;
 }
 
+/* === Navigation Links Inside Drawer === */
 .menu-links {
-  list-style: none;
+  list-style: none;                     /* No bullets */
   padding: 20px 0;
-  flex-grow: 1;
+  flex-grow: 1;                         /* Fills vertical space */
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -94,9 +104,10 @@
 }
 
 .menu-links a:hover {
-  color: var(--primary);
+  color: var(--primary);               /* Change color on hover */
 }
 
+/* === Footer Section Inside Drawer === */
 .menu-footer {
   border-top: 1px solid #ccc;
   padding-top: 10px;
@@ -115,21 +126,23 @@
   color: var(--primary);
 }
 
+/* === Overlay Behind Drawer === */
 #overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
+  width: 100vw;                         /* Full width */
+  height: 100vh;                        /* Full height */
+  background: rgba(0, 0, 0, 0.4);       /* Semi-transparent black */
   z-index: 1500;
-  display: none;
+  display: none;                        /* Hidden by default */
 }
 
 #overlay.show {
-  display: block;
+  display: block;                       /* Show when active */
 }
 
+/* === Fade-In Animation === */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }

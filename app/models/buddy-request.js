@@ -1,5 +1,6 @@
 const db = require("../services/db"); // Import database connection
 
+// BuddyRequest class to handle buddy request operations
 class BuddyRequest {
     constructor(id) {
         this.id = id;

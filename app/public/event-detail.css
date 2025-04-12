@@ -1,92 +1,129 @@
-/* Container & Card */
-.event-card {
-    background-color: #fff;
-    padding: 32px;
-    border-radius: 16px;
-    max-width: 700px;
-    margin: 40px auto;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
-  }
-  
-  /* Title */
-  .event-title {
-    font-size: 2rem;
-    font-weight: 600;
-    color: #333;
-    text-align: center;
-    margin-bottom: 24px;
-  }
-  
-  /* Info Blocks */
-  .event-info p {
-    font-size: 1rem;
-    color: #444;
-    margin-bottom: 12px;
-  }
-  
-  .event-info strong {
-    color: #222;
-  }
-  
-  /* Participants */
-  .participant-list {
-    list-style-type: disc;
-    padding-left: 24px;
-    margin-top: 16px;
-    color: #333;
-  }
-  
-  .participant-list li {
-    margin-bottom: 6px;
-  }
-  
-  /* Success Text */
-  .text-success {
-    color: #28a745;
-    font-weight: 500;
-  }
-  
-  /* Muted Text */
-  .text-muted {
-    color: #888;
-    font-style: italic;
-  }
-  
-  /* Buttons */
-  .btn {
-    padding: 10px 16px;
-    font-size: 1rem;
-    border-radius: 8px;
-    text-decoration: none;
-    display: inline-block;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .btn-primary {
-    background-color: #66B89E;
-    color: #fff;
-    border: none;
-  }
-  
-  .btn-primary:hover {
-    background-color: #559f8b;
-  }
-  
-  .btn-secondary {
-    background-color: #aaaaaa;
-    color: white;
-    border: none;
-  }
-  
-  .btn-secondary:hover {
-    background-color: #888888;
-  }
-  
-  /* Navigation Buttons Row */
-  .nav-buttons {
-    display: flex;
-    gap: 12px;
-    margin-top: 24px;
-  }
-  
+/* === Container & Event Detail Card === */
+.event-card-detail {
+  background-color: #fff;                         /* White background for clean look */
+  padding: 32px;                                  /* Inner spacing */
+  border-radius: 16px;                            /* Rounded corners */
+  width: 1000px;                                  /* Fixed card width */
+  margin: 40px auto;                              /* Center horizontally + space around */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);     /* Soft shadow for depth */
+  display: flex;                                  /* Horizontal layout */
+  justify-content: space-between;                /* Space between info and buttons */
+  align-items: start;                             /* Aligns top edge of children */
+}
+
+/* === Navigation Buttons Group (below card) === */
+.nav-buttons {
+  display: flex;
+  justify-content: center;                        /* Center the buttons horizontally */
+  gap: 30px;                                      /* Space between buttons */
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* === Event Title Styling === */
+.event-title-detail {
+  font-size: 2rem;                                /* Large title font */
+  font-weight: 600;                               /* Semi-bold for emphasis */
+  color: #333;
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+/* === Event Information Section === */
+.event-info {
+  flex: 1;                                        /* Takes up remaining space */
+}
+
+.event-info p {
+  font-size: 1rem;
+  color: #444;
+  margin-bottom: 12px;                            /* Space between paragraphs */
+}
+
+/* === Dropdown Styling for Participant Select === */
+.participant-dropdown {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);       /* Subtle shadow for depth */
+}
+
+/* === Text Utilities === */
+.text-success {
+  color: #28a745;                                 /* Green for success messages */
+  font-weight: 500;
+}
+
+.text-muted {
+  color: #888;                                    /* Gray for muted or secondary text */
+  font-style: italic;
+}
+
+/* === Button Base Styling === */
+.btn {
+  display: auto;                                  /* Auto = default display value (usually block/inline) */
+  align-items: center;                            /* Used only if display is flex */
+  justify-content: center;  
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* === Link styled as a button === */
+a.btn {
+  text-decoration: none;                          /* Remove underline */
+  color: inherit;                                 /* Inherit color from parent */
+}
+
+/* === Vertical Button Group === */
+.button-group {
+  display: flex;
+  flex-direction: column;                         /* Stack buttons vertically */
+  gap: 10px;
+  align-items: center;
+}
+
+/* === Modal Overlay Container === */
+.modal {
+  display: none;                                  /* Hidden by default */
+  position: fixed;                                /* Position relative to viewport */
+  top: 0;
+  left: 0;
+  z-index: 10;                                    /* Ensure modal appears above other elements */
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);           /* Semi-transparent black backdrop */
+  align-items: center;                            /* Center modal vertically */
+  justify-content: center;                        /* Center modal horizontally */
+}
+
+.modal.show {
+  display: flex;                                  /* Show modal by turning on flex layout */
+}
+
+/* === Modal Content Box === */
+.modal-content {
+  background-color: #fff;
+  padding: 20px 24px;
+  border-radius: 12px;
+  width: 90%;                                     /* Responsive width */
+  max-width: 500px;                               /* But no more than 500px wide */
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);       /* Shadow for elevation */
+  text-align: center;
+  position: static;                               /* Reset any prior positioning */
+  top: auto;
+  left: auto;
+  transform: none;
+}
+
+/* === Modal Footer Buttons Group === */
+.modal-footer {
+  display: flex;
+  flex-direction: column;                         /* Stack buttons vertically */
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+}

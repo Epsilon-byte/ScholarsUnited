@@ -1,0 +1,49 @@
+extends layout
+
+block content
+  .matchmaking-container
+    h1 Find Study Buddies
+    
+    .search-section
+      form(action="/matchmaking/search", method="POST")
+        .search-input-group
+          input(type="text", name="searchTerm", placeholder="Search for study buddies...", value=searchTerm || '')
+          select(name="searchType")
+            option(value="name", selected=searchType === 'name') Name
+            option(value="academic", selected=searchType === 'academic') Academic Info
+            option(value="interest", selected=searchType === 'interest') Interest
+            option(value="course", selected=searchType === 'course') Course
+          button(type="submit") Search
+    
+    if searchPerformed
+      if users.length > 0
+        .search-results
+          h2 Search Results
+          each user in users
+            .user-card
+              .user-info
+                h3= user.FullName
+                p Academic: #{user.AcademicInfo}
+                if user.Interests
+                  p Interests: 
+                    span.interest-tag= user.Interests
+              .user-actions
+                a.connect-button(href=`/messages?receiverId=${user.UserID}`) Connect
+      else
+        p.no-results No users found matching your search criteria.
+    else
+      .all-users
+        h2 All Study Buddies
+        if users.length > 0
+          each user in users
+            .user-card
+              .user-info
+                h3= user.FullName
+                p Academic: #{user.AcademicInfo}
+                if user.Interests
+                  p Interests: 
+                    span.interest-tag= user.Interests
+              .user-actions
+                a.connect-button(href=`/messaging?receiverId=${user.UserID}&receiverName=${encodeURIComponent(user.FullName)}`) Connect
+        else
+          p.no-users No users available at the moment.
