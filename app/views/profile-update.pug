@@ -1,5 +1,16 @@
 .section-form
-  form(action='/profile/update' method='POST')
+  form(action='/profile/update' method='POST' enctype='multipart/form-data')
+    .form-group.profile-picture-upload
+      label(for='profilePicture') Profile Picture:
+      .current-picture
+        if userDetails && userDetails.ProfilePicture
+          img.profile-image(src=userDetails.ProfilePicture alt='Profile Picture')
+        else
+          .profile-placeholder
+            i.fas.fa-user
+      input.form-control-file(type='file', name='profilePicture', id='profilePicture', accept='image/*')
+      small.form-text Upload a profile picture (JPG, PNG, or GIF, max 5MB)
+
     .form-group
       label(for='fullName') Full Name:
       input.form-control(type='text', name='fullName', id='fullName', value=(userDetails && userDetails.FullName) ? userDetails.FullName : '')
