@@ -19,5 +19,42 @@ block content
                   p 📅 #{event.date || 'Date N/A'} at 🕒 #{event.time || 'Time N/A'}
                 .event-actions
                   a(href=`/events/${event.EventID}` class='btn-view') View Details
+          
+          // Pagination controls
+          if pagination && pagination.totalPages > 1
+            .pagination-container
+              .pagination-info
+                p Showing #{events.length} of #{pagination.totalEvents} events
+              
+              .pagination-controls
+                if pagination.hasPrev
+                  a.pagination-button(href=`/events?page=${pagination.page - 1}&limit=${pagination.limit}`) 
+                    i.fas.fa-chevron-left
+                    |  Previous
+                
+                .pagination-pages
+                  - var startPage = Math.max(1, pagination.page - 2)
+                  - var endPage = Math.min(pagination.totalPages, startPage + 4)
+                  
+                  if startPage > 1
+                    a.pagination-page(href=`/events?page=1&limit=${pagination.limit}`) 1
+                    if startPage > 2
+                      span.pagination-ellipsis ...
+                  
+                  - for (var i = startPage; i <= endPage; i++)
+                    if i === pagination.page
+                      span.pagination-page.active #{i}
+                    else
+                      a.pagination-page(href=`/events?page=${i}&limit=${pagination.limit}`) #{i}
+                  
+                  if endPage < pagination.totalPages
+                    if endPage < pagination.totalPages - 1
+                      span.pagination-ellipsis ...
+                    a.pagination-page(href=`/events?page=${pagination.totalPages}&limit=${pagination.limit}`) #{pagination.totalPages}
+                
+                if pagination.hasNext
+                  a.pagination-button(href=`/events?page=${pagination.page + 1}&limit=${pagination.limit}`) 
+                    | Next 
+                    i.fas.fa-chevron-right
         else
           p.no-events Sorry, no events are currently scheduled.

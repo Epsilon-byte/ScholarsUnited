@@ -5,9 +5,13 @@ const bcrypt = require("bcryptjs"); // Library for hashing passwords
 const bodyParser = require("body-parser"); // Middleware for parsing request bodies
 const dotenv = require("dotenv"); // Loads environment variables from a .env file
 const ensureAuthenticated = require("./services/authMiddleware"); // Custom middleware to ensure user authentication
+const helmet = require('helmet'); // Security headers
 
 // Imports helper functions for formatting date and time
 const { formatDate, formatTime } = require("./helper.js");
+
+// Imports password policy service
+const passwordPolicy = require('./services/passwordPolicy');
 
 // Loads the environment variables from .env file
 dotenv.config();
@@ -18,6 +22,21 @@ const app = express();
 // ========== MIDDLEWARE SETUP ==========
 // Serves static files (e.g., CSS) from the "app/public" directory
 app.use(express.static("app/public"));
+
+// Add Helmet middleware for security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:"],
+    },
+  },
+  // Disable X-Powered-By header to hide Express
+  hidePoweredBy: true
+}));
 
 // Parses URL-encoded and JSON request bodies
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -42,6 +61,12 @@ app.use(
     })
 );
 
+// CSRF protection removed to fix errors
+
+// Rate limiting setup for login attempts
+const loginAttempts = new Map();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCK_TIME = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 // Sets the view engine to Pug and specify the views directory
 app.set('view engine', 'pug');
@@ -49,6 +74,29 @@ app.set('views', './app/views');
 
 // Imports database functions from db.js
 const db = require('./services/db');
+
+// Import password reset service
+const passwordReset = require('./services/passwordReset');
+
+// Import CAPTCHA service
+const captchaService = require('./services/captchaService');
+
+// Import study group models
+const { StudyGroup } = require("./models/study-group");
+const { StudySession } = require("./models/study-session");
+
+// Imports models for database interactions
+const { User } = require("./models/user");
+const { Interest } = require("./models/interest");
+const { UserInterest } = require("./models/user-interest");
+const { Course } = require("./models/course");
+const { UserCourse } = require("./models/user-course");
+const { Event } = require("./models/event");
+const { EventParticipant } = require("./models/event-participant");
+const { EventMessage } = require("./models/event-message");
+const { Message } = require("./models/message");
+const { BuddyRequest } = require("./models/buddy-request");
+const { Notification } = require("./models/notification");
 
 // ========== ROUTES ==========
 
@@ -61,18 +109,6 @@ app.get("/", (req, res) => {
     // Otherwise, redirect to the login page
     res.redirect("/login");
 });
-
-// Imports models for database interactions
-const { User } = require("./models/user");
-const { Interest } = require("./models/interest");
-const { UserInterest } = require("./models/user-interest");
-const { Course } = require("./models/course");
-const { UserCourse } = require("./models/user-course");
-const { Event } = require("./models/event");
-const { EventParticipant } = require("./models/event-participant");
-const { Message } = require("./models/message");
-const { BuddyRequest } = require("./models/buddy-request");
-const { Notification } = require("./models/notification");
 
 // Renders the index page
 app.get("/", function (req, res) {
@@ -250,90 +286,169 @@ app.get("/user-courses/:userId", ensureAuthenticated, function (req, res) {
         });
 });
 
-// ========== EVENT ROUTES ==========
-
-// Fetch and render all events
+// ========== EVENTS ROUTES ==========
+// Main events page with pagination
 app.get("/events", ensureAuthenticated, async (req, res) => {
   try {
-    const events = await Event.getAllEvents();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 6;
+    const offset = (page - 1) * limit;
 
+    // Get total count of events
+    const totalEvents = await Event.getEventCount();
+    const totalPages = Math.ceil(totalEvents / limit);
+
+    // Get events with pagination
+    const eventsData = await Event.getEventsPaginated(offset, limit);
+    
     // Format date and time for display
-    events.forEach(event => {
-      event.date = formatDate(event.Date);
-      event.time = formatTime(event.Time);
-    });
+    const events = eventsData.map(event => ({
+      ...event,
+      date: new Date(event.Date).toLocaleDateString(),
+      time: event.Time
+    }));
 
-    res.render("events", { events: events || [] });
+    // Pagination data
+    const pagination = {
+      page,
+      limit,
+      totalEvents,
+      totalPages,
+      hasPrev: page > 1,
+      hasNext: page < totalPages
+    };
+
+    res.render("events", {
+      events,
+      pagination,
+      user: req.session.user
+    });
   } catch (err) {
     console.error("Error fetching events:", err);
-    res.render("events", { events: [] });
+    res.render("events", {
+      events: [],
+      pagination: null,
+      error: "Failed to load events"
+    });
   }
 });
 
-// Render event creation form
+// Create event page
 app.get("/events/create", ensureAuthenticated, (req, res) => {
-  res.render("create-event");
+  res.render("create-event", {
+    user: req.session.user,
+    messages: req.session.messages || {}
+  });
+  delete req.session.messages;
 });
 
-// Handle event creation form submission
+// Create event submission
 app.post("/events/create", ensureAuthenticated, async (req, res) => {
-  const { title, description, date, time, location, userId } = req.body;
+  const { title, description, date, time, location } = req.body;
+  const userId = req.session.user.id;
 
   try {
+    // Validate required fields
+    if (!title || !date) {
+      req.session.messages = { error: ["Title and date are required."] };
+      return res.redirect('/events/create');
+    }
+
+    // Create the event
     const eventId = await Event.createEvent(title, description, date, time, location, userId);
-    console.log("Event created with ID:", eventId);
-    res.redirect("/events");
+    
+    if (eventId) {
+      // Automatically add the creator as a participant
+      await EventParticipant.addParticipant(userId, eventId);
+      
+      req.session.messages = { success: ["Event created successfully!"] };
+      res.redirect(`/events/${eventId}`);
+    } else {
+      req.session.messages = { error: ["Failed to create event."] };
+      res.redirect('/events/create');
+    }
   } catch (err) {
     console.error("Error creating event:", err);
-    res.status(500).send("Error creating event");
+    req.session.messages = { error: ["Something went wrong."] };
+    res.redirect('/events/create');
   }
 });
 
-// Fetch and render event details by ID
-app.get("/events/:id", ensureAuthenticated, async (req, res) => {
-  const eventId = req.params.id;
-
-  try {
-    const event = await Event.getEventById(eventId);
-    if (!event) return res.status(404).send("Event not found");
-
-    event.date = formatDate(event.Date);
-    event.time = formatTime(event.Time);
-
-    const eventInstance = new Event(eventId);
-    const participants = await eventInstance.getEventParticipants();
-
-    const userId = req.session.user.id;
-    const hasJoined = participants.some(p => p.UserID === userId);
-
-    // Pass the event object, participants, and other data to the template
-    res.render("event-details", {
-      event,
-      user: req.session.user,
-      participants,
-      hasJoined
-    });
-  } catch (err) {
-    console.error("Error fetching event details:", err);
-    res.status(500).send("Error fetching event details");
-  }
-});
-
-/// Renders the edit form with current values
+// Edit event page
 app.get("/events/edit/:id", ensureAuthenticated, async (req, res) => {
   const eventId = req.params.id;
 
   try {
-    const event = await Event.getEventById(eventId);
-    if (!event) return res.status(404).send("Event not found");
+    const eventData = await Event.getEventById(eventId);
+    
+    if (!eventData) {
+      req.flash('error', 'Event not found');
+      return res.redirect('/events');
+    }
 
-    res.render("edit-event", { event });
+    // Format date for the form (YYYY-MM-DD)
+    const event = {
+      ...eventData,
+      formattedDate: new Date(eventData.Date).toISOString().split('T')[0]
+    };
+
+    res.render("edit-event", {
+      event,
+      user: req.session.user,
+      messages: req.session.messages || {}
+    });
+    delete req.session.messages;
   } catch (err) {
-    console.error("Error loading edit event form:", err);
-    res.status(500).send("Error loading edit form");
+    console.error("Error fetching event for editing:", err);
+    req.flash('error', 'Error loading event');
+    res.redirect('/events');
   }
 });
 
+// Event details page
+app.get("/events/:id", ensureAuthenticated, async (req, res) => {
+  const eventId = req.params.id;
+  const userId = req.session.user.id;
+
+  try {
+    // Get event details
+    const eventData = await Event.getEventById(eventId);
+    if (!eventData) {
+      req.flash('error', 'Event not found');
+      return res.redirect('/events');
+    }
+
+    // Format date and time
+    const event = {
+      ...eventData,
+      date: new Date(eventData.Date).toLocaleDateString(),
+      time: eventData.Time
+    };
+
+    // Check if user is already a participant
+    const hasJoined = await EventParticipant.isParticipating(userId, eventId);
+    
+    // Get participants
+    const participants = await EventParticipant.getEventParticipants(eventId);
+
+    res.render("event-details", {
+      event,
+      participants,
+      hasJoined,
+      user: req.session.user,
+      messages: req.session.messages || {}
+    });
+    
+    // Clear flash messages
+    delete req.session.messages;
+  } catch (err) {
+    console.error("Error fetching event details:", err);
+    req.flash('error', 'Error loading event details');
+    res.redirect('/events');
+  }
+});
+
+// Update event submission
 app.post("/events/edit/:id", ensureAuthenticated, async (req, res) => {
   const eventId = req.params.id;
   const { title, description, date, time, location } = req.body;
@@ -377,6 +492,193 @@ app.post("/events/delete/:id", ensureAuthenticated, async (req, res) => {
   }
 });
 
+// Handles joining an event
+app.post("/events/join/:id", ensureAuthenticated, async function (req, res) {
+    const eventId = req.params.id;
+    const userId = req.session.user.id;
+
+    try {
+        const result = await EventParticipant.addParticipant(userId, eventId);
+
+        if (result.success) {
+            req.flash('success', 'Successfully joined the event!');
+            res.redirect(`/events/${eventId}`);
+        } else {
+            req.flash('error', 'Failed to join event');
+            res.redirect(`/events/${eventId}`);
+        }
+    } catch (err) {
+        console.error("Error joining event:", err);
+        req.flash('error', 'Error joining event');
+        res.redirect(`/events/${eventId}`);
+    }
+});
+
+// Handles leaving an event
+app.post("/events/leave/:id", ensureAuthenticated, async function (req, res) {
+    const eventId = req.params.id;
+    const userId = req.session.user.id;
+
+    try {
+        const result = await EventParticipant.removeParticipant(userId, eventId);
+
+        if (result.success) {
+            req.flash('success', 'Successfully left the event');
+            res.redirect(`/events/${eventId}`);
+        } else {
+            req.flash('error', 'You are not a participant in this event');
+            res.redirect(`/events/${eventId}`);
+        }
+    } catch (err) {
+        console.error("Error leaving event:", err);
+        req.flash('error', 'Error leaving event');
+        res.redirect(`/events/${eventId}`);
+    }
+});
+
+// Event chat page
+app.get("/events/:id/chat", ensureAuthenticated, async function (req, res) {
+    const eventId = req.params.id;
+    const userId = req.session.user.id;
+
+    try {
+        // Get event details
+        const eventData = await Event.getEventById(eventId);
+        if (!eventData) {
+            req.flash('error', 'Event not found');
+            return res.redirect('/events');
+        }
+
+        // Format date and time
+        const event = {
+            ...eventData,
+            date: new Date(eventData.Date).toLocaleDateString(),
+            time: eventData.Time
+        };
+
+        // Check if user is a participant
+        const isParticipant = await EventParticipant.isParticipating(userId, eventId);
+        
+        // Get participants
+        const participants = await EventParticipant.getEventParticipants(eventId);
+        
+        // Get chat messages
+        const messages = await EventMessage.getEventMessages(eventId);
+
+        res.render('event-chat', {
+            event,
+            participants,
+            messages,
+            isParticipant,
+            user: req.session.user
+        });
+    } catch (err) {
+        console.error("Error loading event chat:", err);
+        req.flash('error', 'Error loading event chat');
+        res.redirect('/events');
+    }
+});
+
+// API endpoint for sending event messages
+app.post("/api/events/message", ensureAuthenticated, async function (req, res) {
+    const { eventId, content } = req.body;
+    const userId = req.session.user.id;
+
+    if (!eventId || !content) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'Event ID and message content are required' 
+        });
+    }
+
+    try {
+        // Check if user is a participant
+        const canSend = await EventMessage.canUserSendMessage(userId, eventId);
+        if (!canSend) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'You must be a participant to send messages' 
+            });
+        }
+
+        // Create and save the message
+        const result = await EventMessage.createMessage(userId, eventId, content);
+        
+        if (result.success) {
+            // Get the sender's name
+            const user = req.session.user;
+            
+            // Emit the message via Socket.IO
+            const io = req.app.io;
+            io.to(`event-${eventId}`).emit('eventMessage', {
+                userId,
+                eventId,
+                message: content,
+                timestamp: new Date(),
+                senderName: user.fullName || user.email
+            });
+            
+            return res.json({ 
+                success: true, 
+                message: 'Message sent successfully' 
+            });
+        } else {
+            return res.status(500).json({ 
+                success: false, 
+                message: 'Failed to send message' 
+            });
+        }
+    } catch (err) {
+        console.error("Error sending event message:", err);
+        return res.status(500).json({ 
+            success: false, 
+            message: 'Error sending message' 
+        });
+    }
+});
+
+// Get event participants API
+app.get("/api/events/:id/participants", ensureAuthenticated, async function (req, res) {
+    const eventId = req.params.id;
+
+    try {
+        const participants = await EventParticipant.getEventParticipants(eventId);
+        res.json({ success: true, participants });
+    } catch (err) {
+        console.error("Error fetching participants:", err);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error fetching participants' 
+        });
+    }
+});
+
+// Get event messages API
+app.get("/api/events/:id/messages", ensureAuthenticated, async function (req, res) {
+    const eventId = req.params.id;
+    const userId = req.session.user.id;
+
+    try {
+        // Check if user is a participant
+        const canAccess = await EventParticipant.isParticipating(userId, eventId);
+        if (!canAccess) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'You must be a participant to view messages' 
+            });
+        }
+
+        const messages = await EventMessage.getEventMessages(eventId);
+        res.json({ success: true, messages });
+    } catch (err) {
+        console.error("Error fetching messages:", err);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error fetching messages' 
+        });
+    }
+});
+
 // ========== EVENT-PARTICIPANT ROUTES ==========
 // Fetches participants for a specific event
 app.get("/event-participants/:eventId", ensureAuthenticated, function (req, res) {
@@ -413,7 +715,6 @@ app.post("/events/join/:id", ensureAuthenticated, async (req, res) => {
     res.redirect(`/events/${eventId}`);
   }
 });
-
 
 // ========== MESSAGE ROUTES ==========
 // Show messages for the current user
@@ -540,9 +841,7 @@ app.post("/messages/update/:id", ensureAuthenticated, async (req, res) => {
   }
 });
 
-
-  
-  // ========== BUDDY REQUEST ROUTES ==========
+// ========== BUDDY REQUEST ROUTES ==========
 // Fetches sent buddy requests for a specific user
 app.get("/buddyRequests/sent/:userId", ensureAuthenticated, function (req, res) {
     BuddyRequest.getSentRequests(req.params.userId)
@@ -724,17 +1023,74 @@ app.post("/events/join/:id", ensureAuthenticated, async function (req, res) {
 // ========== LOGIN ROUTE ==========
 // Renders the login page
 app.get("/login", (req, res) => {
-    res.render("login", { messages: req.session.messages });
+    // Generate a simple CAPTCHA
+    const captcha = captchaService.generateCaptcha();
+    
+    // Store the CAPTCHA text in the session
+    req.session.captcha = captcha.text;
+    
+    res.render("login", { 
+        messages: req.session.messages,
+        captchaSvg: captcha.svg
+    });
     req.session.messages = {}; // Clear messages after rendering
 });
 
 // Handles login form submission
 app.post("/login", async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, captcha } = req.body;
+    
+    // Verify CAPTCHA
+    if (!captcha || captcha.trim() !== req.session.captcha) {
+        req.session.messages = { 
+            error: ["Incorrect CAPTCHA. Please try again."] 
+        };
+        return res.redirect('/login');
+    }
+    
+    // Rate limiting check
+    const ipAddress = req.ip;
+    const currentTime = Date.now();
+    
+    if (loginAttempts.has(ipAddress)) {
+        const attemptData = loginAttempts.get(ipAddress);
+        
+        // Check if account is locked
+        if (attemptData.lockUntil && attemptData.lockUntil > currentTime) {
+            const minutesLeft = Math.ceil((attemptData.lockUntil - currentTime) / 60000);
+            req.session.messages = { 
+                error: [`Too many failed login attempts. Please try again in ${minutesLeft} minutes.`] 
+            };
+            return res.redirect('/login');
+        }
+        
+        // Reset lock if it has expired
+        if (attemptData.lockUntil && attemptData.lockUntil <= currentTime) {
+            attemptData.attempts = 0;
+            attemptData.lockUntil = null;
+        }
+    } else {
+        // First login attempt
+        loginAttempts.set(ipAddress, {
+            attempts: 0,
+            lockUntil: null
+        });
+    }
 
     try {
         const user = await User.findByEmail(email);
         if (!user) {
+            // Increment failed attempts
+            const attemptData = loginAttempts.get(ipAddress);
+            attemptData.attempts += 1;
+            
+            // Lock account if too many attempts
+            if (attemptData.attempts >= MAX_LOGIN_ATTEMPTS) {
+                attemptData.lockUntil = currentTime + LOCK_TIME;
+            }
+            
+            loginAttempts.set(ipAddress, attemptData);
+            
             console.log("❌ User not found in database!");
             return res.status(401).send("Invalid email or password");
         }
@@ -743,9 +1099,23 @@ app.post("/login", async (req, res) => {
 
         const match = await bcrypt.compare(password, user.Password);
         if (!match) {
+            // Increment failed attempts
+            const attemptData = loginAttempts.get(ipAddress);
+            attemptData.attempts += 1;
+            
+            // Lock account if too many attempts
+            if (attemptData.attempts >= MAX_LOGIN_ATTEMPTS) {
+                attemptData.lockUntil = currentTime + LOCK_TIME;
+            }
+            
+            loginAttempts.set(ipAddress, attemptData);
+            
             console.log("❌ Password mismatch!");
             return res.status(401).send("Invalid email or password");
         }
+
+        // Reset login attempts on successful login
+        loginAttempts.delete(ipAddress);
 
         // Sets session data
         req.session.user = {
@@ -762,17 +1132,50 @@ app.post("/login", async (req, res) => {
     }
 });
 
-
 // ========== REGISTRATION ROUTE ==========
 // Renders the registration page
 app.get("/register", (req, res) => {
-    res.render("register", { messages: req.session.messages });
+    // Generate a simple CAPTCHA
+    const captcha = captchaService.generateCaptcha();
+    
+    // Store the CAPTCHA text in the session
+    req.session.captcha = captcha.text;
+    
+    res.render("register", { 
+        messages: req.session.messages,
+        captchaSvg: captcha.svg
+    });
     req.session.messages = {}; // Clear messages after rendering
 });
 
 // Handles registration form submission
 app.post("/register", async (req, res) => {
-    const { email, password, fullName, interests, hobbies, academic_info, time_frames } = req.body;
+    const { email, password, confirmPassword, fullName, interests, hobbies, academic_info, time_frames, captcha } = req.body;
+
+    // Verify CAPTCHA
+    if (!captcha || captcha.trim() !== req.session.captcha) {
+        req.session.messages = { 
+            error: ["Incorrect CAPTCHA. Please try again."] 
+        };
+        return res.redirect('/register');
+    }
+    
+    // Check if passwords match
+    if (password !== confirmPassword) {
+        req.session.messages = { 
+            error: ["Passwords do not match."] 
+        };
+        return res.redirect('/register');
+    }
+    
+    // Validate password against policy
+    const passwordValidation = passwordPolicy.validatePassword(password);
+    if (!passwordValidation.isValid) {
+        req.session.messages = { 
+            error: [passwordValidation.message] 
+        };
+        return res.redirect('/register');
+    }
 
     try {
         const newUser = await User.register({
@@ -861,7 +1264,7 @@ app.get("/profile", ensureAuthenticated, async (req, res) => {
       res.redirect("/profile");
     } catch (err) {
       console.error("❌ Error updating profile:", err);
-  
+
       // ✅ Improved, specific error messages
       if (err.code === 'ER_PARSE_ERROR') {
         req.session.messages = {
@@ -875,31 +1278,31 @@ app.get("/profile", ensureAuthenticated, async (req, res) => {
         req.session.messages = {
           error: ["Something went wrong while updating your profile. Please try again."]
         };
-  
+
         // Optional: add technical details in development mode
         if (process.env.NODE_ENV !== 'production') {
           req.session.messages.error.push(`Details: ${err.message}`);
         }
       }
-  
+
       res.redirect("/profile");
     }
   });
-  
+
   app.post('/profile/delete', ensureAuthenticated, async (req, res) => {
     const userId = req.session.user.id;
-  
+
     try {
       // Delete user from database
       await db.query('DELETE FROM Users WHERE UserID = ?', [userId]);
-  
+
       // Clear session and redirect
       req.session.destroy(err => {
         if (err) {
           console.error("Session destroy error:", err);
           return res.status(500).send("Error ending session after deleting account.");
         }
-  
+
         res.redirect('/login');
       });
     } catch (err) {
@@ -907,12 +1310,11 @@ app.get("/profile", ensureAuthenticated, async (req, res) => {
       res.status(500).send("Error deleting account.");
     }
   });
-  
-  
+
   app.post('/profile/reset-password', ensureAuthenticated, async (req, res) => {
     const userId = req.session.user.id;
     const { currentPassword, newPassword, confirmPassword } = req.body;
-  
+
     try {
       // ✅ Validate password match
       if (newPassword !== confirmPassword) {
@@ -921,51 +1323,216 @@ app.get("/profile", ensureAuthenticated, async (req, res) => {
         };
         return res.redirect('/profile');
       }
-  
+
+      // Validate password against policy
+      const passwordValidation = passwordPolicy.validatePassword(newPassword);
+      if (!passwordValidation.isValid) {
+        req.session.messages = { 
+          error: [passwordValidation.message] 
+        };
+        return res.redirect('/profile');
+      }
+
       // ✅ Retrieve current hashed password
       const [results] = await db.query('SELECT Password FROM Users WHERE UserID = ?', [userId]);
-  
+
       if (!results || results.length === 0) {
         req.session.messages = {
           error: ["User not found. Please log in again."]
         };
         return res.redirect('/profile');
       }
-  
+
       const hashedPassword = results[0].Password;
       const passwordMatch = await bcrypt.compare(currentPassword, hashedPassword);
-  
+
       if (!passwordMatch) {
         req.session.messages = {
           error: ["Current password is incorrect. Please try again."]
         };
         return res.redirect('/profile');
       }
-  
+
       // ✅ Update to new password
       const newHashedPassword = await bcrypt.hash(newPassword, 10);
       await db.query('UPDATE Users SET Password = ? WHERE UserID = ?', [newHashedPassword, userId]);
-  
+
       req.session.messages = {
         success: ["Password updated successfully."]
       };
       res.redirect('/profile');
     } catch (err) {
       console.error("❌ Error resetting password:", err);
-  
+
       // ✅ Friendly fallback message with optional debug info
       req.session.messages = {
         error: ["An unexpected error occurred while resetting your password."]
       };
-  
+
       if (process.env.NODE_ENV !== 'production') {
         req.session.messages.error.push(`Details: ${err.message}`);
       }
-  
+
       res.redirect('/profile');
     }
   });
+
+// ========== PASSWORD RESET ROUTES ==========
+// Forgot password form
+app.get('/forgot-password', (req, res) => {
+  // Generate a simple CAPTCHA
+  const captcha = captchaService.generateCaptcha();
   
+  // Store the CAPTCHA text in the session
+  req.session.captcha = captcha.text;
+  
+  res.render('forgot-password', { 
+    messages: req.session.messages,
+    captchaSvg: captcha.svg
+  });
+  req.session.messages = {}; // Clear messages after rendering
+});
+
+// Handle forgot password submission
+app.post('/forgot-password', async (req, res) => {
+  const { email, captcha } = req.body;
+  
+  // Verify CAPTCHA
+  if (!captcha || captcha.trim() !== req.session.captcha) {
+    req.session.messages = { 
+      error: ["Incorrect CAPTCHA. Please try again."] 
+    };
+    return res.redirect('/forgot-password');
+  }
+  
+  try {
+    // Find user by email
+    const user = await User.findByEmail(email);
+    
+    if (user) {
+      // Generate reset token
+      const token = await passwordReset.createResetToken(user.UserID);
+      
+      // Send reset email
+      await passwordReset.sendResetEmail(user.Email, token, user.FullName);
+    }
+    
+    // Always show success message even if email doesn't exist (security best practice)
+    req.session.messages = { 
+      success: ["If an account with that email exists, we've sent a password reset link."] 
+    };
+    return res.redirect('/login');
+  } catch (err) {
+    console.error("Password reset error:", err);
+    req.session.messages = { 
+      error: [err.message || "An error occurred. Please try again later."] 
+    };
+    return res.redirect('/forgot-password');
+  }
+});
+
+// Reset password form
+app.get('/reset-password/:token', async (req, res) => {
+  const { token } = req.params;
+  
+  try {
+    // Verify token
+    const tokenData = await passwordReset.verifyToken(token);
+    
+    if (!tokenData) {
+      req.session.messages = { 
+        error: ["Invalid or expired password reset link. Please request a new one."] 
+      };
+      return res.redirect('/forgot-password');
+    }
+    
+    // Generate a simple CAPTCHA
+    const captcha = captchaService.generateCaptcha();
+    
+    // Store the CAPTCHA text in the session
+    req.session.captcha = captcha.text;
+    
+    // Render reset password form
+    res.render('reset-password', { 
+      token,
+      captchaSvg: captcha.svg,
+      messages: req.session.messages
+    });
+    req.session.messages = {}; // Clear messages after rendering
+  } catch (err) {
+    console.error("Token verification error:", err);
+    req.session.messages = { 
+      error: [err.message || "An error occurred. Please try again later."] 
+    };
+    return res.redirect('/forgot-password');
+  }
+});
+
+// Handle reset password submission
+app.post('/reset-password/:token', async (req, res) => {
+  const { token } = req.params;
+  const { password, confirmPassword, captcha } = req.body;
+  
+  // Verify CAPTCHA
+  if (!captcha || captcha.trim() !== req.session.captcha) {
+    req.session.messages = { 
+      error: ["Incorrect CAPTCHA. Please try again."] 
+    };
+    return res.redirect(`/reset-password/${token}`);
+  }
+  
+  // Validate password match
+  if (password !== confirmPassword) {
+    req.session.messages = { 
+      error: ["Passwords do not match. Please try again."] 
+    };
+    return res.redirect(`/reset-password/${token}`);
+  }
+  
+  // Validate password against policy
+  const passwordValidation = passwordPolicy.validatePassword(password);
+  if (!passwordValidation.isValid) {
+    req.session.messages = { 
+      error: [passwordValidation.message] 
+    };
+    return res.redirect(`/reset-password/${token}`);
+  }
+  
+  try {
+    // Verify token
+    const tokenData = await passwordReset.verifyToken(token);
+    
+    if (!tokenData) {
+      req.session.messages = { 
+        error: ["Invalid or expired password reset link. Please request a new one."] 
+      };
+      return res.redirect('/forgot-password');
+    }
+    
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Update user password
+    await db.query(
+      'UPDATE Users SET Password = ? WHERE UserID = ?',
+      [hashedPassword, tokenData.UserID]
+    );
+    
+    // Mark token as used
+    await passwordReset.markTokenAsUsed(tokenData.TokenID);
+    
+    req.session.messages = { 
+      success: ["Your password has been reset successfully. Please log in with your new password."] 
+    };
+    return res.redirect('/login');
+  } catch (err) {
+    console.error("Password reset error:", err);
+    req.session.messages = { 
+      error: [err.message || "An error occurred. Please try again later."] 
+    };
+    return res.redirect(`/reset-password/${token}`);
+  }
+});
 
 // ========== LOGOUT ROUTE ==========
 // Handles user logout
@@ -1069,8 +1636,561 @@ app.post('/matchmaking/search', async (req, res) => {
   }
 });
 
+// Export the app for socket.io integration
+module.exports = app;
 
-// Starts the server on port 3000
-app.listen(3000, function () {
-    console.log(`Server running at http://127.0.0.1:3000/`);
+// ========== STUDY GROUP ROUTES ==========
+// List all study groups with pagination
+app.get("/study-groups", ensureAuthenticated, async (req, res) => {
+  try {
+    // Get pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    
+    // Get filters
+    const filters = {
+      courseId: req.query.courseId,
+      search: req.query.search,
+      limit,
+      offset
+    };
+    
+    // Get total count of groups for pagination
+    const totalGroups = await StudyGroup.getGroupCount(filters);
+    const totalPages = Math.ceil(totalGroups / limit);
+    
+    // Get groups for current page
+    const groups = await StudyGroup.getAllGroups(filters);
+    
+    // Get user's groups
+    const userGroups = await StudyGroup.getUserGroups(req.session.user.id);
+    
+    // Get all courses for filter dropdown
+    const courses = await Course.getAllCourses();
+
+    res.render("study-groups", { 
+      groups: groups || [], 
+      userGroups: userGroups || [],
+      courses: courses || [],
+      user: req.session.user,
+      filters: {
+        courseId: req.query.courseId,
+        search: req.query.search
+      },
+      pagination: {
+        page,
+        limit,
+        totalPages,
+        totalGroups,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    });
+  } catch (err) {
+    console.error("Error fetching study groups:", err);
+    res.render("study-groups", { 
+      groups: [],
+      userGroups: [],
+      courses: [],
+      user: req.session.user,
+      filters: {},
+      pagination: {
+        page: 1,
+        limit: 10,
+        totalPages: 0,
+        totalGroups: 0,
+        hasNext: false,
+        hasPrev: false
+      }
+    });
+  }
+});
+
+// Create study group form
+app.get("/study-groups/create", ensureAuthenticated, async (req, res) => {
+  try {
+    // Get all courses for dropdown
+    const courses = await Course.getAllCourses();
+    
+    res.render("create-study-group", {
+      courses: courses || [],
+      user: req.session.user
+    });
+  } catch (err) {
+    console.error("Error loading create study group form:", err);
+    res.status(500).send("Error loading form");
+  }
+});
+
+// Handle study group creation
+app.post("/study-groups/create", ensureAuthenticated, async (req, res) => {
+  try {
+    const { name, description, courseId, maxParticipants, isPrivate } = req.body;
+    const creatorId = req.session.user.id;
+    
+    // Create the study group
+    const groupId = await StudyGroup.createGroup(
+      name, 
+      description, 
+      courseId, 
+      creatorId, 
+      maxParticipants || 10, 
+      isPrivate === 'on'
+    );
+    
+    // Redirect to the new group page
+    res.redirect(`/study-groups/${groupId}`);
+  } catch (err) {
+    console.error("Error creating study group:", err);
+    res.status(500).send("Error creating study group");
+  }
+});
+
+// View study group details
+app.get("/study-groups/:id", ensureAuthenticated, async (req, res) => {
+  try {
+    const groupId = req.params.id;
+    const userId = req.session.user.id;
+    
+    // Get group details
+    const group = new StudyGroup(groupId);
+    const groupDetails = await group.getGroupDetails();
+    
+    if (!groupDetails) {
+      return res.status(404).send("Study group not found");
+    }
+    
+    // Check if user is a member
+    const membership = await StudyGroup.isUserMember(groupId, userId);
+    
+    // If group is private and user is not a member, deny access
+    if (groupDetails.IsPrivate && !membership) {
+      return res.status(403).render("error", {
+        message: "This is a private study group. You need to be a member to view it."
+      });
+    }
+    
+    // Get group members
+    const members = await group.getGroupMembers();
+    
+    // Get upcoming sessions
+    const sessions = await StudySession.getGroupSessions(groupId);
+    
+    // Format dates and times
+    sessions.forEach(session => {
+      session.formattedDate = formatDate(session.Date);
+      session.formattedStartTime = formatTime(session.StartTime);
+      session.formattedEndTime = formatTime(session.EndTime);
+    });
+    
+    res.render("study-group-details", {
+      group: groupDetails,
+      members,
+      sessions,
+      user: req.session.user,
+      isMember: !!membership,
+      isCreator: membership && membership.Role === 'creator',
+      isModerator: membership && (membership.Role === 'moderator' || membership.Role === 'creator')
+    });
+  } catch (err) {
+    console.error("Error fetching study group details:", err);
+    res.status(500).send("Error fetching study group details");
+  }
+});
+
+// Join a study group
+app.post("/study-groups/:id/join", ensureAuthenticated, async (req, res) => {
+  try {
+    const groupId = req.params.id;
+    const userId = req.session.user.id;
+    
+    // Check if user is already a member
+    const membership = await StudyGroup.isUserMember(groupId, userId);
+    
+    if (membership) {
+      req.session.messages = { info: ["You are already a member of this group."] };
+      return res.redirect(`/study-groups/${groupId}`);
+    }
+    
+    // Join the group
+    const group = new StudyGroup(groupId);
+    const result = await group.addMember(userId);
+    
+    if (result.success) {
+      req.session.messages = { success: ["You have successfully joined the group!"] };
+    } else {
+      req.session.messages = { error: [result.message] };
+    }
+    
+    res.redirect(`/study-groups/${groupId}`);
+  } catch (err) {
+    console.error("Error joining study group:", err);
+    res.status(500).send("Error joining study group");
+  }
+});
+
+// Leave a study group
+app.post("/study-groups/:id/leave", ensureAuthenticated, async (req, res) => {
+  try {
+    const groupId = req.params.id;
+    const userId = req.session.user.id;
+    
+    // Check if user is a member
+    const membership = await StudyGroup.isUserMember(groupId, userId);
+    
+    if (!membership) {
+      req.session.messages = { error: ["You are not a member of this group."] };
+      return res.redirect(`/study-groups/${groupId}`);
+    }
+    
+    // Check if user is the creator
+    if (membership.Role === 'creator') {
+      req.session.messages = { error: ["As the creator, you cannot leave the group. You can delete it instead."] };
+      return res.redirect(`/study-groups/${groupId}`);
+    }
+    
+    // Leave the group
+    const group = new StudyGroup(groupId);
+    await group.removeMember(userId);
+    
+    req.session.messages = { success: ["You have left the group."] };
+    res.redirect("/study-groups");
+  } catch (err) {
+    console.error("Error leaving study group:", err);
+    res.status(500).send("Error leaving study group");
+  }
+});
+
+// Delete a study group (creator only)
+app.post("/study-groups/:id/delete", ensureAuthenticated, async (req, res) => {
+  try {
+    const groupId = req.params.id;
+    const userId = req.session.user.id;
+    
+    // Check if user is the creator
+    const membership = await StudyGroup.isUserMember(groupId, userId);
+    
+    if (!membership || membership.Role !== 'creator') {
+      req.session.messages = { error: ["Only the creator can delete the group."] };
+      return res.redirect(`/study-groups/${groupId}`);
+    }
+    
+    // Delete the group
+    const group = new StudyGroup(groupId);
+    await group.deleteGroup();
+    
+    req.session.messages = { success: ["The study group has been deleted."] };
+    res.redirect("/study-groups");
+  } catch (err) {
+    console.error("Error deleting study group:", err);
+    res.status(500).send("Error deleting study group");
+  }
+});
+
+// ========== STUDY SESSION ROUTES ==========
+// Create study session form
+app.get("/study-groups/:groupId/sessions/create", ensureAuthenticated, async (req, res) => {
+  try {
+    const groupId = req.params.groupId;
+    const userId = req.session.user.id;
+    
+    // Check if user is a member
+    const membership = await StudyGroup.isUserMember(groupId, userId);
+    
+    if (!membership) {
+      req.session.messages = { error: ["You must be a member to create a session."] };
+      return res.redirect(`/study-groups/${groupId}`);
+    }
+    
+    // Get group details
+    const group = new StudyGroup(groupId);
+    const groupDetails = await group.getGroupDetails();
+    
+    res.render("create-study-session", {
+      group: groupDetails,
+      user: req.session.user
+    });
+  } catch (err) {
+    console.error("Error loading create study session form:", err);
+    res.status(500).send("Error loading form");
+  }
+});
+
+// Handle study session creation
+app.post("/study-groups/:groupId/sessions/create", ensureAuthenticated, async (req, res) => {
+  try {
+    const groupId = req.params.groupId;
+    const userId = req.session.user.id;
+    const { title, description, date, startTime, endTime, location, isOnline, meetingLink } = req.body;
+    
+    // Check if user is a member
+    const membership = await StudyGroup.isUserMember(groupId, userId);
+    
+    if (!membership) {
+      req.session.messages = { error: ["You must be a member to create a session."] };
+      return res.redirect(`/study-groups/${groupId}`);
+    }
+    
+    // Create the session
+    const sessionId = await StudySession.createSession(
+      groupId,
+      title,
+      description,
+      date,
+      startTime,
+      endTime,
+      location,
+      isOnline === 'on',
+      meetingLink,
+      userId
+    );
+    
+    req.session.messages = { success: ["Study session created successfully!"] };
+    res.redirect(`/study-sessions/${sessionId}`);
+  } catch (err) {
+    console.error("Error creating study session:", err);
+    res.status(500).send("Error creating study session");
+  }
+});
+
+// View study session details
+app.get("/study-sessions/:id", ensureAuthenticated, async (req, res) => {
+  try {
+    const sessionId = req.params.id;
+    const userId = req.session.user.id;
+    
+    // Get session details
+    const session = new StudySession(sessionId);
+    const sessionDetails = await session.getSessionDetails();
+    
+    if (!sessionDetails) {
+      return res.status(404).send("Study session not found");
+    }
+    
+    // Check if user is a member of the group
+    const membership = await StudyGroup.isUserMember(sessionDetails.GroupID, userId);
+    
+    // Get group details
+    const group = new StudyGroup(sessionDetails.GroupID);
+    const groupDetails = await group.getGroupDetails();
+    
+    // If group is private and user is not a member, deny access
+    if (groupDetails.IsPrivate && !membership) {
+      return res.status(403).render("error", {
+        message: "This session belongs to a private study group. You need to be a member to view it."
+      });
+    }
+    
+    // Get session participants
+    const participants = await session.getSessionParticipants();
+    
+    // Get session resources
+    const resources = await session.getSessionResources();
+    
+    // Check if user is participating
+    const isParticipating = await StudySession.isUserParticipant(sessionId, userId);
+    
+    // Format date and times
+    sessionDetails.formattedDate = formatDate(sessionDetails.Date);
+    sessionDetails.formattedStartTime = formatTime(sessionDetails.StartTime);
+    sessionDetails.formattedEndTime = formatTime(sessionDetails.EndTime);
+    
+    res.render("study-session-details", {
+      session: sessionDetails,
+      group: groupDetails,
+      participants,
+      resources,
+      user: req.session.user,
+      isMember: !!membership,
+      isCreator: sessionDetails.CreatorID === userId,
+      isParticipating: !!isParticipating,
+      participationStatus: isParticipating ? isParticipating.Status : null
+    });
+  } catch (err) {
+    console.error("Error fetching study session details:", err);
+    res.status(500).send("Error fetching study session details");
+  }
+});
+
+// Join a study session
+app.post("/study-sessions/:id/join", ensureAuthenticated, async (req, res) => {
+  try {
+    const sessionId = req.params.id;
+    const userId = req.session.user.id;
+    const status = req.body.status || 'attending';
+    
+    // Get session details
+    const session = new StudySession(sessionId);
+    const sessionDetails = await session.getSessionDetails();
+    
+    if (!sessionDetails) {
+      return res.status(404).send("Study session not found");
+    }
+    
+    // Check if user is a member of the group
+    const membership = await StudyGroup.isUserMember(sessionDetails.GroupID, userId);
+    
+    if (!membership) {
+      req.session.messages = { error: ["You must be a member of the group to join this session."] };
+      return res.redirect(`/study-groups/${sessionDetails.GroupID}`);
+    }
+    
+    // Join the session
+    const result = await session.addParticipant(userId, status);
+    
+    if (result.success) {
+      req.session.messages = { success: [result.message] };
+    } else {
+      req.session.messages = { error: [result.message] };
+    }
+    
+    res.redirect(`/study-sessions/${sessionId}`);
+  } catch (err) {
+    console.error("Error joining study session:", err);
+    res.status(500).send("Error joining study session");
+  }
+});
+
+// Leave a study session
+app.post("/study-sessions/:id/leave", ensureAuthenticated, async (req, res) => {
+  try {
+    const sessionId = req.params.id;
+    const userId = req.session.user.id;
+    
+    // Get session details
+    const session = new StudySession(sessionId);
+    const sessionDetails = await session.getSessionDetails();
+    
+    if (!sessionDetails) {
+      return res.status(404).send("Study session not found");
+    }
+    
+    // Check if user is participating
+    const isParticipating = await StudySession.isUserParticipant(sessionId, userId);
+    
+    if (!isParticipating) {
+      req.session.messages = { error: ["You are not participating in this session."] };
+      return res.redirect(`/study-sessions/${sessionId}`);
+    }
+    
+    // Check if user is the creator
+    if (sessionDetails.CreatorID === userId) {
+      req.session.messages = { error: ["As the creator, you cannot leave the session. You can delete it instead."] };
+      return res.redirect(`/study-sessions/${sessionId}`);
+    }
+    
+    // Leave the session
+    await session.removeParticipant(userId);
+    
+    req.session.messages = { success: ["You have left the session."] };
+    res.redirect(`/study-groups/${sessionDetails.GroupID}`);
+  } catch (err) {
+    console.error("Error leaving study session:", err);
+    res.status(500).send("Error leaving study session");
+  }
+});
+
+// Delete a study session (creator only)
+app.post("/study-sessions/:id/delete", ensureAuthenticated, async (req, res) => {
+  try {
+    const sessionId = req.params.id;
+    const userId = req.session.user.id;
+    
+    // Get session details
+    const session = new StudySession(sessionId);
+    const sessionDetails = await session.getSessionDetails();
+    
+    if (!sessionDetails) {
+      return res.status(404).send("Study session not found");
+    }
+    
+    // Check if user is the creator
+    if (sessionDetails.CreatorID !== userId) {
+      req.session.messages = { error: ["Only the creator can delete the session."] };
+      return res.redirect(`/study-sessions/${sessionId}`);
+    }
+    
+    // Delete the session
+    await session.deleteSession();
+    
+    req.session.messages = { success: ["The study session has been deleted."] };
+    res.redirect(`/study-groups/${sessionDetails.GroupID}`);
+  } catch (err) {
+    console.error("Error deleting study session:", err);
+    res.status(500).send("Error deleting study session");
+  }
+});
+
+// Add resource to study session
+app.post("/study-sessions/:id/resources/add", ensureAuthenticated, async (req, res) => {
+  try {
+    const sessionId = req.params.id;
+    const userId = req.session.user.id;
+    const { title, description, fileUrl, externalLink } = req.body;
+    
+    // Get session details
+    const session = new StudySession(sessionId);
+    const sessionDetails = await session.getSessionDetails();
+    
+    if (!sessionDetails) {
+      return res.status(404).send("Study session not found");
+    }
+    
+    // Check if user is participating
+    const isParticipating = await StudySession.isUserParticipant(sessionId, userId);
+    
+    if (!isParticipating) {
+      req.session.messages = { error: ["You must be a participant to add resources."] };
+      return res.redirect(`/study-sessions/${sessionId}`);
+    }
+    
+    // Add the resource
+    await session.addResource(title, description, fileUrl, externalLink, userId);
+    
+    req.session.messages = { success: ["Resource added successfully!"] };
+    res.redirect(`/study-sessions/${sessionId}`);
+  } catch (err) {
+    console.error("Error adding resource to study session:", err);
+    res.status(500).send("Error adding resource");
+  }
+});
+
+// Delete resource from study session
+app.post("/study-sessions/:sessionId/resources/:resourceId/delete", ensureAuthenticated, async (req, res) => {
+  try {
+    const sessionId = req.params.sessionId;
+    const resourceId = req.params.resourceId;
+    const userId = req.session.user.id;
+    
+    // Get session details
+    const session = new StudySession(sessionId);
+    const sessionDetails = await session.getSessionDetails();
+    
+    if (!sessionDetails) {
+      return res.status(404).send("Study session not found");
+    }
+    
+    // Check if user is the creator of the session or the uploader of the resource
+    const resources = await session.getSessionResources();
+    const resource = resources.find(r => r.ResourceID == resourceId);
+    
+    if (!resource) {
+      return res.status(404).send("Resource not found");
+    }
+    
+    if (sessionDetails.CreatorID !== userId && resource.UploadedBy !== userId) {
+      req.session.messages = { error: ["You don't have permission to delete this resource."] };
+      return res.redirect(`/study-sessions/${sessionId}`);
+    }
+    
+    // Delete the resource
+    await session.removeResource(resourceId);
+    
+    req.session.messages = { success: ["Resource deleted successfully!"] };
+    res.redirect(`/study-sessions/${sessionId}`);
+  } catch (err) {
+    console.error("Error deleting resource from study session:", err);
+    res.status(500).send("Error deleting resource");
+  }
 });

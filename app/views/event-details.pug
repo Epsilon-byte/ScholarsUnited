@@ -30,8 +30,10 @@ block content
             form(action=`/events/join/${event.EventID}` method="POST")
               button.btn.btn-primary(type="submit") ✅ Join Event
           else
-            form(action=`/events/leave/${event.EventID}` method="POST")
-              button.btn.btn-warning(type="submit") 👋 Leave Event
+            .event-actions-joined
+              a.btn.btn-primary(href=`/events/${event.EventID}/chat`) 💬 Event Chat
+              form(action=`/events/leave/${event.EventID}` method="POST" style="display: inline-block;")
+                button.btn.btn-warning(type="submit") 👋 Leave Event
 
           a.btn.btn-info(href=`/events/edit/${event.EventID}`) ✏️ Update Event
           button.btn.btn-danger(type="button" onclick=`openModal(${event.EventID})`) 🗑️ Delete Event

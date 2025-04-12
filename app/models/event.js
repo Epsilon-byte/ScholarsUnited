@@ -89,6 +89,30 @@ class Event {
       throw err;
     }
   }
+  
+  // Static method: get total count of events
+  static async getEventCount() {
+    const query = `SELECT COUNT(*) as count FROM Events`;
+    try {
+      const [results] = await db.query(query);
+      return results[0].count || 0;
+    } catch (err) {
+      console.error("Error counting events:", err);
+      throw err;
+    }
+  }
+  
+  // Static method: fetches events with pagination
+  static async getEventsPaginated(offset, limit) {
+    const query = `SELECT * FROM Events ORDER BY Date DESC LIMIT ? OFFSET ?`;
+    try {
+      const [results] = await db.query(query, [limit, offset]);
+      return results || [];
+    } catch (err) {
+      console.error("Error fetching paginated events:", err);
+      throw err;
+    }
+  }
 
   // Static method: fetches a specific event by ID
   static async getEventById(eventId) {

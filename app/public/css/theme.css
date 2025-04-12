@@ -1,0 +1,201 @@
+/* Theme variables */
+:root {
+  --primary: #4a6fa5;
+  --primary-dark: #3a5a8c;
+  --secondary: #6c757d;
+  --success: #28a745;
+  --danger: #dc3545;
+  --warning: #ffc107;
+  --info: #17a2b8;
+  --light: #f8f9fa;
+  --dark: #343a40;
+  
+  /* Light theme (default) */
+  --bg-color: #f8f9fa;
+  --text-color: #212529;
+  --card-bg: #ffffff;
+  --border-color: #dee2e6;
+  --input-bg: #ffffff;
+  --input-text: #495057;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --hover-bg: #e9ecef;
+  --navbar-bg: #ffffff;
+  --navbar-text: #212529;
+  --menu-bg: #ffffff;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --primary: #5d8acd;
+  --primary-dark: #4a6fa5;
+  --bg-color: #121212;
+  --text-color: #e0e0e0;
+  --card-bg: #1e1e1e;
+  --border-color: #444444;
+  --input-bg: #2d2d2d;
+  --input-text: #e0e0e0;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --hover-bg: #2d2d2d;
+  --navbar-bg: #1e1e1e;
+  --navbar-text: #e0e0e0;
+  --menu-bg: #1e1e1e;
+}
+
+/* Apply theme to elements */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.card, .modal-content {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+input, select, textarea, .form-control {
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  border-color: var(--border-color);
+}
+
+input:focus, select:focus, textarea:focus, .form-control:focus {
+  background-color: var(--input-bg);
+  color: var(--input-text);
+}
+
+.table {
+  color: var(--text-color);
+}
+
+.table-hover tbody tr:hover {
+  background-color: var(--hover-bg);
+}
+
+.border {
+  border-color: var(--border-color) !important;
+}
+
+.bg-light {
+  background-color: var(--card-bg) !important;
+}
+
+.text-dark {
+  color: var(--text-color) !important;
+}
+
+/* Navbar styles */
+.navbar {
+  background-color: var(--navbar-bg);
+  color: var(--navbar-text);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-left, .navbar-right {
+  color: var(--navbar-text);
+}
+
+.logo-text {
+  color: var(--navbar-text);
+}
+
+.menu-drawer {
+  background-color: var(--menu-bg);
+  color: var(--text-color);
+}
+
+.menu-links a {
+  color: var(--text-color);
+}
+
+.menu-links a:hover {
+  background-color: var(--hover-bg);
+}
+
+.menu-footer a {
+  color: var(--text-color);
+}
+
+/* Login and registration forms */
+.login-box, .registration-box {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+/* Dashboard elements */
+.dashboard-box {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+.event-card, .course-card {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+/* Theme toggle switch */
+.theme-switch-wrapper {
+  display: flex;
+  align-items: center;
+  margin-left: 15px;
+}
+
+.theme-switch {
+  display: inline-block;
+  height: 24px;
+  position: relative;
+  width: 48px;
+}
+
+.theme-switch input {
+  display: none;
+}
+
+.slider {
+  background-color: #ccc;
+  bottom: 0;
+  cursor: pointer;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  background-color: white;
+  bottom: 4px;
+  content: "";
+  height: 16px;
+  left: 4px;
+  position: absolute;
+  transition: .4s;
+  width: 16px;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--primary);
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+/* Dark mode icons */
+.theme-icon {
+  margin: 0 5px;
+  font-size: 14px;
+}
+
+.sun-icon {
+  color: #ffc107;
+}
+
+.moon-icon {
+  color: #6c757d;
+}

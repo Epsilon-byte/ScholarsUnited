@@ -2,6 +2,16 @@ header.navbar
   .navbar-left
     img.logo(src="/SB.png", alt="Logo")
     span.logo-text Scholars United
+  
+  .navbar-right
+    .theme-switch-wrapper
+      span.theme-icon.sun-icon
+        i.fas.fa-sun
+      label.theme-switch
+        input#theme-toggle-checkbox(type="checkbox")
+        span.slider
+      span.theme-icon.moon-icon
+        i.fas.fa-moon
 
   button.menu-toggle(onclick="toggleMenu()") ☰
 
