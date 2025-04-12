@@ -8,6 +8,7 @@ const ensureAuthenticated = require("./services/authMiddleware"); // Custom midd
 const helmet = require('helmet'); // Security headers
 const http = require('http'); // HTTP server for Socket.io
 const socketIo = require('socket.io'); // Socket.io for real-time messaging
+const socketService = require('./services/socketService'); // Socket.io service for real-time communication
 
 // Imports helper functions for formatting date and time
 const { formatDate, formatTime } = require("./helper.js");
@@ -23,7 +24,10 @@ const app = express();
 
 // Create HTTP server and Socket.io instance
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketService.initializeSocketIO(server);
+
+// Make io instance available to routes
+app.set('io', io);
 
 // ========== MIDDLEWARE SETUP ==========
 // Serves static files (e.g., CSS) from the "app/public" directory
@@ -503,41 +507,68 @@ app.get("/events/:id/chat", ensureAuthenticated, async (req, res) => {
 
 // API endpoint for sending event messages
 app.post("/api/events/message", ensureAuthenticated, async (req, res) => {
+  console.log('Event message API called with body:', req.body);
   const { eventId, userId, content } = req.body;
   const currentUserId = req.session.user.id;
   
   // Validate user identity
   if (parseInt(userId) !== parseInt(currentUserId)) {
+    console.log('User ID mismatch:', userId, currentUserId);
     return res.status(403).json({ success: false, message: "User ID mismatch" });
   }
   
   try {
     // Check if user is allowed to send messages to this event
+    console.log('Checking if user can send message to event');
     const canSend = await EventMessage.canUserSendMessage(userId, eventId);
+    console.log('Can user send message:', canSend);
+    
     if (!canSend) {
       return res.status(403).json({ success: false, message: "You must be a participant to send messages" });
     }
     
     // Create the message
+    console.log('Creating message with:', userId, eventId, content);
     const result = await EventMessage.createMessage(userId, eventId, content);
+    console.log('Message creation result:', result);
     
     if (result.success) {
       // Get the created message with sender info
       const message = await EventMessage.getMessageById(result.insertedId);
+      console.log('Retrieved message:', message);
       
-      // Emit the message to all users in the event room
-      const io = req.app.get('io');
-      socketService.sendEventMessage(io, eventId, {
+      // Get user info for the sender name
+      const user = await User.getUserById(userId);
+      console.log('User info:', user);
+      
+      // Prepare message data for socket
+      const messageData = {
         messageId: message.MessageID,
         userId: message.SenderID,
         eventId: message.EventID,
         content: message.Content,
         timestamp: message.Timestamp,
-        senderName: message.SenderName
-      });
+        senderName: message.SenderName || (user ? user.FullName : 'Unknown User')
+      };
+      
+      console.log('Emitting socket message with data:', messageData);
+      
+      // Emit the message to all users in the event room
+      try {
+        const io = req.app.get('io');
+        if (io) {
+          socketService.sendEventMessage(io, eventId, messageData);
+          console.log('Socket message emitted successfully');
+        } else {
+          console.error('Socket.IO instance not available');
+        }
+      } catch (socketErr) {
+        console.error('Error emitting socket message:', socketErr);
+      }
       
       return res.json({ success: true, message: "Message sent successfully", messageData: message });
     } else {
+      console.error('Failed to create message');
       return res.status(500).json({ success: false, message: "Failed to send message" });
     }
   } catch (err) {
@@ -723,67 +754,94 @@ app.post("/events/leave/:id", ensureAuthenticated, async (req, res) => {
 });
 
 // API endpoint for sending event messages
-app.post("/api/events/message", ensureAuthenticated, async (req, res) => {
-  const { eventId, content } = req.body;
-  const userId = req.session.user.id;
-
+app.post('/api/events/message', async (req, res) => {
   try {
-    // Check if user can send messages to this event
+    const { eventId, userId, content } = req.body;
+    
+    console.log('Received message request:', { eventId, userId, content });
+    
+    if (!eventId || !userId || !content) {
+      console.log('Missing required fields:', { eventId, userId, content });
+      return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+    
+    // Check if user is a participant
     const canSend = await EventMessage.canUserSendMessage(userId, eventId);
     if (!canSend) {
-      return res.status(403).json({
-        success: false,
-        message: "You must be a participant to send messages in this event"
-      });
+      console.log('User is not a participant:', { userId, eventId });
+      return res.status(403).json({ success: false, message: 'You must be a participant to send messages' });
     }
-
-    // Create and send the message
+    
+    // Create message
+    console.log('Creating message:', { userId, eventId, content });
     const result = await EventMessage.createMessage(userId, eventId, content);
+    console.log('Message creation result:', result);
     
-    // Get the newly created message with sender details
-    const messageData = await EventMessage.getMessageById(result.insertedId);
+    if (!result.success) {
+      console.log('Failed to create message:', result.message);
+      return res.status(500).json({ success: false, message: result.message || 'Failed to create message' });
+    }
     
-    // Emit message to all users in the event room
-    io.to(`event-${eventId}`).emit('eventMessage', {
-      messageId: messageData.MessageID,
-      content: messageData.Content,
-      timestamp: messageData.Timestamp,
-      userId: messageData.SenderID,
-      senderName: messageData.SenderName,
-      eventId: messageData.EventID
-    });
-
-    res.json({
-      success: true,
-      message: "Message sent successfully",
-      messageId: result.insertedId
-    });
-  } catch (err) {
-    console.error("Error sending event message:", err);
-    res.status(500).json({
-      success: false,
-      message: "Failed to send message"
-    });
+    // Get user info for the socket broadcast
+    const user = await User.getUserById(userId);
+    if (!user) {
+      console.log('User not found:', userId);
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    
+    // Emit socket event
+    const socketService = req.app.get('socketService');
+    if (socketService) {
+      const messageData = {
+        messageId: result.messageId,
+        userId: userId,
+        eventId: eventId,
+        content: content,
+        timestamp: new Date(),
+        senderName: user.FullName
+      };
+      console.log('Sending socket event:', messageData);
+      socketService.sendEventMessage(messageData);
+    }
+    
+    console.log('Message created successfully:', result.messageId);
+    return res.json({ success: true, messageId: result.messageId });
+  } catch (error) {
+    console.error('Error creating event message:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
 // API endpoint for deleting event messages
-app.post("/api/events/message/delete/:messageId", ensureAuthenticated, async (req, res) => {
+app.post('/api/events/message/delete/:messageId', async (req, res) => {
   const messageId = req.params.messageId;
-  const userId = req.session.user.id;
+  const userId = req.body.userId || (req.session && req.session.user ? req.session.user.id : null);
 
   try {
-    // Get message details
+    console.log("Delete message request:", { messageId, userId });
+    
+    if (!userId) {
+      console.log("No user ID provided for delete");
+      return res.status(401).json({
+        success: false,
+        message: "You must be logged in to delete messages"
+      });
+    }
+    
+    // Check if user owns the message
     const message = await EventMessage.getMessageById(messageId);
     if (!message) {
+      console.log("Message not found for deletion:", messageId);
       return res.status(404).json({
         success: false,
         message: "Message not found"
       });
     }
 
-    // Check if user is the sender of the message
+    console.log("Message found for deletion:", message);
+    
     if (message.SenderID != userId) {
+      console.log("User does not own message:", { messageOwnerId: message.SenderID, requestUserId: userId });
       return res.status(403).json({
         success: false,
         message: "You can only delete your own messages"
@@ -791,20 +849,25 @@ app.post("/api/events/message/delete/:messageId", ensureAuthenticated, async (re
     }
 
     // Delete the message
-    const eventMessage = new EventMessage(userId, message.EventID, message.Content);
-    eventMessage.id = messageId;
-    const result = await eventMessage.deleteMessage();
+    console.log("Deleting message:", messageId);
+    const result = await EventMessage.deleteMessage(messageId);
+    console.log("Delete result:", result);
+    
+    // Notify all users in the event room
+    const socketService = req.app.get('socketService');
+    if (socketService) {
+      console.log("Emitting delete event for message:", messageId);
+      socketService.emitEventMessageDeleted(message.EventID, messageId);
+    }
 
-    // Notify all users in the event room about the deletion
-    io.to(`event-${message.EventID}`).emit('eventMessageDeleted', messageId);
-
-    res.json({
+    console.log("Message deleted successfully:", messageId);
+    return res.json({
       success: true,
       message: "Message deleted successfully"
     });
   } catch (err) {
     console.error("Error deleting event message:", err);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to delete message"
     });
@@ -812,48 +875,74 @@ app.post("/api/events/message/delete/:messageId", ensureAuthenticated, async (re
 });
 
 // API endpoint for updating event messages
-app.post("/api/events/message/update/:messageId", ensureAuthenticated, async (req, res) => {
+app.post("/api/events/message/update/:messageId", async (req, res) => {
   const messageId = req.params.messageId;
   const { newContent } = req.body;
-  const userId = req.session.user.id;
+  const userId = req.body.userId || (req.session && req.session.user ? req.session.user.id : null);
 
   try {
-    // Get message details
+    console.log("Update message request:", { messageId, userId, newContent });
+    
+    if (!userId) {
+      console.log("No user ID provided for update");
+      return res.status(401).json({
+        success: false,
+        message: "You must be logged in to update messages"
+      });
+    }
+    
+    if (!newContent || !newContent.trim()) {
+      console.log("No content provided for update");
+      return res.status(400).json({
+        success: false,
+        message: "New content is required"
+      });
+    }
+
+    // Check if user owns the message
     const message = await EventMessage.getMessageById(messageId);
     if (!message) {
+      console.log("Message not found for update:", messageId);
       return res.status(404).json({
         success: false,
         message: "Message not found"
       });
     }
 
-    // Check if user is the sender of the message
+    console.log("Message found for update:", message);
+    
     if (message.SenderID != userId) {
+      console.log("User does not own message:", { messageOwnerId: message.SenderID, requestUserId: userId });
       return res.status(403).json({
         success: false,
-        message: "You can only update your own messages"
+        message: "You can only edit your own messages"
       });
     }
 
     // Update the message
+    console.log("Updating message:", { messageId, newContent });
     const result = await EventMessage.updateMessage(messageId, newContent);
+    console.log("Update result:", result);
+    
+    // Notify all users in the event room
+    const socketService = req.app.get('socketService');
+    if (socketService) {
+      console.log("Emitting update event for message:", messageId);
+      socketService.emitEventMessageUpdated(message.EventID, {
+        messageId: messageId,
+        content: newContent,
+        timestamp: new Date()
+      });
+    }
 
-    // Notify all users in the event room about the update
-    io.to(`event-${message.EventID}`).emit('eventMessageUpdated', {
-      messageId: messageId,
-      content: newContent,
-      timestamp: new Date(),
-      userId: userId,
-      eventId: message.EventID
-    });
-
-    res.json({
+    console.log("Message updated successfully:", messageId);
+    return res.json({
       success: true,
       message: "Message updated successfully"
     });
   } catch (err) {
     console.error("Error updating event message:", err);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Failed to update message"
     });
