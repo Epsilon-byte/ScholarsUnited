@@ -13,12 +13,31 @@ html
     link(rel='stylesheet' href='/css/password-strength.css')
     link(rel='stylesheet' href='/css/event-chat.css')
     link(rel='stylesheet' href='/styles.css')
-    link(rel='stylesheet' href='/messaging.css')
+    link(rel='stylesheet' href='/css/messaging.css')
     script(src="/socket.io/socket.io.js")
   body(data-current-user-id=typeof user !== 'undefined' ? user.id : '')
     include components/navbar
+    script.
+      // Immediate navbar functionality
+      function toggleMenu() {
+        console.log('Toggle menu clicked');
+        const drawer = document.getElementById('menuDrawer');
+        const overlay = document.getElementById('overlay');
+        if (drawer && overlay) {
+          if (drawer.classList.contains('open')) {
+            drawer.classList.remove('open');
+            overlay.classList.remove('show');
+          } else {
+            drawer.classList.add('open');
+            overlay.classList.add('show');
+          }
+        }
+      }
+      // Make sure the function is globally available
+      window.toggleMenu = toggleMenu;
     block content
     block scripts
       script(src="/js/theme.js")
+      script(src="/js/navbar.js")
       script(src="/js/notifications.js")
       script(src="/music/messaging-sound.js")

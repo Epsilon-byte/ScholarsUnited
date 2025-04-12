@@ -94,6 +94,44 @@ class EventMessage {
             throw err;
         }
     }
+    
+    // Update a message
+    static async updateMessage(messageId, newContent) {
+        const query = "UPDATE EventMessages SET Content = ? WHERE MessageID = ?";
+        try {
+            const [results] = await db.query(query, [newContent, messageId]);
+            return { 
+                success: results.affectedRows > 0, 
+                message: results.affectedRows > 0 ? "Message updated successfully" : "Message not found" 
+            };
+        } catch (err) {
+            console.error("Error updating event message:", err);
+            throw err;
+        }
+    }
+    
+    // Get a single message by ID
+    static async getMessageById(messageId) {
+        const query = `
+            SELECT 
+                EventMessages.MessageID,
+                EventMessages.Content,
+                EventMessages.Timestamp,
+                EventMessages.SenderID,
+                EventMessages.EventID,
+                Users.FullName AS SenderName
+            FROM EventMessages
+            INNER JOIN Users ON EventMessages.SenderID = Users.UserID
+            WHERE EventMessages.MessageID = ?
+        `;
+        try {
+            const [results] = await db.query(query, [messageId]);
+            return results.length > 0 ? results[0] : null;
+        } catch (err) {
+            console.error("Error fetching event message:", err);
+            throw err;
+        }
+    }
 }
 
 module.exports = { EventMessage };

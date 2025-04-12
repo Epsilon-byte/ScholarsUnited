@@ -1,69 +1,70 @@
 extends layout
 
 block content
-  .event-chat-container
-    .event-info-bar
-      h2= event.Title
-      .event-details
-        span.event-date
-          i.fas.fa-calendar
-          | #{event.date} at #{event.time}
-        span.event-location
-          i.fas.fa-map-marker-alt
-          | #{event.Location || 'No location specified'}
-        a.back-link(href=`/events/${event.EventID}`) Back to Event
+  .messaging-container
+    h1 Event: #{event.Title}
+    .event-details-bar
+      span.event-date
+        i.fas.fa-calendar
+        | #{event.date} at #{event.time}
+      span.event-location
+        i.fas.fa-map-marker-alt
+        | #{event.Location || 'No location specified'}
+      a.back-link(href=`/events/${event.EventID}`) Back to Event
     
-    .event-chat-layout
-      .participants-panel
-        h3 Participants (#{participants.length})
-        if !isParticipant
-          .join-prompt
-            p You need to join this event to participate in the chat.
-            form(action=`/events/join/${event.EventID}` method="POST")
-              button.join-button(type="submit") Join Event
-        
-        .participants-list
-          each participant in participants
-            .participant
-              .participant-avatar
-                img(src=`https://ui-avatars.com/api/?name=${encodeURIComponent(participant.FullName)}&background=random` alt=participant.FullName)
-              .participant-name= participant.FullName
-      
-      .messaging-panel
-        if messages.length === 0
-          .empty-chat
-            p No messages yet. Be the first to send a message!
-        else
+    .participants-box
+      h3 Participants (#{participants.length})
+      .participants-list
+        each participant in participants
+          .participant
+            img.participant-avatar(src=`https://ui-avatars.com/api/?name=${encodeURIComponent(participant.FullName)}&background=random` alt=participant.FullName)
+            span.participant-name= participant.FullName
+    
+    if !isParticipant
+      .join-prompt
+        p You need to join this event to participate in the chat.
+        form(action=`/events/join/${event.EventID}` method="POST")
+          button.btn.btn-primary(type="submit") Join Event
+    else
+      // Messages section
+      .messages-container#chatMessages
+        if messages && messages.length
           ul.message-list
             each message in messages
               - const isSender = message.SenderID == user.id;
               li(class=`message-wrapper ${isSender ? 'sender' : 'receiver'}`)
                 .message-item
+                  // Sender name
                   span.message-sender
-                    | 👤 #{message.SenderName}
+                    | 👤 Sender:
+                    strong(style="color: #00675b") #{message.SenderName}
                   
-                  p.message-content #{message.Content}
-                  small.message-time #{new Date(message.Timestamp).toLocaleString()}
+                  // Message content and timestamp
+                  p #{message.Content}
+                  small Sent: #{new Date(message.Timestamp).toLocaleString()}
                   
+                  // Show delete/edit buttons only if current user is the sender
                   if isSender
-                    .message-actions
-                      form(action=`/api/events/message/delete/${message.MessageID}`, method="POST")
-                        button(type="submit") 🗑️ Delete
-                      
-                      form(action=`/api/events/message/update/${message.MessageID}`, method="POST")
-                        input(type="text", name="newContent", placeholder="Edit message", required)
-                        button(type="submit") ✏️ Save
+                    form(action=`/api/events/message/delete/${message.MessageID}`, method="POST")
+                      button(type="submit") 🔒 Delete
+                    
+                    form(action=`/api/events/message/update/${message.MessageID}`, method="POST")
+                      input(type="text", name="newContent", placeholder="Edit message", required)
+                      button(type="submit") 🖉 Save
+        else
+          .empty-chat
+            p No messages yet. Be the first to send a message!
+      
+      // Message send form
+      h2 Send a Message
+      form.message-form#messageForm(action="#")
+        input(type="hidden" name="eventId" value=event.EventID)
+        input(type="hidden" name="userId" value=user.id)
         
-        if isParticipant
-          form.message-form#messageForm(action="#")
-            input(type="hidden" name="eventId" value=event.EventID)
-            input(type="hidden" name="userId" value=user.id)
-            
-            .message-input-container
-              textarea#messageInput(name="message" placeholder="Type your message here..." required)
-              button.send-button(type="submit")
-                i.fas.fa-paper-plane
-                span Send
+        label(for="messageInput") Message:
+        textarea#messageInput(name="message" placeholder="Type your message here..." required)
+        
+        button.btn.btn-primary(type="submit") 📨 Send Message
 
 block scripts
   script.
@@ -75,8 +76,8 @@ block scripts
     const messageInput = document.getElementById('messageInput');
     const chatMessages = document.getElementById('chatMessages');
     
-    // Only run this code if the user is a participant
-    if (messageForm) {
+    // Only run this code if the user is a participant and the form exists
+    if (messageForm && chatMessages) {
       // Authenticate with socket
       const userId = #{user.id};
       socket.emit('authenticate', userId);
@@ -92,57 +93,185 @@ block scripts
         const message = messageInput.value.trim();
         if (!message) return;
         
+        // Create message data
+        const messageData = {
+          eventId: eventId,
+          userId: userId,
+          content: message
+        };
+        
         // Send message to server
         fetch('/api/events/message', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            eventId,
-            content: message
-          })
+          body: JSON.stringify(messageData)
         })
         .then(response => response.json())
-        .then(data => {
-          if (data.success) {
+        .then(result => {
+          if (result.success) {
             // Clear input field
             messageInput.value = '';
           } else {
-            console.error('Error sending message:', data.message);
+            alert('Failed to send message: ' + (result.message || 'Unknown error'));
           }
         })
         .catch(error => {
           console.error('Error:', error);
+          alert('Failed to send message. Please try again.');
         });
       });
       
-      // Listen for new messages
+      // Listen for new messages from socket
       socket.on('eventMessage', function(data) {
-        addMessageToChat(data);
+        // Check if this is an update to an existing message
+        if (data.isUpdate) {
+          updateExistingMessage(data);
+        } else {
+          addMessageToChat(data);
+        }
+      });
+      
+      // Listen for message deletion
+      socket.on('eventMessageDeleted', function(messageId) {
+        const messageElement = document.querySelector(`li[data-message-id="${messageId}"]`);
+        if (messageElement) {
+          messageElement.remove();
+          
+          // Check if chat is now empty
+          const messageList = document.querySelector('.message-list');
+          if (messageList && messageList.children.length === 0) {
+            chatMessages.innerHTML = `
+              <div class="empty-chat">
+                <p>No messages yet. Be the first to send a message!</p>
+              </div>
+            `;
+          }
+        }
       });
       
       // Clean up when leaving the page
       window.addEventListener('beforeunload', function() {
         socket.emit('leaveEventRoom', { userId, eventId });
       });
+      
+      // Add event listeners to existing message forms
+      setupExistingMessageForms();
+    }
+    
+    // Function to set up event listeners for existing message forms
+    function setupExistingMessageForms() {
+      // Delete forms
+      document.querySelectorAll('form[action^="/api/events/message/delete"]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const messageId = form.action.split('/').pop();
+          const messageItem = form.closest('li.message-wrapper');
+          
+          fetch(`/api/events/message/delete/${messageId}`, {
+            method: 'POST'
+          })
+          .then(response => response.json())
+          .then(result => {
+            if (result.success) {
+              messageItem.remove();
+            } else {
+              alert('Failed to delete message: ' + (result.message || 'Unknown error'));
+            }
+          })
+          .catch(error => {
+            console.error('Error deleting message:', error);
+            alert('Failed to delete message. Please try again.');
+          });
+        });
+      });
+      
+      // Update forms
+      document.querySelectorAll('form[action^="/api/events/message/update"]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const messageId = form.action.split('/').pop();
+          const messageItem = form.closest('li.message-wrapper');
+          const newContent = form.querySelector('input[name="newContent"]').value.trim();
+          
+          if (!newContent) return;
+          
+          fetch(`/api/events/message/update/${messageId}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ newContent })
+          })
+          .then(response => response.json())
+          .then(result => {
+            if (result.success) {
+              // Update the message content
+              const contentElement = messageItem.querySelector('p');
+              if (contentElement) {
+                contentElement.textContent = newContent;
+              }
+              // Clear the input
+              form.querySelector('input[name="newContent"]').value = '';
+              // Update timestamp
+              const timeElement = messageItem.querySelector('small');
+              if (timeElement) {
+                timeElement.textContent = 'Sent: ' + new Date().toLocaleString() + ' (edited)';
+              }
+            } else {
+              alert('Failed to update message: ' + (result.message || 'Unknown error'));
+            }
+          })
+          .catch(error => {
+            console.error('Error updating message:', error);
+            alert('Failed to update message. Please try again.');
+          });
+        });
+      });
+    }
+    
+    // Function to update an existing message
+    function updateExistingMessage(data) {
+      const messageItem = document.querySelector(`li[data-message-id="${data.messageId}"]`);
+      if (messageItem) {
+        const contentElement = messageItem.querySelector('p');
+        if (contentElement) {
+          contentElement.textContent = data.content;
+        }
+        
+        const timeElement = messageItem.querySelector('small');
+        if (timeElement) {
+          timeElement.textContent = 'Sent: ' + new Date(data.timestamp).toLocaleString() + ' (edited)';
+        }
+      }
     }
     
     // Function to add a new message to the chat
     function addMessageToChat(data) {
+      if (!chatMessages) return;
+      
       // Remove empty chat message if present
       const emptyChat = chatMessages.querySelector('.empty-chat');
       if (emptyChat) {
         emptyChat.remove();
       }
       
-      // Create message element
-      const messageList = chatMessages.querySelector('ul') || document.createElement('ul');
-      if (!chatMessages.contains(messageList)) {
+      // Create message list if it doesn't exist
+      let messageList = chatMessages.querySelector('.message-list');
+      if (!messageList) {
+        messageList = document.createElement('ul');
+        messageList.className = 'message-list';
         chatMessages.appendChild(messageList);
       }
       
+      // Check if message already exists (to prevent duplicates)
+      const existingMessage = document.querySelector(`li[data-message-id="${data.messageId}"]`);
+      if (existingMessage) return;
+      
+      // Create message element
       const messageItem = document.createElement('li');
+      messageItem.setAttribute('data-message-id', data.messageId);
       const isSender = data.userId == #{user.id};
       messageItem.className = `message-wrapper ${isSender ? 'sender' : 'receiver'}`;
       
@@ -152,18 +281,20 @@ block scripts
         <div class="message-item">
           <span class="message-sender">
             👤 Sender:
-            <strong style="color: #00675b">${data.senderName} (ID: ${data.userId})</strong>
+            <strong style="color: #00675b">${data.senderName}</strong>
           </span>
-          <br>
-          <p>${data.message}</p>
+          
+          <p>${data.content}</p>
           <small>Sent: ${timestamp}</small>
+          
           ${isSender ? `
             <form action="/api/events/message/delete/${data.messageId}" method="POST">
-              <button type="submit">🔒 Delete</button>
+              <button type="submit">🗑️ Delete</button>
             </form>
+            
             <form action="/api/events/message/update/${data.messageId}" method="POST">
               <input type="text" name="newContent" placeholder="Edit message" required>
-              <button type="submit">🖉 Save and Resend Edit Messages</button>
+              <button type="submit">✏️ Save</button>
             </form>
           ` : ''}
         </div>
@@ -172,4 +303,75 @@ block scripts
       // Add to chat and scroll to bottom
       messageList.appendChild(messageItem);
       chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // Add event listeners to forms if this is the sender's message
+      if (isSender) {
+        // Delete form
+        const deleteForm = messageItem.querySelector('form[action^="/api/events/message/delete"]');
+        if (deleteForm) {
+          deleteForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const messageId = data.messageId;
+            
+            fetch(`/api/events/message/delete/${messageId}`, {
+              method: 'POST'
+            })
+            .then(response => response.json())
+            .then(result => {
+              if (result.success) {
+                messageItem.remove();
+              } else {
+                alert('Failed to delete message: ' + (result.message || 'Unknown error'));
+              }
+            })
+            .catch(error => {
+              console.error('Error deleting message:', error);
+              alert('Failed to delete message. Please try again.');
+            });
+          });
+        }
+        
+        // Update form
+        const updateForm = messageItem.querySelector('form[action^="/api/events/message/update"]');
+        if (updateForm) {
+          updateForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const messageId = data.messageId;
+            const newContent = updateForm.querySelector('input[name="newContent"]').value.trim();
+            
+            if (!newContent) return;
+            
+            fetch(`/api/events/message/update/${messageId}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ newContent })
+            })
+            .then(response => response.json())
+            .then(result => {
+              if (result.success) {
+                // Update the message content
+                const contentElement = messageItem.querySelector('p');
+                if (contentElement) {
+                  contentElement.textContent = newContent;
+                }
+                // Clear the input
+                updateForm.querySelector('input[name="newContent"]').value = '';
+                // Update timestamp
+                const timeElement = messageItem.querySelector('small');
+                if (timeElement) {
+                  timeElement.textContent = 'Sent: ' + new Date().toLocaleString() + ' (edited)';
+                }
+              } else {
+                alert('Failed to update message: ' + (result.message || 'Unknown error'));
+              }
+            })
+            .catch(error => {
+              console.error('Error updating message:', error);
+              alert('Failed to update message. Please try again.');
+            });
+          });
+        }
+      }
     }

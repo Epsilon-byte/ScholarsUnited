@@ -68,17 +68,18 @@ function initializeSocketIO(server) {
     });
     
     // Handle event chat messages
-    socket.on('eventMessage', ({ userId, eventId, message }) => {
-      if (userId && eventId && message) {
+    socket.on('eventMessage', ({ userId, eventId, message, messageId, content, senderName }) => {
+      if (userId && eventId) {
         const roomName = `event-${eventId}`;
         
         // Broadcast message to all users in the event room
         io.to(roomName).emit('eventMessage', {
+          messageId,
           userId,
           eventId,
-          message,
+          content: content || (message ? message.content : ''),
           timestamp: new Date(),
-          senderName: message.senderName // This should be passed from the client
+          senderName: senderName || (message ? message.senderName : 'Unknown User')
         });
         
         console.log(`Message sent to event ${eventId} by user ${userId}`);

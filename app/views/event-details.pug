@@ -26,7 +26,7 @@ block content
 
       // ✅ Button section grouped
       .button-group
-          if !hasJoined
+          if !isParticipant
             form(action=`/events/join/${event.EventID}` method="POST")
               button.btn.btn-primary(type="submit") ✅ Join Event
           else
