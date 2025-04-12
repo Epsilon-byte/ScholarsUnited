@@ -1,53 +1,53 @@
 /* === Calendar Banner/Header === */
 .course-box {
-  background-color: #66B89E; /* Soft green background for header */
-  color: #fff; /* White text for contrast */
-  padding: 24px; /* Inner spacing */
-  border-radius: 12px; /* Rounded corners */
-  text-align: center; /* Center align text */
-  margin: 0 auto 30px auto; /* Center horizontally with bottom margin */
-  width: 90%; /* Responsive width */
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* Subtle depth */
+  background-color: #66B89E;         /* Soft green background for a calm, welcoming feel */
+  color: #fff;                       /* White text for high contrast */
+  padding: 24px;                     /* Space inside the box */
+  border-radius: 12px;               /* Rounded corners for a modern look */
+  text-align: center;                /* Center-aligns the content inside */
+  margin: 0 auto 30px auto;          /* Center horizontally and add space below */
+  width: 90%;                        /* Takes up most of the width, but not full screen */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* Soft shadow for visual depth */
 }
 
 .course-box h1 {
-  margin-bottom: 6px;
-  font-size: 2.2rem;
+  margin-bottom: 6px;               /* Space between heading and next element */
+  font-size: 2.2rem;                /* Large font for main heading */
 }
 
 .course-box p {
-  margin: 0;
-  font-size: 1rem;
+  margin: 0;                        /* Removes default paragraph margin */
+  font-size: 1rem;                  /* Standard readable size */
 }
 
 /* === Calendar Controls === */
 .calendar-controls {
-  display: grid; /* Structured layout */
-  grid-template-columns: 1fr auto 1fr; /* Left control, center title, right control */
-  align-items: center; /* Align vertically */
-  justify-content: center;
-  gap: 20px; /* Spacing between elements */
-  margin: 30px auto;
-  max-width: 1000px; /* Constrain width */
+  display: grid;                               /* Grid layout to position controls */
+  grid-template-columns: 1fr auto 1fr;         /* Left and right areas take equal space; center auto-sized */
+  align-items: center;                         /* Vertically center items */
+  justify-content: center;                     /* Horizontally center items */
+  gap: 20px;                                   /* Spacing between columns */
+  margin: 30px auto;                           /* Adds vertical spacing and centers horizontally */
+  max-width: 1000px;                           /* Prevents it from stretching too wide */
 }
 
 .calendar-selector {
-  display: flex; /* Stack dropdowns */
+  display: flex;                               /* Flexbox for vertical stacking */
   flex-direction: column;
-  align-items: flex-start; /* Left-align content */
-  gap: 10px;
+  align-items: flex-start;                     /* Align content to the left */
+  gap: 10px;                                   /* Spacing between selects */
 }
 
 .calendar-selector select {
-  padding: 10px;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: 1px solid #ccc; /* Light border */
+  padding: 10px;                               /* Internal spacing for clickability */
+  font-size: 1rem;                             /* Standard readable text */
+  border-radius: 8px;                          /* Soft corners */
+  border: 1px solid #ccc;                      /* Light gray border */
 }
 
-/* Centered Month + Arrows */
+/* === Month Display (with navigation arrows) === */
 .calendar-title {
-  display: flex;
+  display: flex;                               /* Align title and arrows inline */
   align-items: center;
   justify-content: center;
   gap: 20px;
@@ -55,108 +55,107 @@
 }
 
 .calendar-title h2 {
-  margin: 0;
-  font-size: 2rem;
-  color: #333;
+  margin: 0;                                   /* Remove default margin */
+  font-size: 2rem;                             /* Prominent month name */
+  color: #333;                                 /* Dark gray text */
 }
 
 .calendar-nav {
-  font-size: 1.8rem;
-  color: #66B89E; /* Themed arrow color */
-  text-decoration: none;
-  padding: 0 12px;
-  transition: color 0.2s ease; /* Smooth hover */
+  font-size: 1.8rem;                           /* Large arrows */
+  color: #66B89E;                              /* Match overall theme */
+  text-decoration: none;                       /* No underline */
+  padding: 0 12px;                             /* Horizontal spacing around arrows */
+  transition: color 0.2s ease;                 /* Smooth hover effect */
 }
 
 .calendar-nav:hover {
-  color: #4c8c78; /* Darker hover color */
-  cursor: pointer;
+  color: #4c8c78;                              /* Darker shade on hover */
+  cursor: pointer;                             /* Pointer to indicate clickability */
 }
 
 /* === Calendar Grid === */
 .calendar-grid {
-  display: grid; /* Calendar layout */
-  grid-template-columns: repeat(7, 1fr); /* 7-day week */
-  gap: 10px;
-  margin: 0 auto;
-  max-width: 1000px;
+  display: grid;                               /* Grid layout for calendar days */
+  grid-template-columns: repeat(7, 1fr);       /* 7 equal-width columns for 7 days of the week */
+  gap: 10px;                                   /* Space between days */
+  margin: 0 auto;                              /* Center the grid horizontally */
+  max-width: 1000px;                           /* Limit total width */
 }
 
-/* Weekday Headers */
+/* === Day of Week Headers === */
 .day-header {
   text-align: center;
   font-weight: bold;
-  background-color: #f0f0f0; /* Light grey */
+  background-color: #f0f0f0;                   /* Light gray background */
   padding: 10px;
   border-radius: 6px;
   font-size: 0.95rem;
-  color: #333;
+  color: #333;                                 /* Standard readable text color */
 }
 
-/* Day Box Styling */
+/* === Individual Day Boxes === */
 .calendar-day {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 10px;
+  background-color: #fff;                      /* White background */
+  border: 1px solid #ccc;                      /* Light border */
+  border-radius: 10px;                         /* Rounded corners */
   min-height: 120px;
-  height: 120px;
+  height: 120px;                               /* Fixed height for consistency */
   padding: 8px;
   display: flex;
-  flex-direction: column;
+  flex-direction: column;                      /* Stack day number and events */
   justify-content: flex-start;
   position: relative;
   font-size: 0.85rem;
-  overflow: hidden;
+  overflow: hidden;                            /* Prevents content overflow */
 }
 
-/* Dimmed out-of-month days */
 .calendar-day.dimmed {
-  opacity: 0.35; /* Visually faded */
+  opacity: 0.35;                               /* Used for days outside the current month */
 }
 
-/* Highlight today's date */
 .calendar-day.today {
-  border: 2px solid #66B89E; /* Accent border */
-  box-shadow: 0 0 4px rgba(102, 184, 158, 0.4); /* Subtle glow */
+  border: 2px solid #66B89E;                   /* Highlight today’s date */
+  box-shadow: 0 0 4px rgba(102, 184, 158, 0.4);/* Subtle glow for today */
 }
 
-/* Day Number */
+/* === Day Number === */
 .calendar-day .day-number {
   font-weight: bold;
   color: #333;
-  margin-bottom: 6px;
+  margin-bottom: 6px;                          /* Space between date and events */
 }
 
-/* Event List */
+/* === Event List === */
 .event-list {
-  list-style: none; /* Remove bullets */
+  list-style: none;                            /* Remove default bullet points */
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  flex-grow: 1;
-  gap: 4px;
+  flex-grow: 1;                                /* Fill available vertical space */
+  gap: 4px;                                    /* Small gap between event items */
 }
 
-/* Event Item */
+/* === Individual Event Tag === */
 .event-item {
-  background-color: #66B89E;
-  color: white;
-  font-size: 0.75rem;
+  background-color: #66B89E;                   /* Themed background */
+  color: white;                                /* White text for contrast */
+  font-size: 0.75rem;                          /* Small font for compact space */
   padding: 4px 6px;
   border-radius: 4px;
   text-align: center;
-  white-space: nowrap; /* Prevent wrap */
-  overflow: hidden;
-  text-overflow: ellipsis; /* Truncate overflow */
+  white-space: nowrap;                         /* Keep text on one line */
+  overflow: hidden;                            /* Hide overflow */
+  text-overflow: ellipsis;                     /* Add "..." if text is too long */
 }
 
+/* === Links inside Events === */
 .event-item a {
   color: white;
   text-decoration: none;
 }
 
 .event-item a:hover {
-  text-decoration: underline; /* Hover feedback */
+  text-decoration: underline;                  /* Feedback on hover */
 }

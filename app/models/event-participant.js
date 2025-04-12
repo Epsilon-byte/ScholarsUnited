@@ -1,5 +1,7 @@
 const db = require("../services/db"); // Import database connection from services folder
 
+// EventParticipant class to handle event participant operations
+// This class is responsible for checking if a user is participating in an event, adding a participant, and removing a participant from an event.
 class EventParticipant {
     constructor(userId, eventId) {
         this.userId = userId;
@@ -18,6 +20,7 @@ class EventParticipant {
         }
     }
 
+    // Add a participant to an event
     static async addParticipant(userId, eventId) {
         // First check if already participating
         try {

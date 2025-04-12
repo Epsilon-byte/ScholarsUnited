@@ -1,45 +1,46 @@
-/* Container & Card */
+/* === Container & Event Detail Card === */
 .event-card-detail {
-  background-color: #fff;
-  padding: 32px;
-  border-radius: 16px;
-  width: 1000px;
-  margin: 40px auto;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
-  display: flex;
-  justify-content: space-between;
-  align-items: start;
+  background-color: #fff;                         /* White background for clean look */
+  padding: 32px;                                  /* Inner spacing */
+  border-radius: 16px;                            /* Rounded corners */
+  width: 1000px;                                  /* Fixed card width */
+  margin: 40px auto;                              /* Center horizontally + space around */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);     /* Soft shadow for depth */
+  display: flex;                                  /* Horizontal layout */
+  justify-content: space-between;                /* Space between info and buttons */
+  align-items: start;                             /* Aligns top edge of children */
 }
-/* Navigation Buttons (below the card) */
+
+/* === Navigation Buttons Group (below card) === */
 .nav-buttons {
   display: flex;
-  justify-content: center;
-  gap: 30px;
+  justify-content: center;                        /* Center the buttons horizontally */
+  gap: 30px;                                      /* Space between buttons */
   margin-top: 20px;
   margin-bottom: 20px;
 }
 
-/* Title */
+/* === Event Title Styling === */
 .event-title-detail {
-  font-size: 2rem;
-  font-weight: 600;
+  font-size: 2rem;                                /* Large title font */
+  font-weight: 600;                               /* Semi-bold for emphasis */
   color: #333;
   text-align: left;
   margin-bottom: 24px;
 }
 
-/* Info Blocks */
+/* === Event Information Section === */
 .event-info {
-  flex: 1;
+  flex: 1;                                        /* Takes up remaining space */
 }
 
 .event-info p {
   font-size: 1rem;
   color: #444;
-  margin-bottom: 12px;
+  margin-bottom: 12px;                            /* Space between paragraphs */
 }
 
-/* Participants Dropdown */
+/* === Dropdown Styling for Participant Select === */
 .participant-dropdown {
   width: 100%;
   padding: 8px;
@@ -47,79 +48,81 @@
   border-radius: 4px;
   background-color: #fff;
   color: #333;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);       /* Subtle shadow for depth */
 }
 
-/* Muted and Success Text */
+/* === Text Utilities === */
 .text-success {
-  color: #28a745;
+  color: #28a745;                                 /* Green for success messages */
   font-weight: 500;
 }
 
 .text-muted {
-  color: #888;
+  color: #888;                                    /* Gray for muted or secondary text */
   font-style: italic;
 }
 
-/* Button Base Styling */
+/* === Button Base Styling === */
 .btn {
-  display: auto;
-  align-items: center;
+  display: auto;                                  /* Auto = default display value (usually block/inline) */
+  align-items: center;                            /* Used only if display is flex */
   justify-content: center;  
   font-size: 1rem;
   font-weight: 600;
-  text-align: center;  
+  text-align: center;
 }
 
-/* If it's a <a> styled as a button */
+/* === Link styled as a button === */
 a.btn {
-  text-decoration: none;
-  color: inherit;
+  text-decoration: none;                          /* Remove underline */
+  color: inherit;                                 /* Inherit color from parent */
 }
 
+/* === Vertical Button Group === */
 .button-group {
   display: flex;
-  flex-direction: column;
+  flex-direction: column;                         /* Stack buttons vertically */
   gap: 10px;
   align-items: center;
 }
 
-/* Modal Backdrop Container */
+/* === Modal Overlay Container === */
 .modal {
-  display: none;
-  position: fixed;
+  display: none;                                  /* Hidden by default */
+  position: fixed;                                /* Position relative to viewport */
   top: 0;
   left: 0;
-  z-index: 10;
+  z-index: 10;                                    /* Ensure modal appears above other elements */
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.4);
-  align-items: center;
-  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.4);           /* Semi-transparent black backdrop */
+  align-items: center;                            /* Center modal vertically */
+  justify-content: center;                        /* Center modal horizontally */
 }
 
 .modal.show {
-  display: flex;
+  display: flex;                                  /* Show modal by turning on flex layout */
 }
 
-/* Modal Content Box */
+/* === Modal Content Box === */
 .modal-content {
   background-color: #fff;
   padding: 20px 24px;
   border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  width: 90%;                                     /* Responsive width */
+  max-width: 500px;                               /* But no more than 500px wide */
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);       /* Shadow for elevation */
   text-align: center;
-  position: static;
+  position: static;                               /* Reset any prior positioning */
   top: auto;
   left: auto;
   transform: none;
 }
 
+/* === Modal Footer Buttons Group === */
 .modal-footer {
   display: flex;
-  flex-direction: column;
+  flex-direction: column;                         /* Stack buttons vertically */
   align-items: center;
   gap: 10px;
   padding: 10px 0;

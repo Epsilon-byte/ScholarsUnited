@@ -1,5 +1,7 @@
 const db = require("../services/db");
 
+// UserInterest class to manage user interests
+// This class provides methods to add, remove, and fetch user interests
 class UserInterest {
     constructor(userId) {
         this.userId = userId;
@@ -7,6 +9,8 @@ class UserInterest {
     }
 
     // Fetch interests for a specific user 
+    // This method retrieves all interests associated with the given user ID
+    // It returns an array of interests or an empty array if none are found
     static async getInterestsByUserId(userId) {
         const query = `
             SELECT Interests.InterestName 
@@ -22,10 +26,9 @@ class UserInterest {
         }
     }
 
-
-
-
     // Add a new interest for a user
+    // This method inserts a new record into the UserInterests table
+    // It takes the user ID and interest ID as parameters
     static async addInterest(userId, interestId) {
         const query = "INSERT INTO UserInterests (UserID, InterestID) VALUES (?, ?)";
         try {
@@ -36,9 +39,10 @@ class UserInterest {
             throw err;
         }
     }
-
     
     // Remove a specific interest for a user
+    // This method deletes a record from the UserInterests table
+    // It takes the user ID and interest ID as parameters
     static async removeInterest(userId, interestId) {
         const query = "DELETE FROM UserInterests WHERE UserID = ? AND InterestID = ?";
         try {
@@ -51,6 +55,8 @@ class UserInterest {
     }
 
     // Fetch all users with a specific interest
+    // This method retrieves all users associated with a given interest ID
+    // It returns an array of users or an empty array if none are found
     static async getUsersByInterest(interestId) {
         const query = `
             SELECT Users.UserID, Users.FullName, Users.Email 

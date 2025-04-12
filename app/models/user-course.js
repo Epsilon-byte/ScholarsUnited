@@ -1,5 +1,7 @@
 const db = require("../services/db"); // Import database connection
 
+// UserCourse model to handle user-course relationships
+// This model will manage the many-to-many relationship between users and courses
 class UserCourse {
     constructor(userId, courseId) {
         this.userId = userId;
@@ -7,6 +9,8 @@ class UserCourse {
     }
 
     // Fetch courses for a specific user
+    // This method retrieves all courses associated with a given user ID
+    // It uses an INNER JOIN to combine data from UserCourses and Courses tables
     static async getCoursesByUserId(userId) {
         const query = `
             SELECT Courses.CourseID, Courses.CourseName 
@@ -23,6 +27,8 @@ class UserCourse {
     }
 
     // Fetch users enrolled in a specific course
+    // This method retrieves all users associated with a given course ID
+    // It uses an INNER JOIN to combine data from UserCourses and Users tables
     static async getUsersByCourseId(courseId) {
         const query = `
             SELECT Users.UserID, Users.FullName 
@@ -39,6 +45,8 @@ class UserCourse {
     }
 
     // Enroll a user in a course
+    // This method inserts a new record into the UserCourses table
+    // It associates the user ID with the course ID
     async enrollUserInCourse() {
         const query = "INSERT INTO UserCourses (UserID, CourseID) VALUES (?, ?)";
         try {
@@ -51,6 +59,8 @@ class UserCourse {
     }
 
     // Remove a user from a course
+    // This method deletes the record from the UserCourses table
+    // It disassociates the user ID from the course ID
     static async removeUserFromCourse(userId, courseId) {
         const query = "DELETE FROM UserCourses WHERE UserID = ? AND CourseID = ?";
         try {

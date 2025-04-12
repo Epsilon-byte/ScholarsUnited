@@ -2,68 +2,72 @@
 /* Messaging Styles */
 /* ================ */
 
+/* === Main container for all messages === */
 .messaging-container {
-  max-width: 700px;
-  margin: 40px auto;
+  max-width: 700px;                             /* Limits layout width */
+  margin: 40px auto;                            /* Centers container with spacing */
   padding: 20px;
   background-color: #fff;
   border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);  /* Light drop shadow */
   font-family: 'Segoe UI', sans-serif;
 }
 
-/* Flex layout for bubble alignment */
+/* === Wrapper for each message (flex row) === */
 .message-wrapper {
   display: flex;
-  justify-content: flex-start;
-  margin-bottom: 16px;
+  justify-content: flex-start;                 /* Default left alignment */
+  margin-bottom: 16px;                         /* Space between messages */
 }
 
-/* Align right for current user */
+/* === Aligns message to right for sender === */
 .sender {
   justify-content: flex-end;
 }
 
-/* Message bubble shared styles */
+/* === Shared bubble style === */
 .message-item {
-  max-width: 70%;
+  max-width: 70%;                              /* Don't exceed 70% of container */
   padding: 16px;
   border-radius: 16px;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease;             /* Subtle scale on hover */
 }
 
 .message-item:hover {
-  transform: scale(1.02);
+  transform: scale(1.02);                      /* Slight zoom on hover */
 }
 
-/* Sender bubble (blue-green) */
+/* === Sender bubble color (teal) === */
 .sender .message-item {
   background-color: #e6f5f0;
-  border-left: 6px solid #66B89E;
+  border-left: 6px solid #66B89E;              /* Accent line */
 }
 
-/* Receiver bubble (gray) */
+/* === Receiver bubble color (light gray) === */
 .receiver .message-item {
   background-color: #f1f1f1;
   border-left: 6px solid #ccc;
 }
 
-/* Sender info (bold black), receiver info (dark gray) */
+/* === Sender info text style === */
 .message-sender {
   color: #111;
   font-weight: 600;
 }
 
+/* === Receiver info text style === */
 .message-receiver {
   color: #555;
   font-weight: 500;
 }
 
+/* === Paragraphs inside bubbles === */
 .message-item p {
   margin: 8px 0;
 }
 
+/* === Timestamps or small text === */
 .message-item small {
   color: #777;
   font-size: 0.85rem;
@@ -71,9 +75,9 @@
   margin-top: 6px;
 }
 
-/* Delete Button */
+/* === Delete button inside form === */
 form[action^="/messages/delete"] button {
-  background-color: #dc3545;
+  background-color: #dc3545;                   /* Red for danger */
   color: white;
   padding: 6px 12px;
   font-size: 0.85rem;
@@ -88,7 +92,7 @@ form[action^="/messages/delete"] button:hover {
   background-color: #c82333;
 }
 
-/* Edit Form */
+/* === Edit form (input + button row) === */
 form[action^="/messages/update"] {
   display: flex;
   gap: 10px;
@@ -103,7 +107,7 @@ form[action^="/messages/update"] input {
 }
 
 form[action^="/messages/update"] button {
-  background-color: #28a745;
+  background-color: #28a745;                   /* Green for update */
   color: white;
   border: none;
   padding: 6px 12px;
@@ -116,17 +120,19 @@ form[action^="/messages/update"] button:hover {
   background-color: #218838;
 }
 
-/* New Message Form */
+/* === New Message Form Section === */
 form[action="/messages/send"] {
   margin-top: 30px;
 }
 
+/* === Label styles === */
 form[action="/messages/send"] label {
   font-weight: 600;
   margin-top: 10px;
   display: block;
 }
 
+/* === Receiver ID input === */
 form[action="/messages/send"] input[name="receiverId"] {
   width: 50%;
   padding: 8px;
@@ -136,6 +142,7 @@ form[action="/messages/send"] input[name="receiverId"] {
   border: 1px solid #ccc;
 }
 
+/* === Message content textarea === */
 form[action="/messages/send"] textarea {
   width: 100%;
   padding: 12px;
@@ -145,12 +152,13 @@ form[action="/messages/send"] textarea {
   border: 1px solid #ccc;
   font-size: 1rem;
   font-family: inherit;
-  resize: vertical;
+  resize: vertical;                            /* Allows vertical resize */
   min-height: 120px;
 }
 
+/* === Send Button === */
 form[action="/messages/send"] button {
-  background-color: #66B89E;
+  background-color: #66B89E;                   /* Teal theme */
   color: white;
   padding: 10px 16px;
   font-size: 1rem;
@@ -164,7 +172,7 @@ form[action="/messages/send"] button:hover {
   background-color: #4e9d86;
 }
 
-/* Emoji/Icon Utility */
+/* === Emoji / Icon inline style === */
 .emoji {
   font-size: 1.2rem;
   margin-right: 4px;

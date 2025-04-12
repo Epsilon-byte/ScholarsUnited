@@ -1,5 +1,7 @@
 const db = require("../services/db"); // Import database connection
 
+// Notification model class
+// This class handles operations related to notifications in the database
 class Notification {
     constructor(id) {
         this.id = id;
@@ -10,6 +12,8 @@ class Notification {
     }
 
     // Fetch notification details
+    // This method retrieves the notification details based on the provided ID
+    // It returns the notification object if found, otherwise null
     async getNotificationDetails() {
         const query = "SELECT * FROM Notifications WHERE NotificationID = ?";
         try {
@@ -29,6 +33,8 @@ class Notification {
     }
 
     // Static method to create a new notification
+    // This method inserts a new notification into the database
+    // It returns the ID of the newly created notification
     static async createNotification(userId, message) {
         const query = "INSERT INTO Notifications (UserID, Message) VALUES (?, ?)";
         try {
@@ -41,6 +47,8 @@ class Notification {
     }
 
     // Mark a notification as read
+    // This method updates the 'Read' status of the notification in the database
+    // It returns true if the update was successful, otherwise false
     async markAsRead() {
         const query = "UPDATE Notifications SET `Read` = 1 WHERE NotificationID = ?";
         try {
@@ -53,6 +61,8 @@ class Notification {
       }
 
     // Delete a notification
+    // This method removes a notification from the database based on the NotificationID
+    // It returns true if the deletion was successful, otherwise false
     async deleteNotification() {
         const query = "DELETE FROM Notifications WHERE NotificationID = ?";
         try {
@@ -65,6 +75,8 @@ class Notification {
     }
 
     // Fetch all notifications for a user
+    // This method retrieves all notifications for a specific user from the database
+    // It returns an array of notification objects if found, otherwise an empty array
     static async getNotificationsByUserId(userId) {
         const query = `
           SELECT 
