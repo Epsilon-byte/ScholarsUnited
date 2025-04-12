@@ -33,16 +33,50 @@ header.navbar
       a(href="/logout") Logout
 
   script.
-    function toggleMenu() {
-      const drawer = document.getElementById('menuDrawer');
-      const overlay = document.getElementById('overlay');
-      drawer.classList.toggle('open');
-      overlay.classList.toggle('show');
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+      function toggleMenu() {
+        const drawer = document.getElementById('menuDrawer');
+        const overlay = document.getElementById('overlay');
+        if (drawer && overlay) {
+          drawer.classList.toggle('open');
+          overlay.classList.toggle('show');
+        }
+      }
 
-    document.querySelectorAll('.menu-links a').forEach(link => {
-      link.addEventListener('click', () => {
-        document.getElementById('menuDrawer').classList.remove('open');
-        document.getElementById('overlay').classList.remove('show');
+      // Attach event to menu toggle button
+      const menuToggle = document.querySelector('.menu-toggle');
+      if (menuToggle) {
+        menuToggle.addEventListener('click', function(e) {
+          e.preventDefault();
+          toggleMenu();
+        });
+      }
+
+      // Attach event to menu close button
+      const menuClose = document.querySelector('.menu-close');
+      if (menuClose) {
+        menuClose.addEventListener('click', function(e) {
+          e.preventDefault();
+          toggleMenu();
+        });
+      }
+
+      // Attach event to overlay
+      const overlay = document.getElementById('overlay');
+      if (overlay) {
+        overlay.addEventListener('click', function() {
+          toggleMenu();
+        });
+      }
+
+      // Close menu when clicking on links
+      document.querySelectorAll('.menu-links a').forEach(link => {
+        link.addEventListener('click', () => {
+          document.getElementById('menuDrawer').classList.remove('open');
+          document.getElementById('overlay').classList.remove('show');
+        });
       });
+
+      // Make global toggleMenu function available
+      window.toggleMenu = toggleMenu;
     });
